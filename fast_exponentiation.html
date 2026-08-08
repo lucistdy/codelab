@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Doubling Superpower: Fast Exponentiation, Explained for Real Humans</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Prime Detective Agency &middot; Skill Refresher</div>
+      <h1>The Doubling Superpower: <em>Fast Exponentiation</em></h1>
+      <p class="sub">In the main case file, this trick flies by in three paragraphs. Here it is again &mdash; slowly, with small numbers, comic strips made of boxes, and a tool you can play with until it clicks.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Small numbers only</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The problem: multiplying is slow, one at a time</h2></div>
+      <p class="lead">Here's the mission: compute <code>2</code> raised to the power of <code>1,000,000</code>. That means multiplying <code>2 &times; 2 &times; 2 &times; 2&hellip;</code> a million times in a row.</p>
+      <p>If a computer does this the obvious way &mdash; multiply by 2, then multiply by 2 again, then again &mdash; it needs <strong>one multiplication for every single step</strong>. Want <code>2</code><sup>10</sup>? That's 9 multiplications. Want <code>2</code><sup>1,000,000</sup>? That's <strong>999,999 multiplications</strong>, one after another, no shortcuts.</p>
+
+      <div class="callout warn">
+        <div class="ctitle">Why should you care?</div>
+        <p>This isn't just a math-class curiosity. The secret codes that protect your passwords, your messages, and your online shopping (you'll meet this later in the case file as RSA-style cryptography) all depend on raising huge numbers to huge powers. If computers actually needed a million steps every time, the internet would grind to a halt. They don't &mdash; because of the trick on this page.</p>
+      </div>
+
+      <p>So here's the challenge for this lesson: can we compute <code>2</code><sup>1,000,000</sup> using way fewer than a million multiplications? Spoiler &mdash; yes. About <strong>20</strong> will do it. Let's find out how.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">999,999</div><div class="lbl">multiplications, doing it one step at a time</div></div>
+        <div class="stat fast"><div class="num">~20</div><div class="lbl">multiplications, using the doubling trick you're about to learn</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>The big idea: squaring skips ahead</h2></div>
+      <p class="lead">You already know this trick from somewhere else &mdash; cell division. One cell splits into 2. Those 2 split into 4. Those 4 split into 8. Every round, the amount <strong>doubles</strong>, and the numbers explode fast: after just 20 rounds you've already blown past a million cells.</p>
+      <p>Exponents work the exact same way, if you look at them the right way. Watch what happens when you only ever <strong>square</strong> a number (multiply it by itself):</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">a&sup1;</div><div class="v">a</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box"><div class="p">a&sup2;</div><div class="v">a&times;a</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box"><div class="p">a&#8308;</div><div class="v">(a&sup2;)&sup2;</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box"><div class="p">a&#8312;</div><div class="v">(a&#8308;)&sup2;</div></div>
+      </div>
+
+      <p>Look closely: to get from <code>a</code>&sup1; all the way to <code>a</code>&#8312; (that's <code>a</code> to the <strong>8th</strong> power), we only needed <strong>3 multiplications</strong> &mdash; not 7! Every time you square, you don't add one more copy of <code>a</code>, you <strong>double</strong> the exponent. 1 &rarr; 2 &rarr; 4 &rarr; 8. That's the same doubling speed as the cell-division example, and it's why the numbers you can reach explode just as fast: 20 squarings gets you all the way to the exponent <code>2</code><sup>20</sup>, which is over a million.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>Multiplying by <code>a</code> adds 1 to the exponent. Squaring <strong>doubles</strong> the exponent. Doubling gets big way, way faster than adding &mdash; that's the entire secret.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>But what about exponents like 13? Meet binary</h2></div>
+      <p class="lead">Squaring alone only reaches exponents that are exact powers of 2: 1, 2, 4, 8, 16, 32&hellip; But we don't just want <code>a</code><sup>8</sup>, we might want <code>a</code><sup>13</sup>. 13 isn't a power of 2. So how do we get there using only squarings?</p>
+      <p>Here's the trick: <strong>any whole number can be built by adding up powers of 2.</strong> This is exactly what "binary" means. Take 13:</p>
+
+      <div class="bits" aria-label="13 written in binary: 8 + 4 + 0 + 1">
+        <div class="bit on"><div class="cell">1</div><div class="pw">8</div></div>
+        <div class="bit on"><div class="cell">1</div><div class="pw">4</div></div>
+        <div class="bit"><div class="cell">0</div><div class="pw">2</div></div>
+        <div class="bit on"><div class="cell">1</div><div class="pw">1</div></div>
+      </div>
+      <p><code>13 = 8 + 4 + 1</code>. In "binary," we write that as <code>1101</code> &mdash; a 1 under every power of 2 we're using (8, 4, 1), and a 0 under the one we're skipping (2).</p>
+
+      <p>Now here's why that matters for exponents. A basic rule of powers is that <strong>multiplying two powers of the same number adds their exponents</strong>: <code>a</code><sup>8</sup> <code>&times; a</code><sup>4</sup> <code>&times; a</code><sup>1</sup> <code>= a</code><sup>8+4+1</sup> <code>= a</code><sup>13</sup>. So instead of multiplying <code>a</code> by itself 12 times, we can:</p>
+      <ol style="padding-left:1.3em;font-size:15.5px;">
+        <li>Build <code>a</code>&sup1;, <code>a</code>&sup2;, <code>a</code>&#8308;, <code>a</code>&#8312; by squaring &mdash; only <strong>3 multiplications</strong></li>
+        <li>Multiply together the ones that match the 1s in <code>1101</code>: that's <code>a</code>&#8312;, <code>a</code>&#8308;, and <code>a</code>&sup1; &mdash; <strong>2 more multiplications</strong></li>
+      </ol>
+      <p>Total: <strong>5 multiplications</strong> to compute <code>a</code><sup>13</sup>, instead of 12. And the bigger the exponent gets, the more dramatic this saving becomes &mdash; because binary numbers grow their digit-count much slower than the number itself. That's the whole magic trick.</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>A quick word about "mod" (the clock trick)</h2></div>
+      <p class="lead">The real code doesn't just compute huge powers &mdash; it also does something called "<code>mod m</code>," meaning "give me the remainder after dividing by m." You've used this your whole life without a fancy name for it: it's <strong>clock math</strong>.</p>
+      <p>A clock only has 12 numbers. If it's 10 o'clock and 5 hours pass, you don't say "15 o'clock" &mdash; you wrap back around to 3 o'clock. That's exactly <code>15 mod 12 = 3</code>. Once you hit the top, you loop back to the start.</p>
+      <p>In our code, every single multiplication is immediately followed by "<code>% m</code>" (take the remainder). That keeps every number in the calculation small and manageable &mdash; always between 0 and <code>m &minus; 1</code> &mdash; even if the "real" answer, without wrapping around, would have hundreds of digits. This is exactly why the trick can handle exponents like a million: the numbers never get the chance to blow up.</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Reading the actual code, line by line</h2></div>
+      <p class="lead">Here's the real function from the case file. Don't worry about understanding it all at once &mdash; read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fast_power.py</div>
+        <pre><code><span class="kw">def</span> fast_power(a, b, m):
+    <span class="cm"># computes (a to the power of b) % m, without ever building that giant number</span>
+    result = <span class="nu">1</span>
+    base = a % m
+    <span class="kw">while</span> b:                      <span class="cm"># stop once b hits 0</span>
+        <span class="kw">if</span> b % <span class="nu">2</span> == <span class="nu">1</span>:
+            result = result * base % m
+        base = base * base % m    <span class="cm"># this line is the "doubling"</span>
+        b = b // <span class="nu">2</span>
+    <span class="kw">return</span> result
+
+<span class="kw">print</span>(fast_power(<span class="nu">2</span>, <span class="nu">1000000</span>, <span class="nu">1000000007</span>))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">result = 1
+base = a % m</div>
+          <div class="annot-note"><span><b>result</b> starts empty (multiplying by 1 changes nothing). <b>base</b> starts as our very first power, <code>a</code>&sup1; &mdash; already clock-wrapped by m.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while b:</div>
+          <div class="annot-note"><span>Keep going as long as there's more of the exponent left to process. Each lap through the loop handles <b>one binary digit</b> of b.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if b % 2 == 1:
+    result = result * base % m</div>
+          <div class="annot-note"><span>Is the digit we're looking at a <b>1</b>? If so, this power belongs in the final answer &mdash; multiply it in. If it's a 0, skip it, we don't need it.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">base = base * base % m</div>
+          <div class="annot-note"><span>This is the doubling move from Level 2: square <b>base</b> so it becomes the <em>next</em> power &mdash; a&sup1; becomes a&sup2;, a&sup2; becomes a&#8308;, a&#8308; becomes a&#8312;&hellip;</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">b = b // 2</div>
+          <div class="annot-note"><span>Chop the exponent in half (drop the digit we just used). This shrinks b to 0 in about <code>log&#8322;(b)</code> steps &mdash; for a million, that's only ~20.</span></div>
+        </div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Python already has this superpower built in &mdash; you don't need to write it yourself: <code>pow(a, b, m)</code> is a built-in function, and that third argument tells it "take the remainder along the way," using exactly the fast exponentiation trick you just learned, under the hood!</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Let's trace it together: 3&sup1;&sup3; mod 7</h2></div>
+      <p class="lead">Talk is cheap &mdash; let's run the code by hand, one line at a time, with tiny numbers: <code>a = 3</code>, <code>b = 13</code>, <code>m = 7</code>. Follow the <span style="color:var(--clue);font-weight:700;">green</span> cells &mdash; those are the rounds where a bit was 1 and we multiplied a power into the result.</p>
+
+      <table class="trace">
+        <thead><tr><th>Round</th><th>b</th><th>b odd?</th><th>action</th><th>base &rarr; base&sup2; mod 7</th><th>result</th><th>next b</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>13</td><td class="odd">yes</td><td>result = 1&times;3 mod 7 = <b>3</b></td><td>3 &rarr; 2</td><td>3</td><td>6</td></tr>
+          <tr><td>2</td><td>6</td><td class="even">no</td><td>skip</td><td>2 &rarr; 4</td><td>3</td><td>3</td></tr>
+          <tr><td>3</td><td>3</td><td class="odd">yes</td><td>result = 3&times;4 mod 7 = <b>5</b></td><td>4 &rarr; 2</td><td>5</td><td>1</td></tr>
+          <tr><td>4</td><td>1</td><td class="odd">yes</td><td>result = 5&times;2 mod 7 = <b>3</b></td><td>2 &rarr; 4</td><td>3</td><td>0 &mdash; stop</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="7">Final answer: 3&sup1;&sup3; mod 7 = <span style="font-size:16px;">3</span></td></tr></tfoot>
+      </table>
+
+      <p>Notice the "b odd?" column, read from top to bottom: <strong>yes, no, yes, yes</strong> &mdash; that's <code>1, 0, 1, 1</code>. Read <em>backwards</em> (bottom to top, since the loop peels off the smallest binary digit first), that's <code>1101</code> &mdash; exactly the binary form of 13 you saw back in Level 3! The code isn't doing anything mysterious &mdash; it's just reading 13's binary digits one at a time and deciding, digit by digit, whether to multiply that power in.</p>
+
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">a&sup1; mod 7</div><div class="v">3</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box"><div class="p">a&sup2; mod 7</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box picked"><div class="p">a&#8308; mod 7</div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box picked"><div class="p">a&#8312; mod 7</div><div class="v">2</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">The highlighted boxes (1, 4, and 8) are the ones 13's binary form asked for. Multiply them: 2 &times; 4 &times; 3 mod 7 = 24 mod 7 = <strong>3</strong>. Matches!</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you drive: try your own numbers</h2></div>
+      <p class="lead">Pick any small <code>a</code>, <code>b</code>, and <code>m</code>. The tool below runs the exact same algorithm and shows every round, just like the table above.</p>
+
+      <div class="widget">
+        <h3>Fast exponentiation tracer</h3>
+        <div class="hint">Tip: keep b under a few hundred thousand so the table stays readable. Try b = 1,000,000 at the end to see how few rounds it really takes!</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a (base)</label><input type="number" id="inA" value="3" min="0" max="1000000"></div>
+          <div class="field"><label for="inB">b (exponent)</label><input type="number" id="inB" value="13" min="0" max="1000000"></div>
+          <div class="field"><label for="inM">m (mod)</label><input type="number" id="inM" value="7" min="1" max="1000000"></div>
+          <div class="field"><button class="btn" id="runBtn">Run the trace</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Quick challenges (no peeking until you've tried)</h2></div>
+      <p class="lead">Test the doubling superpower on paper before you check with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Compute 2&sup1;&sup0; using only doubling (no mod needed)</summary>
+        <div class="reveal">
+          <p><code>2</code>&sup1;<code> = 2</code>, <code>2</code>&sup2;<code> = 4</code>, <code>2</code>&#8308;<code> = 16</code>, <code>2</code>&#8312;<code> = 256</code>. Since <code>10 = 8 + 2</code>, the answer is <code>2</code>&#8312; <code>&times; 2</code>&sup2; <code>= 256 &times; 4 = 1024</code>. Check: <code>2</code><sup>10</sup> is indeed <code>1024</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Compute 5&#8310; mod 11 by hand, then check it with the tool</summary>
+        <div class="reveal">
+          <table class="trace" style="margin:0;">
+            <thead><tr><th>Round</th><th>b</th><th>odd?</th><th>result</th><th>base&rarr;base&sup2; mod 11</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>6</td><td class="even">no</td><td>1</td><td>5 &rarr; 3</td></tr>
+              <tr><td>2</td><td>3</td><td class="odd">yes</td><td>3</td><td>3 &rarr; 9</td></tr>
+              <tr><td>3</td><td>1</td><td class="odd">yes</td><td>5</td><td>9 &rarr; 4</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:10px;">Final answer: <code>5</code><sup>6</sup> mod 11 = <strong>5</strong>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why does the loop only take about log&#8322;(b) rounds instead of b rounds?</summary>
+        <div class="reveal">
+          <p>Every single round divides <code>b</code> by 2 (<code>b = b // 2</code>). Starting from a big number and cutting it in half over and over is exactly what "<code>log</code>&#8322;" measures &mdash; it's asking "how many times can I cut this in half before I hit zero?" For b = 1,000,000 the answer is about 20, because <code>2</code><sup>20</sup> is already over a million. That's why 20 rounds is enough &mdash; each round is doing the work of doubling the previous one's reach.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Back to the main file: <strong>The Prime Number Detective Agency</strong> case archive, Case&nbsp;03. This trick reappears in Cases&nbsp;07 and&nbsp;08 as the engine behind the Fermat and Miller&ndash;Rabin lie detectors.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function trace(a, b, m){
+    var steps = [];
+    var result = 1;
+    var base = ((a % m) + m) % m;
+    var bb = b;
+    while (bb > 0){
+      var bit = bb % 2;
+      var resultBefore = result;
+      if (bit === 1){ result = (result * base) % m; }
+      var baseBefore = base;
+      var baseAfter = (base * base) % m;
+      base = baseAfter;
+      var bBefore = bb;
+      bb = Math.floor(bb / 2);
+      steps.push({
+        round: steps.length + 1,
+        bBefore: bBefore,
+        bit: bit,
+        resultBefore: resultBefore,
+        resultAfter: result,
+        baseBefore: baseBefore,
+        baseAfter: baseAfter,
+        bAfter: bb
+      });
+    }
+    if (b === 0){ result = 1 % m; }
+    return { steps: steps, result: result };
+  }
+
+  function binaryBits(b){
+    if (b === 0) return [0];
+    var bits = [];
+    var n = b;
+    while (n > 0){ bits.unshift(n % 2); n = Math.floor(n / 2); }
+    return bits;
+  }
+
+  function renderBits(b){
+    var bits = binaryBits(b);
+    var html = '<div class="bits">';
+    for (var i = 0; i < bits.length; i++){
+      var power = Math.pow(2, bits.length - 1 - i);
+      html += '<div class="bit ' + (bits[i] === 1 ? 'on' : '') + '"><div class="cell">' + bits[i] + '</div><div class="pw">' + power.toLocaleString() + '</div></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function run(){
+    var a = parseInt(document.getElementById('inA').value, 10);
+    var b = parseInt(document.getElementById('inB').value, 10);
+    var m = parseInt(document.getElementById('inM').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(a) || isNaN(b) || isNaN(m) || a < 0 || b < 0 || m < 1){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>a and b need to be 0 or more, and m needs to be at least 1.</p></div>';
+      return;
+    }
+    if (b > 1000000 || a > 1000000 || m > 1000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Too big for this demo</div><p>Keep a, b, and m at 1,000,000 or smaller &mdash; past that, the browser\'s math starts losing precision (the Python code up above doesn\'t have this limit, only this in-page demo does).</p></div>';
+      return;
+    }
+
+    var t = trace(a, b, m);
+
+    var html = '';
+    html += '<p style="margin-top:16px;font-size:13.5px;color:var(--ink-soft);"><b>' + b.toLocaleString() + '</b> in binary, most-significant digit first:</p>';
+    html += renderBits(b);
+
+    html += '<table class="trace"><thead><tr><th>Round</th><th>b</th><th>odd?</th><th>action</th><th>base&rarr;base&sup2; mod ' + m + '</th><th>result</th><th>next b</th></tr></thead><tbody>';
+    for (var i = 0; i < t.steps.length; i++){
+      var s = t.steps[i];
+      var oddCell = s.bit === 1
+        ? '<td class="odd">yes</td>'
+        : '<td class="even">no</td>';
+      var actionCell = s.bit === 1
+        ? '<td>result = ' + s.resultBefore + '&times;' + s.baseBefore + ' mod ' + m + ' = <b>' + s.resultAfter + '</b></td>'
+        : '<td>skip</td>';
+      html += '<tr><td>' + s.round + '</td><td>' + s.bBefore + '</td>' + oddCell + actionCell +
+              '<td>' + s.baseBefore + ' &rarr; ' + s.baseAfter + '</td><td>' + s.resultAfter + '</td><td>' + s.bAfter + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="answer-line">' + a + '<sup>' + b.toLocaleString() + '</sup> mod ' + m + ' = <b>' + t.result + '</b></div>';
+
+    var slowSteps = Math.max(b - 1, 0);
+    var fastSteps = t.steps.length;
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowSteps.toLocaleString() + '</div><div class="lbl">multiplications, one at a time</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastSteps.toLocaleString() + '</div><div class="lbl">multiplications, with doubling</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

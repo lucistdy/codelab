@@ -1,0 +1,1054 @@
+<title>质数侦探社：模运算与素数判定破案指南</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:"PingFang SC","Heiti SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    --font-body:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a;
+      --paper-raised:#1b2327;
+      --paper-raised-2:#1f2a26;
+      --ink:#e8e6db;
+      --ink-soft:#a6b0a8;
+      --line:#2c3630;
+      --accent:#e2a13e;
+      --accent-strong:#f0b65b;
+      --accent-soft:#3c2f16;
+      --alert:#e2685f;
+      --alert-soft:#452321;
+      --clue:#5cc99a;
+      --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .page{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+
+  /* ---------- Hero / cover ---------- */
+  .hero{
+    padding:64px 20px 40px;
+    background:
+      linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);
+    border-bottom:1px solid var(--line);
+  }
+  .hero-inner{max-width:760px;margin:0 auto;position:relative;}
+  .eyebrow{
+    font-family:var(--font-stamp);
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .hero h1{
+    font-size:clamp(32px,6vw,52px);
+    line-height:1.15;
+    margin:0 0 10px;
+    letter-spacing:-.01em;
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:var(--accent-strong);
+    text-decoration:underline;
+    text-decoration-color:var(--accent-soft);
+    text-decoration-thickness:6px;
+    text-underline-offset:-2px;
+  }
+  .hero .sub{
+    font-size:17px;
+    color:var(--ink-soft);
+    max-width:34em;
+  }
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;align-items:center;}
+  .stamp{
+    font-family:var(--font-stamp);
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.08em;
+    padding:7px 14px;
+    border:2px solid currentColor;
+    border-radius:4px;
+    text-transform:uppercase;
+    transform:rotate(-2deg);
+    display:inline-block;
+  }
+  .stamp.status{color:var(--alert);transform:rotate(3deg);}
+  .stamp.case{color:var(--ink-soft);}
+  .stamp.dept{color:var(--clue);transform:rotate(-1deg);}
+
+  .brief{
+    margin-top:30px;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    box-shadow:var(--shadow);
+  }
+  .brief p{margin:0;font-size:15.5px;color:var(--ink);}
+  .brief strong{color:var(--accent-strong);}
+
+  /* ---------- TOC / docket ---------- */
+  .docket{padding:36px 20px 8px;}
+  .docket h2{font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 16px;font-family:var(--font-stamp);}
+  .docket-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line);}
+  .docket-list li{border-bottom:1px solid var(--line);}
+  .docket-list a{
+    display:flex;align-items:center;gap:14px;
+    padding:13px 4px;
+    text-decoration:none;color:var(--ink);
+    font-size:15px;
+  }
+  .docket-list a:hover{color:var(--accent-strong);}
+  .docket-list .num{
+    font-family:var(--font-mono);color:var(--ink-soft);font-size:13px;min-width:2.4em;
+  }
+  .docket-list .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .docket-list .ttl{flex:1;}
+  .docket-list .lvl{font-size:12px;color:var(--ink-soft);font-family:var(--font-mono);}
+  .dot.easy{background:var(--clue);}
+  .dot.mid{background:var(--accent);}
+  .dot.hard{background:var(--alert);}
+
+  /* ---------- Sections ---------- */
+  section.case{
+    padding:52px 20px 8px;
+    border-top:1px solid var(--line);
+    scroll-margin-top:16px;
+  }
+  .case-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+  .case-idx{
+    font-family:var(--font-mono);
+    color:var(--ink-soft);
+    font-size:13px;
+    letter-spacing:.08em;
+  }
+  .badge{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:12px;
+    padding:4px 11px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .badge.easy{background:var(--clue-soft);color:var(--clue);}
+  .badge.mid{background:var(--accent-soft);color:var(--accent-strong);}
+  .badge.hard{background:var(--alert-soft);color:var(--alert);}
+
+  section.case h2{font-size:clamp(22px,3.6vw,28px);margin:6px 0 18px;}
+  section.case h3{font-size:17px;margin:30px 0 10px;color:var(--ink);}
+  section.case p{font-size:15.5px;color:var(--ink);}
+  section.case p.lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callout boxes ---------- */
+  .callout{
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin:22px 0;
+    border:1px solid var(--line);
+    background:var(--paper-raised);
+    box-shadow:var(--shadow);
+  }
+  .callout .ctitle{
+    font-family:var(--font-display);font-weight:700;font-size:14px;
+    display:flex;align-items:center;gap:8px;margin-bottom:8px;
+  }
+  .callout p{margin:0 0 8px;font-size:14.5px;}
+  .callout p:last-child{margin-bottom:0;}
+  .callout.fact{border-color:var(--clue-soft);}
+  .callout.fact .ctitle{color:var(--clue);}
+  .callout.tip{border-color:var(--accent-soft);}
+  .callout.tip .ctitle{color:var(--accent-strong);}
+
+  /* Wanted poster */
+  .wanted{
+    border:3px double var(--alert);
+    border-radius:6px;
+    padding:26px 24px;
+    margin:26px 0;
+    background:var(--alert-soft);
+    text-align:center;
+  }
+  .wanted .w-label{font-family:var(--font-stamp);font-weight:800;letter-spacing:.22em;color:var(--alert);font-size:14px;}
+  .wanted .w-num{
+    font-family:var(--font-mono);font-weight:700;font-size:56px;color:var(--ink);
+    margin:10px 0;letter-spacing:.02em;
+  }
+  .wanted .w-desc{font-size:15px;color:var(--ink);max-width:32em;margin:0 auto;}
+  .wanted .w-tag{
+    display:inline-block;margin-top:14px;font-family:var(--font-stamp);
+    font-size:11px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;
+  }
+
+  /* ---------- Code blocks ---------- */
+  .codebox{
+    margin:18px 0;
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    border:1px solid var(--line);
+  }
+  .codebox .bar{
+    background:var(--paper-raised-2);
+    color:var(--ink-soft);
+    font-family:var(--font-mono);
+    font-size:12px;
+    padding:8px 14px;
+    display:flex;align-items:center;gap:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .codebox .bar .dots{display:flex;gap:5px;}
+  .codebox .bar .dots span{width:8px;height:8px;border-radius:50%;background:var(--line);}
+  .codebox pre{
+    margin:0;
+    padding:16px 18px;
+    background:var(--code-bg);
+    color:var(--code-fg);
+    overflow-x:auto;
+  }
+  .codebox code{
+    font-family:var(--font-mono);
+    font-size:13.5px;
+    line-height:1.7;
+    white-space:pre;
+  }
+  .codebox .kw{color:var(--code-kw);}
+  .codebox .st{color:var(--code-st);}
+  .codebox .cm{color:var(--code-cm);font-style:italic;}
+  .codebox .nu{color:var(--code-nu);}
+
+  /* ---------- Interactive widgets ---------- */
+  .widget{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px;
+    margin:22px 0;
+    box-shadow:var(--shadow);
+  }
+  figure{margin:0;}
+  figcaption{font-size:13px;color:var(--ink-soft);margin-top:10px;text-align:center;}
+
+  .clock-flex{display:flex;gap:24px;flex-wrap:wrap;align-items:center;}
+  .clock-svg-wrap{width:200px;flex:none;margin:0 auto;}
+  .clock-controls{flex:1;min-width:220px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:12px;color:var(--ink-soft);font-family:var(--font-mono);}
+  .field input{
+    width:84px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;
+    background:var(--paper);color:var(--ink);font-family:var(--font-mono);font-size:15px;
+  }
+  .btn{
+    font-family:var(--font-display);font-weight:700;font-size:14px;
+    padding:9px 18px;border-radius:7px;border:none;cursor:pointer;
+    background:var(--accent);color:#fff;
+  }
+  .btn:hover{background:var(--accent-strong);}
+  .btn:focus-visible{outline:3px solid var(--accent-soft);outline-offset:2px;}
+  .result-line{
+    font-family:var(--font-mono);font-size:16px;margin-top:12px;color:var(--ink);
+    min-height:1.6em;
+  }
+  .result-line .r{color:var(--accent-strong);font-weight:700;}
+
+  .clock-num text{font-family:var(--font-mono);font-size:13px;fill:var(--ink);}
+  .clock-num circle{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;cursor:pointer;}
+  .clock-num:hover circle{fill:var(--accent-soft);}
+  .clock-num.active circle{fill:var(--accent);stroke:var(--accent-strong);}
+  .clock-num.active text{fill:#fff;}
+  #clockHand{stroke:var(--alert);stroke-width:3;stroke-linecap:round;}
+  .clock-face{fill:none;stroke:var(--line);stroke-width:2;}
+  .clock-hub{fill:var(--ink-soft);}
+
+  /* Sieve grid */
+  .sieve-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+  .sieve-status{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .sieve-grid{
+    display:grid;grid-template-columns:repeat(10,1fr);gap:4px;
+  }
+  .cell{
+    aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:clamp(10px,2.4vw,13px);
+    border-radius:4px;background:var(--paper-raised-2);color:var(--ink-soft);
+    border:1px solid var(--line);
+    transition:background .15s,color .15s,transform .15s;
+  }
+  .cell.one{background:none;border-style:dashed;color:var(--ink-soft);opacity:.5;}
+  .cell.is-prime{background:var(--clue);color:#fff;border-color:var(--clue);transform:scale(1.05);}
+  .cell.is-composite{background:var(--alert-soft);color:var(--alert);border-color:var(--alert-soft);}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .legend i.p{background:var(--clue);}
+  .legend i.c{background:var(--alert-soft);border:1px solid var(--alert);}
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q p.qtext{font-weight:700;margin-bottom:10px;font-size:15px;}
+  .quiz-opts{display:flex;flex-direction:column;gap:8px;}
+  .quiz-opts label{
+    display:flex;align-items:center;gap:10px;padding:9px 12px;
+    border:1px solid var(--line);border-radius:7px;cursor:pointer;font-size:14.5px;
+  }
+  .quiz-opts label:hover{border-color:var(--accent);}
+  .quiz-opts input{accent-color:var(--accent);}
+  .quiz-q.correct .qtext::after{content:" ✓ 答对了";color:var(--clue);font-weight:700;}
+  .quiz-q.wrong .qtext::after{content:" ✗ 差一点";color:var(--alert);font-weight:700;}
+  #quizResult{
+    margin-top:16px;font-family:var(--font-display);font-weight:700;font-size:15px;
+  }
+
+  /* Table */
+  .tblwrap{overflow-x:auto;margin:20px 0;}
+  table{border-collapse:collapse;width:100%;font-size:14px;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);}
+  th{font-family:var(--font-mono);font-size:12px;letter-spacing:.05em;color:var(--ink-soft);text-transform:uppercase;}
+  td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+
+  /* Checklist */
+  .checklist{list-style:none;margin:18px 0;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .checklist li{display:flex;gap:10px;font-size:14.5px;align-items:flex-start;}
+  .checklist li::before{content:"✓";color:var(--clue);font-weight:800;flex:none;}
+
+  /* Challenge cards */
+  .chal{
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;margin:14px 0;background:var(--paper-raised);
+    display:flex;gap:14px;align-items:flex-start;
+  }
+  .chal .tag{
+    font-family:var(--font-mono);font-size:11px;padding:3px 9px;border-radius:5px;flex:none;
+    margin-top:2px;
+  }
+  .chal p{margin:0;font-size:14.5px;}
+  .chal .tag.easy{background:var(--clue-soft);color:var(--clue);}
+  .chal .tag.mid{background:var(--accent-soft);color:var(--accent-strong);}
+  .chal .tag.hard{background:var(--alert-soft);color:var(--alert);}
+
+  /* Diagram figure */
+  .diagram-wrap{width:100%;max-width:440px;margin:20px auto;}
+  .diagram-wrap svg text{font-family:var(--font-mono);}
+  .diagram-wrap svg{color:var(--ink-soft);}
+  .diagram-wrap svg .accent{color:var(--alert);}
+  .diagram-wrap svg .ok{color:var(--clue);}
+
+  footer{
+    padding:50px 20px 70px;text-align:center;color:var(--ink-soft);font-size:13px;
+    border-top:1px solid var(--line);margin-top:30px;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .cell,#clockHand,.clock-num circle{transition:none;}
+  }
+</style>
+
+<div class="page">
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">数学侦探社 · 少年特训教材</div>
+      <h1>质数侦探社：<br><em>模运算</em> 与 素数判定破案指南</h1>
+      <p class="sub">你的任务：学会像侦探一样，用数学"审问"数字——揭穿那些伪装成质数的骗子。全程配 Python 代码，边看边写，边写边破案。</p>
+      <div class="stampbar">
+        <span class="stamp case">案卷编号 NO.20260806</span>
+        <span class="stamp status">状态：侦查中</span>
+        <span class="stamp dept">难度：由浅入深</span>
+      </div>
+      <div class="brief">
+        <p>你知道吗？每次网购、发加密消息，手机背后都有<strong>巨大的质数</strong>在保护你的密码——这套系统叫 RSA 加密。而破译它靠的正是这套课程要教你的本领：<strong>快速判断一个数到底是不是质数</strong>。准备好了吗，新人侦探？</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <nav class="docket">
+      <h2>案卷索引 · Case Docket</h2>
+      <ul class="docket-list">
+        <li><a href="#case1"><span class="num">01</span><span class="dot easy"></span><span class="ttl">时钟上的秘密：什么是"取余"</span><span class="lvl">入门线索</span></a></li>
+        <li><a href="#case2"><span class="num">02</span><span class="dot easy"></span><span class="ttl">循环游戏：时钟上的加法</span><span class="lvl">入门线索</span></a></li>
+        <li><a href="#case3"><span class="num">03</span><span class="dot mid"></span><span class="ttl">翻倍的超能力：快速幂</span><span class="lvl">进阶调查</span></a></li>
+        <li><a href="#case4"><span class="num">04</span><span class="dot mid"></span><span class="ttl">谁是质数？谁是伪装者？</span><span class="lvl">进阶调查</span></a></li>
+        <li><a href="#case5"><span class="num">05</span><span class="dot mid"></span><span class="ttl">埃氏渔网：一网打尽所有质数</span><span class="lvl">进阶调查</span></a></li>
+        <li><a href="#case6"><span class="num">06</span><span class="dot hard"></span><span class="ttl">大数字怎么查？聪明的搜查法</span><span class="lvl">硬核悬案</span></a></li>
+        <li><a href="#case7"><span class="num">07</span><span class="dot hard"></span><span class="ttl">费马测谎仪</span><span class="lvl">硬核悬案</span></a></li>
+        <li><a href="#wanted"><span class="num">·</span><span class="dot hard"></span><span class="ttl">通缉令：完美骗子 561 号</span><span class="lvl">案中案</span></a></li>
+        <li><a href="#case8"><span class="num">08</span><span class="dot hard"></span><span class="ttl">米勒-拉宾：多重盘问揭穿伪装</span><span class="lvl">硬核悬案</span></a></li>
+        <li><a href="#quiz"><span class="num">·</span><span class="dot mid"></span><span class="ttl">测验：你是真侦探吗？</span><span class="lvl">自查</span></a></li>
+        <li><a href="#closing"><span class="num">·</span><span class="dot easy"></span><span class="ttl">结案报告 + 新案件</span><span class="lvl">总结</span></a></li>
+      </ul>
+    </nav>
+
+    <!-- ============ CASE 1 ============ -->
+    <section class="case" id="case1">
+      <div class="case-head">
+        <span class="case-idx">案卷 01 / 08</span>
+        <span class="badge easy">入门线索</span>
+      </div>
+      <h2>时钟上的秘密：什么是"取余"</h2>
+      <p class="lead">先从一个你天天都在用的东西说起——时钟。</p>
+      <p>如果现在是 <strong>10 点</strong>，再过 <strong>5 个小时</strong>是几点？你肯定脱口而出：<strong>3 点</strong>。可是 10 + 5 明明等于 15 呀，为什么答案是 3？因为时钟上没有 15 点这种说法——每到 12，它就"绕回去"重新从 0 开始数。</p>
+      <p>这个"绕圈子、算余数"的动作，在数学和编程里有个正式名字，叫<strong>取余运算</strong>，符号是 <code>%</code>。它算的就是"除完之后剩下多少"：</p>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>算式</th><th>意思</th><th>结果</th></tr></thead>
+          <tbody>
+            <tr><td class="num">15 % 12</td><td>15 除以 12，剩下几？</td><td class="num">3</td></tr>
+            <tr><td class="num">7 % 3</td><td>7 除以 3，商 2 余几？</td><td class="num">1</td></tr>
+            <tr><td class="num">20 % 5</td><td>20 除以 5，正好除尽</td><td class="num">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="widget">
+        <figure>
+          <div class="clock-flex">
+            <div class="clock-svg-wrap">
+              <svg viewBox="0 0 200 200" role="img" aria-label="一个12小时时钟，点击数字设置起点，指针会转到加法结果的位置">
+                <circle class="clock-face" cx="100" cy="100" r="88"/>
+                <line id="clockHand" x1="100" y1="100" x2="100" y2="45"/>
+                <circle class="clock-hub" cx="100" cy="100" r="4"/>
+                <g class="clock-num active" data-val="0"><circle cx="100" cy="22" r="13"/><text x="100" y="26" text-anchor="middle">0</text></g>
+                <g class="clock-num" data-val="1"><circle cx="139" cy="32" r="13"/><text x="139" y="36" text-anchor="middle">1</text></g>
+                <g class="clock-num" data-val="2"><circle cx="168" cy="61" r="13"/><text x="168" y="65" text-anchor="middle">2</text></g>
+                <g class="clock-num" data-val="3"><circle cx="178" cy="100" r="13"/><text x="178" y="104" text-anchor="middle">3</text></g>
+                <g class="clock-num" data-val="4"><circle cx="168" cy="139" r="13"/><text x="168" y="143" text-anchor="middle">4</text></g>
+                <g class="clock-num" data-val="5"><circle cx="139" cy="168" r="13"/><text x="139" y="172" text-anchor="middle">5</text></g>
+                <g class="clock-num" data-val="6"><circle cx="100" cy="178" r="13"/><text x="100" y="182" text-anchor="middle">6</text></g>
+                <g class="clock-num" data-val="7"><circle cx="61" cy="168" r="13"/><text x="61" y="172" text-anchor="middle">7</text></g>
+                <g class="clock-num" data-val="8"><circle cx="32" cy="139" r="13"/><text x="32" y="143" text-anchor="middle">8</text></g>
+                <g class="clock-num" data-val="9"><circle cx="22" cy="100" r="13"/><text x="22" y="104" text-anchor="middle">9</text></g>
+                <g class="clock-num" data-val="10"><circle cx="32" cy="61" r="13"/><text x="32" y="65" text-anchor="middle">10</text></g>
+                <g class="clock-num" data-val="11"><circle cx="61" cy="32" r="13"/><text x="61" y="36" text-anchor="middle">11</text></g>
+              </svg>
+            </div>
+            <div class="clock-controls">
+              <p style="margin-bottom:12px;font-size:14px;color:var(--ink-soft);">点击时钟上的数字选起点，再输入要往后走几步，看指针转到哪。</p>
+              <div class="field-row">
+                <div class="field"><label for="stepsInput">再走几步</label><input id="stepsInput" type="number" value="17" inputmode="numeric"></div>
+                <div class="field"><label>&nbsp;</label><button class="btn" id="clockBtn">转动时钟</button></div>
+              </div>
+              <div class="result-line" id="clockResult">起点 <span class="r">0</span>，走 <span class="r">17</span> 步 → <span class="r">0 + 17 ≡ 5 (mod 12)</span></div>
+            </div>
+          </div>
+          <figcaption>图1：mod 12 就是"时钟运算"——不管走多远，最后都会落在 0～11 中的某一格。</figcaption>
+        </figure>
+      </div>
+
+      <h3>用 Python 写一遍</h3>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>clock.py</div>
+        <pre><code>now_hour = 10
+hours_to_add = 5
+new_hour = (now_hour + hours_to_add) % 12
+print(new_hour)   # 输出 3，因为 15 % 12 == 3</code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">冷知识档案</div>
+        <p>Python 的取余和你想的一模一样贴心：<code>-7 % 3</code> 在 Python 里得到 <strong>2</strong>（永远不会是负数）。但在 C++ 这种语言里，<code>-7 % 3</code> 却会得到 <strong>-1</strong>！同一个算式，不同语言给的答案居然不一样——这就是为什么真正的程序员写代码前，都要先搞懂自己用的语言到底怎么"取余"的。</p>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>negative_mod.py</div>
+        <pre><code>print(-7 % 3)     # 2 —— Python 的余数永远不是负数
+print(-7 // 3)    # -3 —— // 是"整除"，结果向下取整</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ CASE 2 ============ -->
+    <section class="case" id="case2">
+      <div class="case-head">
+        <span class="case-idx">案卷 02 / 08</span>
+        <span class="badge easy">入门线索</span>
+      </div>
+      <h2>循环游戏：时钟上的加法</h2>
+      <p class="lead">取余运算最爱出现在所有"绕圈子"的场景里：星期、月份、游戏里的回合、密码本的字母表……</p>
+      <p>举个例子：今天是<strong>周三</strong>，100 天后是星期几？你不需要一天天数，只要把星期当成一个 7 格的时钟：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>weekday.py</div>
+        <pre><code># 0 = 周日, 1 = 周一, 2 = 周二, 3 = 周三 ...
+today = 3
+days_later = 100
+future_day = (today + days_later) % 7
+print(future_day)   # 5，也就是 100 天后是周五！</code></pre>
+      </div>
+      <p>是不是很神奇？100 天听起来要数很久，但取余运算一步就搞定了。这就是为什么程序员做"循环类"的题目——排班表、游戏回合、加密字母表——第一反应都是<strong>找一个合适的"时钟"（也就是 mod 后面的那个数字）</strong>。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">侦探小贴士</div>
+        <p>凡是看到"每 N 个循环一次"的描述，脑子里就要立刻警铃大作：<strong>这题需要 mod N！</strong>比如"每 7 天一个星期""每 24 小时一天""每 26 个字母轮一圈的密码"，全都是同一种套路。</p>
+      </div>
+    </section>
+
+    <!-- ============ CASE 3 ============ -->
+    <section class="case" id="case3">
+      <div class="case-head">
+        <span class="case-idx">案卷 03 / 08</span>
+        <span class="badge mid">进阶调查</span>
+      </div>
+      <h2>翻倍的超能力：快速幂</h2>
+      <p class="lead">现在案子升级了。侦探社接到新任务：算出 <code>2 的 1000000 次方，再对一个很大的数取余</code>。直接一个一个乘，得算一百万次——电脑会算到天荒地老吗？其实不会，只要用对方法，<strong>连 30 步都不用</strong>。</p>
+      <p>秘诀就是"翻倍"。想象细胞分裂：1 变 2，2 变 4，4 变 8……每一步都是上一步的平方，只要 <strong>20 步左右就能超过一百万</strong>。这个技巧叫<strong>快速幂（二进制取幂）</strong>：把指数不断除以 2，每一轮把底数自己乘自己（平方），如果这一位是奇数就顺手把结果也乘上去。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fast_power.py</div>
+        <pre><code>def fast_power(a, b, m):
+    # 计算 (a 的 b 次方) % m，但不会真的算出那个巨大的数字
+    result = 1
+    base = a % m
+    while b:                      # b 变成 0 就停下
+        if b % 2 == 1:
+            result = result * base % m
+        base = base * base % m    # 这一步就是"翻倍"
+        b = b // 2
+    return result
+
+print(fast_power(2, 1000000, 1000000007))</code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">冷知识档案</div>
+        <p>其实 Python 早就把这个"翻倍超能力"内置好了，你甚至不用自己写：<code>pow(a, b, m)</code> 这个自带函数，第三个参数就是"顺便取余"，底层用的正是你刚学的快速幂技巧！后面案卷里我们会经常直接用它。</p>
+      </div>
+    </section>
+
+    <!-- ============ CASE 4 ============ -->
+    <section class="case" id="case4">
+      <div class="case-head">
+        <span class="case-idx">案卷 04 / 08</span>
+        <span class="badge mid">进阶调查</span>
+      </div>
+      <h2>谁是质数？谁是伪装者？</h2>
+      <p class="lead">好了，正式进入本案核心：<strong>质数</strong>。</p>
+      <p><strong>质数</strong>是只能被 1 和它自己整除的数（并且要大于 1），比如 2、3、5、7、11、13……<strong>合数</strong>则是能被拆成更小数字相乘的"伪装者"，比如 <code>91 = 7 × 13</code>，看起来人畜无害，其实内部藏着两个"同伙"。</p>
+      <p>侦探社的头号任务，就是拿到一个数字，快速判断它到底是"清白的质数"，还是"藏了同伙的合数"。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">侦探小贴士</div>
+        <p>1 既不是质数也不是合数——它太特殊了，数学家专门把它"请出局"，不参与这场游戏。</p>
+      </div>
+    </section>
+
+    <!-- ============ CASE 5 ============ -->
+    <section class="case" id="case5">
+      <div class="case-head">
+        <span class="case-idx">案卷 05 / 08</span>
+        <span class="badge mid">进阶调查</span>
+      </div>
+      <h2>埃氏渔网：一网打尽所有质数</h2>
+      <p class="lead">如果要找出 1 到 100 里<strong>所有</strong>的质数，古希腊数学家<strong>埃拉托斯特尼</strong>两千多年前就想出了一个超聪明的办法，后人叫它<strong>埃氏筛法</strong>——原理就像撒一张渔网，把"有同伙"的数字全部捞走，剩下的自然就是质数。</p>
+      <p>做法：从 2 开始，把 2 的所有倍数（4、6、8…）全部划掉，因为它们都有同伙 2；再看 3，把 3 的倍数全划掉；下一个没被划掉的就是质数，继续用它划掉它的倍数……一路撒网到 100，活下来的全都是真正的质数。</p>
+
+      <div class="widget">
+        <figure>
+          <div class="sieve-top">
+            <button class="btn" id="sieveBtn">开始撒网侦查</button>
+            <span class="sieve-status" id="sieveStatus">点击按钮，看质数如何从合数中"浮现"</span>
+          </div>
+          <div class="sieve-grid" id="sieveGrid"></div>
+          <div class="legend">
+            <span><i class="p"></i> 质数（清白）</span>
+            <span><i class="c"></i> 合数（有同伙，已被划掉）</span>
+          </div>
+        </figure>
+        <figcaption>图2：1～100 的埃氏筛法。每次锁定一个还没被划掉的数字，就把它所有的倍数都标记为"有同伙"。</figcaption>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sieve.py</div>
+        <pre><code>def sieve_of_eratosthenes(limit):
+    is_prime = [True] * (limit + 1)
+    is_prime[0] = is_prime[1] = False   # 0 和 1 直接出局
+    for p in range(2, limit + 1):
+        if is_prime[p]:
+            # p 是质数，把它的倍数全部标记为合数
+            for multiple in range(p * p, limit + 1, p):
+                is_prime[multiple] = False
+    return [n for n in range(limit + 1) if is_prime[n]]
+
+print(sieve_of_eratosthenes(100))</code></pre>
+      </div>
+      <p>这个方法特别快，找 100 万以内的所有质数，普通电脑一眨眼就能完成——比一个个去检查快得多。</p>
+    </section>
+
+    <!-- ============ CASE 6 ============ -->
+    <section class="case" id="case6">
+      <div class="case-head">
+        <span class="case-idx">案卷 06 / 08</span>
+        <span class="badge hard">硬核悬案</span>
+      </div>
+      <h2>大数字怎么查？从蛮力搜查到聪明搜查</h2>
+      <p class="lead">渔网法很棒，但如果只想知道<strong>一个</strong>超大的数字（比如 999999999989）是不是质数，撒一张能装下十亿个格子的网就太浪费了。这时候需要换一套审讯方法。</p>
+      <p>最直接的想法：拿 2、3、4、5……一路除到 <code>n-1</code>，只要有一个能整除，就抓到同伙了。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>is_prime_slow.py</div>
+        <pre><code>def is_prime_slow(n):
+    if n == 0 or n == 1:
+        return False
+    for i in range(2, n):
+        if n % i == 0:
+            return False   # 抓到同伙了！
+    return True
+
+print(is_prime_slow(97))    # True</code></pre>
+      </div>
+
+      <p>这样查一个百万级别的数，就要循环上百万次——对电脑来说还行，但如果数字有几十位长，这种"笨办法"就得算到天荒地老。这里有个聪明的省力技巧：</p>
+      <p><strong>只要查到 √n 就够了。</strong>为什么？因为如果 n 能被拆成 <code>a × b</code>，那么 a 和 b 里一定至少有一个不超过 √n——想象两个人分一块地，两人不可能都比一半还大。所以只要在 2 到 √n 之间没找到同伙，n 就一定是清白的。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>is_prime_fast.py</div>
+        <pre><code>def is_prime_fast(n):
+    if n == 0 or n == 1:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):   # 只查到根号 n
+        if n % i == 0:
+            return False
+    return True
+
+print(is_prime_fast(999999937))   # True，而且几乎瞬间出结果</code></pre>
+      </div>
+      <p>从"查到 n"变成"只查到 √n"，速度提升有多夸张？如果 n 是一亿，原来要循环一亿次，现在只要循环一万次——快了整整一万倍！</p>
+    </section>
+
+    <!-- ============ CASE 7 ============ -->
+    <section class="case" id="case7">
+      <div class="case-head">
+        <span class="case-idx">案卷 07 / 08</span>
+        <span class="badge hard">硬核悬案</span>
+      </div>
+      <h2>费马测谎仪</h2>
+      <p class="lead">但如果 n 不是一亿，而是<strong>几十位</strong>那么长呢？就算只查到 √n，也还是天文数字。侦探社需要一台"测谎仪"，不用挨个审问，靠几个"证人"就能大概率判断真假。</p>
+      <p>17 世纪数学家<strong>费马</strong>发现了一个神奇的规律，后人称为<strong>费马小定理</strong>：</p>
+      <div class="callout tip">
+        <div class="ctitle">费马小定理</div>
+        <p>如果 <code>p</code> 是质数，那么对任何一个和 p 没有公因数的数字 <code>a</code>（也就是"证人"），一定有：</p>
+        <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">a<sup>p−1</sup> mod p <strong>=</strong> 1</p>
+      </div>
+      <p>反过来利用这个规律，就能做一台"测谎仪"：随便找几个证人 a，算一下 <code>a 的 (n-1) 次方 mod n</code>，如果结果不是 1，就<strong>百分之百</strong>抓到证据——n 绝对不是质数！</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fermat_test.py</div>
+        <pre><code>import random
+
+def fermat_test(n, witness_count=5):
+    if n == 0 or n == 1:
+        return False
+    for _ in range(witness_count):
+        a = random.randrange(2, n - 1)      # 随机找一个证人
+        if pow(a, n - 1, n) != 1:
+            return False                     # 证人举报了，n 不是质数
+    return True                              # 所有证人都放行，n 可能是质数</code></pre>
+      </div>
+      <p>注意用词——费马测谎仪只能说"n <strong>可能</strong>是质数"，不能百分百保证。这是因为它只有在抓到反例时才是铁证；如果证人们全部放行，还是有极小概率被骗过去。到底会不会被骗，接着往下看……</p>
+    </section>
+
+    <!-- ============ WANTED ============ -->
+    <section class="case" id="wanted">
+      <div class="wanted">
+        <div class="w-label">通缉令 · WANTED</div>
+        <div class="w-num">561</div>
+        <p class="w-desc"><strong>= 3 × 11 × 17</strong>，一个不折不扣的合数，却能骗过<strong>几乎所有</strong>证人的费马测谎仪——对每一个和它没有公因数的证人 a，都满足 <code>a<sup>561</sup> mod 561 = a</code>，表现得和真的质数一模一样。</p>
+        <p class="w-desc" style="margin-top:10px;">这类"完美骗子"被数学家称为<strong>卡迈克尔数（Carmichael Numbers）</strong>——它们的存在说明，费马测谎仪并不完美，我们需要一套更狠的盘问方式。</p>
+        <span class="w-tag">下落：案卷08 揭晓破解法</span>
+      </div>
+    </section>
+
+    <!-- ============ CASE 8 ============ -->
+    <section class="case" id="case8">
+      <div class="case-head">
+        <span class="case-idx">案卷 08 / 08</span>
+        <span class="badge hard">硬核悬案</span>
+      </div>
+      <h2>米勒-拉宾：多重盘问揭穿伪装</h2>
+      <p class="lead">既然骗子能骗过一次测谎，那就<strong>多问几个刁钻问题</strong>。这就是 <strong>米勒-拉宾质数测试</strong> 的思路——除了看 <code>a 的 (n-1) 次方</code>，还要在算的过程中，检查一个更隐蔽的破绽。</p>
+      <p>关键的数学线索是这样的：</p>
+      <div class="callout tip">
+        <div class="ctitle">破案关键定理</div>
+        <p>如果 p 是质数，那么方程 <code>x² ≡ 1 (mod p)</code> 只有两个解：<code>x = 1</code> 或 <code>x = p − 1</code>（也就是 −1）。<br>换句话说：<strong>如果找到了第三个解，p 就绝对不是质数！</strong></p>
+      </div>
+      <p>米勒-拉宾测试就是故意去找这个"第三个解"。具体步骤：</p>
+      <ol style="padding-left:1.3em;font-size:15.5px;">
+        <li>把 <code>n − 1</code> 拆成 <code>u × 2ˡ</code>（u 是奇数，相当于把偶数部分的 2 全部提出来）</li>
+        <li>找一个证人 a，算出 <code>v = a 的 u 次方 mod n</code></li>
+        <li>把 v 反复平方，最多做 l 次</li>
+        <li>平方的过程中，如果 v 忽然从"不等于 ±1"的数变成了 1，说明抓到了那个"不该存在的第三个解"——铁证：n 不是质数</li>
+        <li>如果全程没有破绽，这个证人就放行，n 暂时算作"可能的质数"</li>
+      </ol>
+
+      <div class="diagram-wrap">
+        <figure>
+          <svg viewBox="0 0 480 500" role="img" aria-label="米勒拉宾算法流程图：从嫌疑数n开始拆解、抽查证人、反复平方，最终分流到无罪或抓到破绽两种结局">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <g fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="130" y="15" width="220" height="46" rx="8"/>
+              <rect x="110" y="95" width="260" height="46" rx="8"/>
+              <rect x="90" y="175" width="300" height="46" rx="8"/>
+              <rect x="110" y="255" width="260" height="46" rx="8"/>
+              <rect class="ok" x="30" y="380" width="190" height="92" rx="8"/>
+              <rect class="accent" x="260" y="380" width="190" height="92" rx="8"/>
+            </g>
+            <g stroke="currentColor" stroke-width="1.6" marker-end="url(#arrow)">
+              <line x1="240" y1="61" x2="240" y2="93"/>
+              <line x1="240" y1="141" x2="240" y2="173"/>
+              <line x1="240" y1="221" x2="240" y2="253"/>
+            </g>
+            <g stroke="currentColor" stroke-width="1.6" marker-end="url(#arrow)">
+              <line class="ok" x1="240" y1="301" x2="130" y2="378"/>
+              <line class="accent" x1="240" y1="301" x2="350" y2="378"/>
+            </g>
+            <g fill="currentColor" text-anchor="middle" font-size="12.5">
+              <text x="240" y="34">锁定嫌疑数 n</text>
+              <text x="240" y="46" font-size="11" opacity=".75">(先排除偶数等简单情况)</text>
+              <text x="240" y="118">拆解: n − 1 = u × 2ˡ (u 是奇数)</text>
+              <text x="240" y="198">抽查证人 a，计算 v = aᵘ mod n</text>
+              <text x="240" y="278">把 v 反复平方，最多做 l 次</text>
+            </g>
+            <g fill="currentColor" text-anchor="middle" font-size="11.5">
+              <text x="185" y="335">全程没有破绽</text>
+              <text x="330" y="335" class="accent">抓到了破绽!</text>
+            </g>
+            <g fill="currentColor" text-anchor="middle" font-size="12">
+              <text x="125" y="412">证人放行</text>
+              <text x="125" y="430" font-size="11" opacity=".8">→ 暂时算作</text>
+              <text x="125" y="446" font-size="11" opacity=".8">"可能是质数"</text>
+              <text x="355" y="412">找到非法平方根</text>
+              <text x="355" y="430" font-size="11" opacity=".8">→ 铁证:</text>
+              <text x="355" y="446" font-size="11" opacity=".8">n 绝对不是质数</text>
+            </g>
+          </svg>
+          <figcaption>图3：米勒-拉宾算法的审讯流程——多一步"平方检查"，就能揪出卡迈克尔数这类完美骗子。</figcaption>
+        </figure>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>miller_rabin.py</div>
+        <pre><code>import random
+
+def is_probably_prime(n, tries=8):
+    if n == 0 or n == 1:
+        return False
+    for small_prime in [2, 3, 5, 7, 11, 13]:
+        if n == small_prime:
+            return True
+        if n % small_prime == 0:
+            return False
+
+    # 第一步：把 n-1 拆成 u * 2^l
+    u, l = n - 1, 0
+    while u % 2 == 0:
+        u = u // 2
+        l = l + 1
+
+    # 第二到五步：反复请证人来盘问
+    for _ in range(tries):
+        a = random.randrange(2, n - 1)
+        v = pow(a, u, n)
+        if v == 1 or v == n - 1:
+            continue                 # 这位证人暂时没发现问题
+        caught = False
+        for _ in range(l - 1):
+            v = v * v % n
+            if v == n - 1:
+                caught = False
+                break
+            caught = True
+        if caught:
+            return False              # 抓到破绽，n 不是质数
+    return True                       # 所有证人都没抓到破绽
+
+print(is_probably_prime(561))            # False —— 骗子被抓了！
+print(is_probably_prime(999999999989))   # True，而且几乎瞬间出结果</code></pre>
+      </div>
+      <p>米勒-拉宾测试对每一个骗子数字，最多只有 <strong>1/4</strong> 的证人会被骗过。这意味着只要多找几个证人（比如 8 个），骗过所有证人的概率会小到<strong>比你被闪电劈中还低</strong>——所以它被称为"概率性"测试，但在实际中几乎和确定性测试一样可靠。</p>
+    </section>
+
+    <!-- ============ QUIZ ============ -->
+    <section class="case" id="quiz">
+      <div class="case-head">
+        <span class="case-idx">结案自查</span>
+        <span class="badge mid">小测验</span>
+      </div>
+      <h2>你是真侦探吗？</h2>
+      <p class="lead">三道题，检验一下这次破案学到了什么。</p>
+
+      <div class="widget">
+        <div class="quiz-q" id="q1">
+          <p class="qtext">1. 17 除以 5，余数是多少？</p>
+          <div class="quiz-opts">
+            <label><input type="radio" name="q1" value="a"> 2</label>
+            <label><input type="radio" name="q1" value="b"> 3</label>
+            <label><input type="radio" name="q1" value="c"> 5</label>
+            <label><input type="radio" name="q1" value="d"> 12</label>
+          </div>
+        </div>
+        <div class="quiz-q" id="q2">
+          <p class="qtext">2. 下面哪一个才是真正的质数（没有藏同伙）？</p>
+          <div class="quiz-opts">
+            <label><input type="radio" name="q2" value="a"> 21</label>
+            <label><input type="radio" name="q2" value="b"> 51</label>
+            <label><input type="radio" name="q2" value="c"> 91</label>
+            <label><input type="radio" name="q2" value="d"> 97</label>
+          </div>
+        </div>
+        <div class="quiz-q" id="q3">
+          <p class="qtext">3. 561 这个"完美骗子"，在数学上属于什么？</p>
+          <div class="quiz-opts">
+            <label><input type="radio" name="q3" value="a"> 真正的质数</label>
+            <label><input type="radio" name="q3" value="b"> 卡迈克尔数</label>
+            <label><input type="radio" name="q3" value="c"> emirp（反转质数）</label>
+            <label><input type="radio" name="q3" value="d"> 高合成数</label>
+          </div>
+        </div>
+        <button class="btn" id="quizBtn">提交，看看破案成果</button>
+        <div id="quizResult"></div>
+      </div>
+    </section>
+
+    <!-- ============ CLOSING ============ -->
+    <section class="case" id="closing">
+      <div class="case-head">
+        <span class="case-idx">结案报告</span>
+        <span class="badge easy">总结</span>
+      </div>
+      <h2>结案报告 + 新案件</h2>
+      <p class="lead">这次侦查，你一共破解了这些线索：</p>
+      <ul class="checklist">
+        <li><strong>取余 %</strong> 是"绕圈子算法"，专治一切循环重复的问题</li>
+        <li><strong>快速幂</strong> 用"翻倍"代替"死磕"，几十步就能算出天文数字的次方</li>
+        <li><strong>埃氏筛法</strong> 一次性网罗某个范围内的所有质数</li>
+        <li>判断单个数字是否质数，可以从暴力查到 n，优化到只查 <strong>√n</strong></li>
+        <li><strong>费马小定理</strong> 提供了一台快速测谎仪，但会被<strong>卡迈克尔数</strong>这样的完美骗子欺骗</li>
+        <li><strong>米勒-拉宾测试</strong> 通过多一步"平方破绽检查"，把骗子几乎无所遁形</li>
+      </ul>
+
+      <h3>新案件档案 · 该你上场了</h3>
+      <div class="chal"><span class="tag easy">入门</span><p>写一个函数 <code>is_leap_year(year)</code>，用 <code>%</code> 判断某一年是不是闰年（提示：能被 4 整除但不能被 100 整除，或者能被 400 整除，就是闰年）。</p></div>
+      <div class="chal"><span class="tag mid">进阶</span><p>改造案卷05的 <code>sieve_of_eratosthenes</code>，找出 1000 以内<strong>最大</strong>的那个质数是多少。</p></div>
+      <div class="chal"><span class="tag mid">进阶</span><p>用 <code>fermat_test</code> 去检验 561，多跑几次、换不同的证人 <code>a</code>，看看它到底能不能一直骗过测谎仪。</p></div>
+      <div class="chal"><span class="tag hard">硬核</span><p>写一个函数判断一个数是不是 <strong>emirp</strong>：先判断这个数本身是质数，再把它倒过来（比如 13 倒过来是 31）判断是不是质数，并且两个数不能是同一个。</p></div>
+      <div class="chal"><span class="tag hard">硬核</span><p>用 <code>is_probably_prime</code> 检验一个很大的数，比如 <code>999999999989</code>，感受一下"聪明测试"面对大数字时有多快。再试试比它更大的数字，看看电脑要多久才会"卡住"。</p></div>
+
+      <div class="callout fact" style="margin-top:32px;">
+        <div class="ctitle">结案花絮</div>
+        <p>顺带一提两个有趣的数论冷知识：像 31 这样的质数，倒过来读也是不同的质数（31 → 13），这种数叫 <strong>emirp</strong>（就是 prime 倒过来拼写）。而约数个数比所有比它小的数都多的数字，叫<strong>高合成数</strong>，也被叫做<strong>反质数</strong>——因为它简直是质数的对立面，浑身都是同伙。</p>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>案件已归档 · 质数侦探社 · 根据《模运算与素数判定》课堂笔记整理</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- syntax highlighter ---------- */
+  function highlightPy(raw){
+    var code = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var keywords = ['def','return','if','elif','else','for','while','in','import','from','as',
+      'not','and','or','is','True','False','None','class','break','continue','pass'];
+    var kwPattern = keywords.join('|');
+    var pattern = new RegExp(
+      '(#.*$)' + '|' +
+      '(\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*")' + '|' +
+      '\\b(' + kwPattern + ')\\b' + '|' +
+      '\\b(\\d+\\.?\\d*)\\b',
+      'gm'
+    );
+    return code.replace(pattern, function(m,c,s,k,n){
+      if(c!==undefined) return '<span class="cm">'+c+'</span>';
+      if(s!==undefined) return '<span class="st">'+s+'</span>';
+      if(k!==undefined) return '<span class="kw">'+k+'</span>';
+      if(n!==undefined) return '<span class="nu">'+n+'</span>';
+      return m;
+    });
+  }
+  document.querySelectorAll('.codebox code').forEach(function(el){
+    el.innerHTML = highlightPy(el.textContent);
+  });
+
+  /* ---------- clock widget ---------- */
+  var clockState = { start: 0 };
+  var handEl = document.getElementById('clockHand');
+  var resultEl = document.getElementById('clockResult');
+  var stepsInput = document.getElementById('stepsInput');
+  var nums = document.querySelectorAll('.clock-num');
+
+  function handPoint(r){
+    var angle = (r*30 - 90) * Math.PI/180;
+    return { x: 100 + 55*Math.cos(angle), y: 100 + 55*Math.sin(angle) };
+  }
+  function setHand(r){
+    var p = handPoint(r);
+    handEl.setAttribute('x2', p.x.toFixed(1));
+    handEl.setAttribute('y2', p.y.toFixed(1));
+  }
+  function updateResult(animate){
+    var steps = parseInt(stepsInput.value, 10);
+    if(isNaN(steps)) steps = 0;
+    var r = ((clockState.start + steps) % 12 + 12) % 12;
+    resultEl.innerHTML = '起点 <span class="r">'+clockState.start+'</span>，走 <span class="r">'+steps+'</span> 步 → <span class="r">'+clockState.start+' + '+steps+' ≡ '+r+' (mod 12)</span>';
+    setHand(r);
+  }
+  nums.forEach(function(g){
+    g.addEventListener('click', function(){
+      nums.forEach(function(x){ x.classList.remove('active'); });
+      g.classList.add('active');
+      clockState.start = parseInt(g.getAttribute('data-val'), 10);
+      updateResult();
+    });
+  });
+  document.getElementById('clockBtn').addEventListener('click', function(){ updateResult(); });
+  setHand(5);
+
+  /* ---------- sieve widget ---------- */
+  var LIMIT = 100;
+  var grid = document.getElementById('sieveGrid');
+  var cells = [];
+  for(var n=1; n<=LIMIT; n++){
+    var c = document.createElement('div');
+    c.className = 'cell' + (n===1 ? ' one' : '');
+    c.textContent = n;
+    grid.appendChild(c);
+    cells[n] = c;
+  }
+  var sieveBtn = document.getElementById('sieveBtn');
+  var sieveStatus = document.getElementById('sieveStatus');
+  var sieveRunning = false;
+
+  function buildActions(){
+    var composite = new Array(LIMIT+1).fill(false);
+    var actions = [];
+    for(var p=2; p<=LIMIT; p++){
+      if(!composite[p]){
+        actions.push({type:'prime', n:p});
+        for(var m=p*p; m<=LIMIT; m+=p){
+          if(!composite[m]){
+            composite[m] = true;
+            actions.push({type:'composite', n:m});
+          }
+        }
+      }
+    }
+    return actions;
+  }
+
+  sieveBtn.addEventListener('click', function(){
+    if(sieveRunning) return;
+    sieveRunning = true;
+    sieveBtn.disabled = true;
+    for(var n=2;n<=LIMIT;n++){ cells[n].className = 'cell'; }
+    var actions = buildActions();
+    var i = 0;
+    var primeCount = 0;
+    sieveStatus.textContent = '正在撒网……';
+    var timer = setInterval(function(){
+      if(i >= actions.length){
+        clearInterval(timer);
+        sieveStatus.textContent = '侦查完毕！1～100 里一共有 ' + primeCount + ' 个质数。';
+        sieveBtn.disabled = false;
+        sieveBtn.textContent = '重新侦查';
+        sieveRunning = false;
+        return;
+      }
+      var act = actions[i];
+      if(act.type === 'prime'){
+        cells[act.n].classList.add('is-prime');
+        primeCount++;
+        sieveStatus.textContent = '锁定质数 ' + act.n + '，正在划掉它的同伙……';
+      } else {
+        cells[act.n].classList.remove('is-prime');
+        cells[act.n].classList.add('is-composite');
+      }
+      i++;
+    }, 35);
+  });
+
+  /* ---------- quiz ---------- */
+  var ANSWERS = { q1:'a', q2:'d', q3:'b' };
+  document.getElementById('quizBtn').addEventListener('click', function(){
+    var score = 0, total = 0;
+    Object.keys(ANSWERS).forEach(function(qname){
+      var qDiv = document.getElementById(qname);
+      var checked = document.querySelector('input[name="'+qname+'"]:checked');
+      qDiv.classList.remove('correct','wrong');
+      total++;
+      if(checked){
+        if(checked.value === ANSWERS[qname]){
+          qDiv.classList.add('correct');
+          score++;
+        } else {
+          qDiv.classList.add('wrong');
+        }
+      } else {
+        qDiv.classList.add('wrong');
+      }
+    });
+    var msg;
+    if(score === total) msg = '满分！你已经是合格的质数侦探了 👍（当然啦，是文字版的赞，不是表情包）';
+    else if(score >= total - 1) msg = '差一点就满分，再回去翻翻案卷就全对了。';
+    else msg = '再去案卷里找找线索，很快就能破案。';
+    document.getElementById('quizResult').textContent = '得分：' + score + ' / ' + total + '。' + msg;
+  });
+})();
+</script>

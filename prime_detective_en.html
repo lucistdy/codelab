@@ -1,0 +1,1057 @@
+<title>The Prime Number Detective Agency: Modular Arithmetic & Primality Testing Case File</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a;
+      --paper-raised:#1b2327;
+      --paper-raised-2:#1f2a26;
+      --ink:#e8e6db;
+      --ink-soft:#a6b0a8;
+      --line:#2c3630;
+      --accent:#e2a13e;
+      --accent-strong:#f0b65b;
+      --accent-soft:#3c2f16;
+      --alert:#e2685f;
+      --alert-soft:#452321;
+      --clue:#5cc99a;
+      --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .page{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+
+  /* ---------- Hero / cover ---------- */
+  .hero{
+    padding:64px 20px 40px;
+    background:
+      linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);
+    border-bottom:1px solid var(--line);
+  }
+  .hero-inner{max-width:760px;margin:0 auto;position:relative;}
+  .eyebrow{
+    font-family:var(--font-stamp);
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .hero h1{
+    font-size:clamp(32px,6vw,50px);
+    line-height:1.14;
+    margin:0 0 10px;
+    letter-spacing:-.01em;
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:var(--accent-strong);
+    text-decoration:underline;
+    text-decoration-color:var(--accent-soft);
+    text-decoration-thickness:6px;
+    text-underline-offset:-2px;
+  }
+  .hero .sub{
+    font-size:17px;
+    color:var(--ink-soft);
+    max-width:36em;
+  }
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;align-items:center;}
+  .stamp{
+    font-family:var(--font-stamp);
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.08em;
+    padding:7px 14px;
+    border:2px solid currentColor;
+    border-radius:4px;
+    text-transform:uppercase;
+    transform:rotate(-2deg);
+    display:inline-block;
+  }
+  .stamp.status{color:var(--alert);transform:rotate(3deg);}
+  .stamp.case{color:var(--ink-soft);}
+  .stamp.dept{color:var(--clue);transform:rotate(-1deg);}
+
+  .brief{
+    margin-top:30px;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    box-shadow:var(--shadow);
+  }
+  .brief p{margin:0;font-size:15.5px;color:var(--ink);}
+  .brief strong{color:var(--accent-strong);}
+
+  /* ---------- TOC / docket ---------- */
+  .docket{padding:36px 20px 8px;}
+  .docket h2{font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 16px;font-family:var(--font-stamp);}
+  .docket-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line);}
+  .docket-list li{border-bottom:1px solid var(--line);}
+  .docket-list a{
+    display:flex;align-items:center;gap:14px;
+    padding:13px 4px;
+    text-decoration:none;color:var(--ink);
+    font-size:15px;
+  }
+  .docket-list a:hover{color:var(--accent-strong);}
+  .docket-list .num{
+    font-family:var(--font-mono);color:var(--ink-soft);font-size:13px;min-width:2.4em;
+  }
+  .docket-list .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .docket-list .ttl{flex:1;}
+  .docket-list .lvl{font-size:12px;color:var(--ink-soft);font-family:var(--font-mono);white-space:nowrap;}
+  .dot.easy{background:var(--clue);}
+  .dot.mid{background:var(--accent);}
+  .dot.hard{background:var(--alert);}
+
+  /* ---------- Sections ---------- */
+  section.case{
+    padding:52px 20px 8px;
+    border-top:1px solid var(--line);
+    scroll-margin-top:16px;
+  }
+  .case-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+  .case-idx{
+    font-family:var(--font-mono);
+    color:var(--ink-soft);
+    font-size:13px;
+    letter-spacing:.08em;
+  }
+  .badge{
+    font-family:var(--font-stamp);
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:.04em;
+    padding:4px 11px;
+    border-radius:999px;
+    white-space:nowrap;
+    text-transform:uppercase;
+  }
+  .badge.easy{background:var(--clue-soft);color:var(--clue);}
+  .badge.mid{background:var(--accent-soft);color:var(--accent-strong);}
+  .badge.hard{background:var(--alert-soft);color:var(--alert);}
+
+  section.case h2{font-size:clamp(22px,3.6vw,28px);margin:6px 0 18px;}
+  section.case h3{font-size:17px;margin:30px 0 10px;color:var(--ink);}
+  section.case p{font-size:15.5px;color:var(--ink);}
+  section.case p.lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callout boxes ---------- */
+  .callout{
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin:22px 0;
+    border:1px solid var(--line);
+    background:var(--paper-raised);
+    box-shadow:var(--shadow);
+  }
+  .callout .ctitle{
+    font-family:var(--font-stamp);font-weight:700;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
+    display:flex;align-items:center;gap:8px;margin-bottom:8px;
+  }
+  .callout p{margin:0 0 8px;font-size:14.5px;}
+  .callout p:last-child{margin-bottom:0;}
+  .callout.fact{border-color:var(--clue-soft);}
+  .callout.fact .ctitle{color:var(--clue);}
+  .callout.tip{border-color:var(--accent-soft);}
+  .callout.tip .ctitle{color:var(--accent-strong);}
+
+  /* Wanted poster */
+  .wanted{
+    border:3px double var(--alert);
+    border-radius:6px;
+    padding:26px 24px;
+    margin:26px 0;
+    background:var(--alert-soft);
+    text-align:center;
+  }
+  .wanted .w-label{font-family:var(--font-stamp);font-weight:800;letter-spacing:.22em;color:var(--alert);font-size:14px;}
+  .wanted .w-num{
+    font-family:var(--font-mono);font-weight:700;font-size:56px;color:var(--ink);
+    margin:10px 0;letter-spacing:.02em;
+  }
+  .wanted .w-desc{font-size:15px;color:var(--ink);max-width:32em;margin:0 auto;}
+  .wanted .w-tag{
+    display:inline-block;margin-top:14px;font-family:var(--font-stamp);
+    font-size:11px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase;
+  }
+
+  /* ---------- Code blocks ---------- */
+  .codebox{
+    margin:18px 0;
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    border:1px solid var(--line);
+  }
+  .codebox .bar{
+    background:var(--paper-raised-2);
+    color:var(--ink-soft);
+    font-family:var(--font-mono);
+    font-size:12px;
+    padding:8px 14px;
+    display:flex;align-items:center;gap:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .codebox .bar .dots{display:flex;gap:5px;}
+  .codebox .bar .dots span{width:8px;height:8px;border-radius:50%;background:var(--line);}
+  .codebox pre{
+    margin:0;
+    padding:16px 18px;
+    background:var(--code-bg);
+    color:var(--code-fg);
+    overflow-x:auto;
+  }
+  .codebox code{
+    font-family:var(--font-mono);
+    font-size:13.5px;
+    line-height:1.7;
+    white-space:pre;
+  }
+  .codebox .kw{color:var(--code-kw);}
+  .codebox .st{color:var(--code-st);}
+  .codebox .cm{color:var(--code-cm);font-style:italic;}
+  .codebox .nu{color:var(--code-nu);}
+
+  /* ---------- Interactive widgets ---------- */
+  .widget{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px;
+    margin:22px 0;
+    box-shadow:var(--shadow);
+  }
+  figure{margin:0;}
+  figcaption{font-size:13px;color:var(--ink-soft);margin-top:10px;text-align:center;}
+
+  .clock-flex{display:flex;gap:24px;flex-wrap:wrap;align-items:center;}
+  .clock-svg-wrap{width:200px;flex:none;margin:0 auto;}
+  .clock-controls{flex:1;min-width:220px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:12px;color:var(--ink-soft);font-family:var(--font-mono);}
+  .field input{
+    width:84px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;
+    background:var(--paper);color:var(--ink);font-family:var(--font-mono);font-size:15px;
+  }
+  .btn{
+    font-family:var(--font-stamp);font-weight:700;font-size:13px;letter-spacing:.03em;
+    padding:9px 18px;border-radius:7px;border:none;cursor:pointer;
+    background:var(--accent);color:#fff;text-transform:uppercase;
+  }
+  .btn:hover{background:var(--accent-strong);}
+  .btn:focus-visible{outline:3px solid var(--accent-soft);outline-offset:2px;}
+  .result-line{
+    font-family:var(--font-mono);font-size:15.5px;margin-top:12px;color:var(--ink);
+    min-height:1.6em;
+  }
+  .result-line .r{color:var(--accent-strong);font-weight:700;}
+
+  .clock-num text{font-family:var(--font-mono);font-size:13px;fill:var(--ink);}
+  .clock-num circle{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;cursor:pointer;}
+  .clock-num:hover circle{fill:var(--accent-soft);}
+  .clock-num.active circle{fill:var(--accent);stroke:var(--accent-strong);}
+  .clock-num.active text{fill:#fff;}
+  #clockHand{stroke:var(--alert);stroke-width:3;stroke-linecap:round;}
+  .clock-face{fill:none;stroke:var(--line);stroke-width:2;}
+  .clock-hub{fill:var(--ink-soft);}
+
+  /* Sieve grid */
+  .sieve-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+  .sieve-status{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .sieve-grid{
+    display:grid;grid-template-columns:repeat(10,1fr);gap:4px;
+  }
+  .cell{
+    aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:clamp(10px,2.4vw,13px);
+    border-radius:4px;background:var(--paper-raised-2);color:var(--ink-soft);
+    border:1px solid var(--line);
+    transition:background .15s,color .15s,transform .15s;
+  }
+  .cell.one{background:none;border-style:dashed;color:var(--ink-soft);opacity:.5;}
+  .cell.is-prime{background:var(--clue);color:#fff;border-color:var(--clue);transform:scale(1.05);}
+  .cell.is-composite{background:var(--alert-soft);color:var(--alert);border-color:var(--alert-soft);}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .legend i.p{background:var(--clue);}
+  .legend i.c{background:var(--alert-soft);border:1px solid var(--alert);}
+
+  /* Quiz */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q p.qtext{font-weight:700;margin-bottom:10px;font-size:15px;}
+  .quiz-opts{display:flex;flex-direction:column;gap:8px;}
+  .quiz-opts label{
+    display:flex;align-items:center;gap:10px;padding:9px 12px;
+    border:1px solid var(--line);border-radius:7px;cursor:pointer;font-size:14.5px;
+  }
+  .quiz-opts label:hover{border-color:var(--accent);}
+  .quiz-opts input{accent-color:var(--accent);}
+  .quiz-q.correct .qtext::after{content:" \2713 Correct!";color:var(--clue);font-weight:700;}
+  .quiz-q.wrong .qtext::after{content:" \2717 Not quite";color:var(--alert);font-weight:700;}
+  #quizResult{
+    margin-top:16px;font-family:var(--font-display);font-weight:700;font-size:15px;
+  }
+
+  /* Table */
+  .tblwrap{overflow-x:auto;margin:20px 0;}
+  table{border-collapse:collapse;width:100%;font-size:14px;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);}
+  th{font-family:var(--font-mono);font-size:12px;letter-spacing:.05em;color:var(--ink-soft);text-transform:uppercase;}
+  td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+
+  /* Checklist */
+  .checklist{list-style:none;margin:18px 0;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .checklist li{display:flex;gap:10px;font-size:14.5px;align-items:flex-start;}
+  .checklist li::before{content:"\2713";color:var(--clue);font-weight:800;flex:none;}
+
+  /* Challenge cards */
+  .chal{
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;margin:14px 0;background:var(--paper-raised);
+    display:flex;gap:14px;align-items:flex-start;
+  }
+  .chal .tag{
+    font-family:var(--font-stamp);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 9px;border-radius:5px;flex:none;
+    margin-top:2px;
+  }
+  .chal p{margin:0;font-size:14.5px;}
+  .chal .tag.easy{background:var(--clue-soft);color:var(--clue);}
+  .chal .tag.mid{background:var(--accent-soft);color:var(--accent-strong);}
+  .chal .tag.hard{background:var(--alert-soft);color:var(--alert);}
+
+  /* Diagram figure */
+  .diagram-wrap{width:100%;max-width:460px;margin:20px auto;}
+  .diagram-wrap svg text{font-family:var(--font-mono);}
+  .diagram-wrap svg{color:var(--ink-soft);}
+  .diagram-wrap svg .accent{color:var(--alert);}
+  .diagram-wrap svg .ok{color:var(--clue);}
+
+  footer{
+    padding:50px 20px 70px;text-align:center;color:var(--ink-soft);font-size:13px;
+    border-top:1px solid var(--line);margin-top:30px;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .cell,#clockHand,.clock-num circle{transition:none;}
+  }
+</style>
+
+<div class="page">
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Math Detective Agency &middot; Junior Field Manual</div>
+      <h1>The Prime Number Detective Agency: <em>Modular Arithmetic</em> &amp; Primality Testing</h1>
+      <p class="sub">Your mission: learn to interrogate numbers like a detective &mdash; and expose the impostors pretending to be primes. Every case comes with Python code, so you can read it, run it, and crack it yourself.</p>
+      <div class="stampbar">
+        <span class="stamp case">Case File No. 20260806</span>
+        <span class="stamp status">Status: Under Investigation</span>
+        <span class="stamp dept">Difficulty: Easy &rarr; Hard</span>
+      </div>
+      <div class="brief">
+        <p>Did you know? Every time you shop online or send an encrypted message, <strong>giant prime numbers</strong> are quietly guarding your secrets &mdash; a system called RSA encryption. And cracking this case means mastering exactly what you're about to learn: <strong>how to tell, fast, whether a number is truly prime</strong>. Ready, rookie detective?</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <nav class="docket">
+      <h2>Case Docket</h2>
+      <ul class="docket-list">
+        <li><a href="#case1"><span class="num">01</span><span class="dot easy"></span><span class="ttl">The Clock's Secret: What Is a Remainder?</span><span class="lvl">Beginner Clue</span></a></li>
+        <li><a href="#case2"><span class="num">02</span><span class="dot easy"></span><span class="ttl">The Loop Game: Addition on a Clock</span><span class="lvl">Beginner Clue</span></a></li>
+        <li><a href="#case3"><span class="num">03</span><span class="dot mid"></span><span class="ttl">The Doubling Superpower: Fast Exponentiation</span><span class="lvl">Intermediate</span></a></li>
+        <li><a href="#case4"><span class="num">04</span><span class="dot mid"></span><span class="ttl">Who's Prime? Who's Faking It?</span><span class="lvl">Intermediate</span></a></li>
+        <li><a href="#case5"><span class="num">05</span><span class="dot mid"></span><span class="ttl">Eratosthenes's Net: Catching Every Prime</span><span class="lvl">Intermediate</span></a></li>
+        <li><a href="#case6"><span class="num">06</span><span class="dot hard"></span><span class="ttl">Big Numbers: Brute Force to Smart Search</span><span class="lvl">Hardcore</span></a></li>
+        <li><a href="#case7"><span class="num">07</span><span class="dot hard"></span><span class="ttl">The Fermat Lie Detector</span><span class="lvl">Hardcore</span></a></li>
+        <li><a href="#wanted"><span class="num">&middot;</span><span class="dot hard"></span><span class="ttl">Wanted: The Perfect Impostor No. 561</span><span class="lvl">Case-within-a-case</span></a></li>
+        <li><a href="#case8"><span class="num">08</span><span class="dot hard"></span><span class="ttl">Miller-Rabin: Cross-Examination</span><span class="lvl">Hardcore</span></a></li>
+        <li><a href="#quiz"><span class="num">&middot;</span><span class="dot mid"></span><span class="ttl">Quiz: Are You a Real Detective?</span><span class="lvl">Self-check</span></a></li>
+        <li><a href="#closing"><span class="num">&middot;</span><span class="dot easy"></span><span class="ttl">Case Closed + New Cases</span><span class="lvl">Wrap-up</span></a></li>
+      </ul>
+    </nav>
+
+    <!-- ============ CASE 1 ============ -->
+    <section class="case" id="case1">
+      <div class="case-head">
+        <span class="case-idx">Case 01 / 08</span>
+        <span class="badge easy">Beginner Clue</span>
+      </div>
+      <h2>The Clock's Secret: What Is a Remainder?</h2>
+      <p class="lead">Let's start with something you use every day &mdash; a clock.</p>
+      <p>If it's <strong>10 o'clock</strong> now, what time is it <strong>5 hours later</strong>? You'd blurt out: <strong>3 o'clock</strong>. But 10 + 5 equals 15 &mdash; so why is the answer 3? Because clocks don't go past 12. Every time it hits 12, it "wraps around" and starts counting from 0 again.</p>
+      <p>This "wrap around and count what's left" move has an official name in math and coding: the <strong>remainder operation</strong>, written as <code>%</code>. It answers the question "what's left over after dividing?":</p>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>Expression</th><th>What it means</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td class="num">15 % 12</td><td>15 divided by 12 &mdash; what's left?</td><td class="num">3</td></tr>
+            <tr><td class="num">7 % 3</td><td>7 divided by 3: quotient 2, remainder?</td><td class="num">1</td></tr>
+            <tr><td class="num">20 % 5</td><td>20 divided by 5, divides evenly</td><td class="num">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="widget">
+        <figure>
+          <div class="clock-flex">
+            <div class="clock-svg-wrap">
+              <svg viewBox="0 0 200 200" role="img" aria-label="A 12-hour clock face. Click a number to set the starting point, and the hand rotates to the result of the addition.">
+                <circle class="clock-face" cx="100" cy="100" r="88"/>
+                <line id="clockHand" x1="100" y1="100" x2="100" y2="45"/>
+                <circle class="clock-hub" cx="100" cy="100" r="4"/>
+                <g class="clock-num active" data-val="0"><circle cx="100" cy="22" r="13"/><text x="100" y="26" text-anchor="middle">0</text></g>
+                <g class="clock-num" data-val="1"><circle cx="139" cy="32" r="13"/><text x="139" y="36" text-anchor="middle">1</text></g>
+                <g class="clock-num" data-val="2"><circle cx="168" cy="61" r="13"/><text x="168" y="65" text-anchor="middle">2</text></g>
+                <g class="clock-num" data-val="3"><circle cx="178" cy="100" r="13"/><text x="178" y="104" text-anchor="middle">3</text></g>
+                <g class="clock-num" data-val="4"><circle cx="168" cy="139" r="13"/><text x="168" y="143" text-anchor="middle">4</text></g>
+                <g class="clock-num" data-val="5"><circle cx="139" cy="168" r="13"/><text x="139" y="172" text-anchor="middle">5</text></g>
+                <g class="clock-num" data-val="6"><circle cx="100" cy="178" r="13"/><text x="100" y="182" text-anchor="middle">6</text></g>
+                <g class="clock-num" data-val="7"><circle cx="61" cy="168" r="13"/><text x="61" y="172" text-anchor="middle">7</text></g>
+                <g class="clock-num" data-val="8"><circle cx="32" cy="139" r="13"/><text x="32" y="143" text-anchor="middle">8</text></g>
+                <g class="clock-num" data-val="9"><circle cx="22" cy="100" r="13"/><text x="22" y="104" text-anchor="middle">9</text></g>
+                <g class="clock-num" data-val="10"><circle cx="32" cy="61" r="13"/><text x="32" y="65" text-anchor="middle">10</text></g>
+                <g class="clock-num" data-val="11"><circle cx="61" cy="32" r="13"/><text x="61" y="36" text-anchor="middle">11</text></g>
+              </svg>
+            </div>
+            <div class="clock-controls">
+              <p style="margin-bottom:12px;font-size:14px;color:var(--ink-soft);">Click a number on the clock to pick a starting point, then enter how many steps to move forward, and watch where the hand lands.</p>
+              <div class="field-row">
+                <div class="field"><label for="stepsInput">Steps forward</label><input id="stepsInput" type="number" value="17" inputmode="numeric"></div>
+                <div class="field"><label>&nbsp;</label><button class="btn" id="clockBtn">Turn the clock</button></div>
+              </div>
+              <div class="result-line" id="clockResult">Start <span class="r">0</span>, move <span class="r">17</span> steps &rarr; <span class="r">0 + 17 &equiv; 5 (mod 12)</span></div>
+            </div>
+          </div>
+          <figcaption>Figure 1: mod 12 is just "clock arithmetic" &mdash; no matter how far you walk, you always land on one of the 12 slots, 0 through 11.</figcaption>
+        </figure>
+      </div>
+
+      <h3>Now in Python</h3>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>clock.py</div>
+        <pre><code>now_hour = 10
+hours_to_add = 5
+new_hour = (now_hour + hours_to_add) % 12
+print(new_hour)   # prints 3, because 15 % 12 == 3</code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Python's remainder is exactly as friendly as you'd hope: <code>-7 % 3</code> gives <strong>2</strong> in Python (never negative). But in a language like C++, <code>-7 % 3</code> gives <strong>-1</strong>! Same expression, different languages, different answers &mdash; which is exactly why real programmers always check how their language handles "remainder" before writing a single line of code.</p>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>negative_mod.py</div>
+        <pre><code>print(-7 % 3)     # 2 -- Python's remainder is never negative
+print(-7 // 3)    # -3 -- // is integer division, rounded down</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ CASE 2 ============ -->
+    <section class="case" id="case2">
+      <div class="case-head">
+        <span class="case-idx">Case 02 / 08</span>
+        <span class="badge easy">Beginner Clue</span>
+      </div>
+      <h2>The Loop Game: Addition on a Clock</h2>
+      <p class="lead">The remainder operation shows up everywhere something loops back around: days of the week, months, turns in a game, letters in a cipher&hellip;</p>
+      <p>Example: today is <strong>Wednesday</strong>. What day of the week is it <strong>100 days</strong> from now? You don't need to count day by day &mdash; just treat the week as a 7-slot clock:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>weekday.py</div>
+        <pre><code># 0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday ...
+today = 3
+days_later = 100
+future_day = (today + days_later) % 7
+print(future_day)   # 5, meaning day 100 falls on a Friday!</code></pre>
+      </div>
+      <p>Pretty neat, right? 100 days sounds like forever to count, but the remainder operation solves it in one step. That's why programmers, faced with anything "looping" &mdash; schedules, game turns, cipher alphabets &mdash; instantly think: <strong>find the right "clock" (that's the number after mod)</strong>.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Detective Tip</div>
+        <p>Any time you see "every N repeats," alarm bells should go off: <strong>this needs mod N!</strong> "Every 7 days is a week," "every 24 hours is a day," "every 26 letters the cipher wraps around" &mdash; it's all the same trick.</p>
+      </div>
+    </section>
+
+    <!-- ============ CASE 3 ============ -->
+    <section class="case" id="case3">
+      <div class="case-head">
+        <span class="case-idx">Case 03 / 08</span>
+        <span class="badge mid">Intermediate Investigation</span>
+      </div>
+      <h2>The Doubling Superpower: Fast Exponentiation</h2>
+      <p class="lead">The case just leveled up. New assignment: compute <code>2 to the power of 1,000,000, then take the remainder against a huge number</code>. Multiplying one step at a time would take a million multiplications &mdash; will the computer be stuck until the end of time? Actually, no. With the right trick, it takes <strong>fewer than 30 steps</strong>.</p>
+      <p>The secret is "doubling." Think of cell division: 1 becomes 2, 2 becomes 4, 4 becomes 8&hellip; each step squares the last one, and in <strong>about 20 steps you blow past a million</strong>. This trick is called <strong>fast exponentiation (binary exponentiation)</strong>: keep dividing the exponent by 2, and each round square the base &mdash; if that bit is odd, multiply it into the result too.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fast_power.py</div>
+        <pre><code>def fast_power(a, b, m):
+    # computes (a to the power of b) % m, without ever building that giant number
+    result = 1
+    base = a % m
+    while b:                      # stop once b hits 0
+        if b % 2 == 1:
+            result = result * base % m
+        base = base * base % m    # this line is the "doubling"
+        b = b // 2
+    return result
+
+print(fast_power(2, 1000000, 1000000007))</code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Python already has this doubling superpower built in &mdash; you don't even need to write it yourself: <code>pow(a, b, m)</code> is a built-in function, and that third argument means "take the remainder along the way," using exactly the fast exponentiation trick you just learned under the hood! We'll lean on it often in the cases ahead.</p>
+      </div>
+    </section>
+
+    <!-- ============ CASE 4 ============ -->
+    <section class="case" id="case4">
+      <div class="case-head">
+        <span class="case-idx">Case 04 / 08</span>
+        <span class="badge mid">Intermediate Investigation</span>
+      </div>
+      <h2>Who's Prime? Who's Faking It?</h2>
+      <p class="lead">Alright, time for the heart of this case: <strong>prime numbers</strong>.</p>
+      <p>A <strong>prime</strong> is a number greater than 1 that can only be divided evenly by 1 and itself &mdash; like 2, 3, 5, 7, 11, 13&hellip; A <strong>composite number</strong> is an "impostor" that can be broken down into smaller numbers multiplied together &mdash; like <code>91 = 7 &times; 13</code>. It looks harmless, but it's secretly hiding two accomplices.</p>
+      <p>The agency's number-one job: given a number, quickly tell whether it's an "innocent prime" or a "composite hiding accomplices."</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Detective Tip</div>
+        <p>1 is neither prime nor composite &mdash; it's too special. Mathematicians officially benched it; it doesn't play this game.</p>
+      </div>
+    </section>
+
+    <!-- ============ CASE 5 ============ -->
+    <section class="case" id="case5">
+      <div class="case-head">
+        <span class="case-idx">Case 05 / 08</span>
+        <span class="badge mid">Intermediate Investigation</span>
+      </div>
+      <h2>Eratosthenes's Net: Catching Every Prime at Once</h2>
+      <p class="lead">If you need to find <strong>every</strong> prime from 1 to 100, the ancient Greek mathematician <strong>Eratosthenes</strong> worked out a brilliant method over 2,000 years ago, now called the <strong>Sieve of Eratosthenes</strong> &mdash; like casting a net that scoops up every number "with accomplices," leaving only the true primes behind.</p>
+      <p>Here's how: start at 2, and cross out every multiple of 2 (4, 6, 8&hellip;) since they all have 2 as an accomplice. Then look at 3, cross out its multiples. The next number left standing is prime &mdash; use it to cross out its own multiples, and so on, all the way to 100. Whatever survives the net is genuinely prime.</p>
+
+      <div class="widget">
+        <figure>
+          <div class="sieve-top">
+            <button class="btn" id="sieveBtn">Start the sweep</button>
+            <span class="sieve-status" id="sieveStatus">Click the button and watch the primes emerge from the composites</span>
+          </div>
+          <div class="sieve-grid" id="sieveGrid"></div>
+          <div class="legend">
+            <span><i class="p"></i> Prime (innocent)</span>
+            <span><i class="c"></i> Composite (has accomplices, crossed out)</span>
+          </div>
+        </figure>
+        <figcaption>Figure 2: the Sieve of Eratosthenes over 1&ndash;100. Each time we lock onto a number that hasn't been crossed out yet, we mark every one of its multiples as "has an accomplice."</figcaption>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sieve.py</div>
+        <pre><code>def sieve_of_eratosthenes(limit):
+    is_prime = [True] * (limit + 1)
+    is_prime[0] = is_prime[1] = False   # 0 and 1 are out
+    for p in range(2, limit + 1):
+        if is_prime[p]:
+            # p is prime -- mark all its multiples as composite
+            for multiple in range(p * p, limit + 1, p):
+                is_prime[multiple] = False
+    return [n for n in range(limit + 1) if is_prime[n]]
+
+print(sieve_of_eratosthenes(100))</code></pre>
+      </div>
+      <p>This method is lightning fast &mdash; finding every prime under a million takes an ordinary computer barely a blink, far faster than checking each number one by one.</p>
+    </section>
+
+    <!-- ============ CASE 6 ============ -->
+    <section class="case" id="case6">
+      <div class="case-head">
+        <span class="case-idx">Case 06 / 08</span>
+        <span class="badge hard">Hardcore Cold Case</span>
+      </div>
+      <h2>Big Numbers: From Brute Force to Smart Search</h2>
+      <p class="lead">The net method is great, but if you only want to know whether <strong>one</strong> huge number (say, 999999999989) is prime, casting a net with a billion slots is overkill. Time for a different interrogation method.</p>
+      <p>The most direct idea: try dividing by 2, 3, 4, 5&hellip; all the way up to <code>n-1</code>. The moment one divides evenly, you've caught an accomplice.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>is_prime_slow.py</div>
+        <pre><code>def is_prime_slow(n):
+    if n == 0 or n == 1:
+        return False
+    for i in range(2, n):
+        if n % i == 0:
+            return False   # caught an accomplice!
+    return True
+
+print(is_prime_slow(97))    # True</code></pre>
+      </div>
+
+      <p>Checking a number in the millions this way means looping millions of times &mdash; fine for a computer, but if the number is dozens of digits long, this brute-force approach would take forever. Here's a smarter shortcut:</p>
+      <p><strong>You only ever need to check up to &radic;n.</strong> Why? If n can be split into <code>a &times; b</code>, then at least one of a and b must be no bigger than &radic;n &mdash; think of two people splitting a plot of land; they can't both be bigger than half. So if you search from 2 to &radic;n and find no accomplice, n is definitely innocent.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>is_prime_fast.py</div>
+        <pre><code>def is_prime_fast(n):
+    if n == 0 or n == 1:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):   # only check up to the square root
+        if n % i == 0:
+            return False
+    return True
+
+print(is_prime_fast(999999937))   # True, and it comes back almost instantly</code></pre>
+      </div>
+      <p>Going from "check up to n" to "only check up to &radic;n" &mdash; how big a speed-up is that? If n is 100 million, the old way loops 100 million times; the new way loops only 10,000 times. That's <strong>ten thousand times faster</strong>!</p>
+    </section>
+
+    <!-- ============ CASE 7 ============ -->
+    <section class="case" id="case7">
+      <div class="case-head">
+        <span class="case-idx">Case 07 / 08</span>
+        <span class="badge hard">Hardcore Cold Case</span>
+      </div>
+      <h2>The Fermat Lie Detector</h2>
+      <p class="lead">But what if n isn't 100 million &mdash; what if it's <strong>dozens of digits</strong> long? Even checking up to &radic;n is still astronomical. The agency needs a "lie detector": no need to interrogate everyone, just a few "witnesses" can settle the case with high confidence.</p>
+      <p>In the 17th century, the mathematician <strong>Fermat</strong> discovered a remarkable pattern, now known as <strong>Fermat's Little Theorem</strong>:</p>
+      <div class="callout tip">
+        <div class="ctitle">Fermat's Little Theorem</div>
+        <p>If <code>p</code> is prime, then for any number <code>a</code> (a "witness") that shares no common factor with p, it must be true that:</p>
+        <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">a<sup>p&minus;1</sup> mod p <strong>=</strong> 1</p>
+      </div>
+      <p>Flip this around and you get a lie detector: pick a few witnesses a, compute <code>a to the (n-1) power mod n</code>. If the result isn't 1, that's <strong>100% proof</strong> &mdash; n is definitely not prime!</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fermat_test.py</div>
+        <pre><code>import random
+
+def fermat_test(n, witness_count=5):
+    if n == 0 or n == 1:
+        return False
+    for _ in range(witness_count):
+        a = random.randrange(2, n - 1)      # pick a random witness
+        if pow(a, n - 1, n) != 1:
+            return False                     # the witness blew the whistle -- n is not prime
+    return True                              # every witness let it slide -- n is probably prime</code></pre>
+      </div>
+      <p>Notice the wording &mdash; the Fermat lie detector can only say "n is <strong>probably</strong> prime," never a guarantee. That's because it's only airtight proof when it catches a counterexample; if every witness lets it slide, there's still a tiny chance of being fooled. Whether it actually gets fooled&hellip; keep reading.</p>
+    </section>
+
+    <!-- ============ WANTED ============ -->
+    <section class="case" id="wanted">
+      <div class="wanted">
+        <div class="w-label">Wanted</div>
+        <div class="w-num">561</div>
+        <p class="w-desc"><strong>= 3 &times; 11 &times; 17</strong>, a bona fide composite number that fools <strong>nearly every</strong> witness in the Fermat lie detector &mdash; for every witness a sharing no common factor with it, <code>a<sup>561</sup> mod 561 = a</code> holds, acting exactly like a real prime.</p>
+        <p class="w-desc" style="margin-top:10px;">Mathematicians call this breed of "perfect impostor" a <strong>Carmichael number</strong> &mdash; proof that the Fermat lie detector isn't foolproof, and we need a tougher interrogation.</p>
+        <span class="w-tag">Last seen: Case 08 reveals how to catch it</span>
+      </div>
+    </section>
+
+    <!-- ============ CASE 8 ============ -->
+    <section class="case" id="case8">
+      <div class="case-head">
+        <span class="case-idx">Case 08 / 08</span>
+        <span class="badge hard">Hardcore Cold Case</span>
+      </div>
+      <h2>Miller-Rabin: Cross-Examination Exposes the Fake</h2>
+      <p class="lead">If an impostor can beat one lie-detector question, ask a few trickier follow-ups. That's the idea behind the <strong>Miller-Rabin primality test</strong> &mdash; beyond checking <code>a to the (n-1) power</code>, it also inspects a subtler tell that shows up along the way.</p>
+      <p>Here's the key mathematical clue:</p>
+      <div class="callout tip">
+        <div class="ctitle">The Theorem That Cracks the Case</div>
+        <p>If p is prime, then the equation <code>x&sup2; &equiv; 1 (mod p)</code> has exactly two solutions: <code>x = 1</code> or <code>x = p &minus; 1</code> (that is, &minus;1). <br>In other words: <strong>if you find a third solution, p is definitely not prime!</strong></p>
+      </div>
+      <p>The Miller-Rabin test deliberately hunts for that "third solution." Here's how, step by step:</p>
+      <ol style="padding-left:1.3em;font-size:15.5px;">
+        <li>Write <code>n &minus; 1</code> as <code>u &times; 2<sup>l</sup></code> (u is odd &mdash; pull out every factor of 2 from the even part)</li>
+        <li>Pick a witness a and compute <code>v = a to the u power mod n</code></li>
+        <li>Square v repeatedly, up to l times</li>
+        <li>While squaring, if v suddenly jumps from "not &plusmn;1" to 1, you've caught that "solution that shouldn't exist" &mdash; airtight proof: n is not prime</li>
+        <li>If nothing suspicious ever shows up, this witness lets n go &mdash; for now, treat n as a "probable prime"</li>
+      </ol>
+
+      <div class="diagram-wrap">
+        <figure>
+          <svg viewBox="0 0 480 500" role="img" aria-label="Flowchart of the Miller-Rabin algorithm: starting from suspect n, it factors n minus 1, questions a witness, squares repeatedly, and branches to either not-guilty or caught-a-flaw.">
+            <defs>
+              <marker id="arrowEN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <g fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="120" y="15" width="240" height="46" rx="8"/>
+              <rect x="100" y="95" width="280" height="46" rx="8"/>
+              <rect x="80" y="175" width="320" height="46" rx="8"/>
+              <rect x="110" y="255" width="260" height="46" rx="8"/>
+              <rect class="ok" x="20" y="380" width="200" height="92" rx="8"/>
+              <rect class="accent" x="260" y="380" width="200" height="92" rx="8"/>
+            </g>
+            <g stroke="currentColor" stroke-width="1.6" marker-end="url(#arrowEN)">
+              <line x1="240" y1="61" x2="240" y2="93"/>
+              <line x1="240" y1="141" x2="240" y2="173"/>
+              <line x1="240" y1="221" x2="240" y2="253"/>
+            </g>
+            <g stroke="currentColor" stroke-width="1.6" marker-end="url(#arrowEN)">
+              <line class="ok" x1="240" y1="301" x2="130" y2="378"/>
+              <line class="accent" x1="240" y1="301" x2="350" y2="378"/>
+            </g>
+            <g fill="currentColor" text-anchor="middle" font-size="12">
+              <text x="240" y="34">Suspect number n</text>
+              <text x="240" y="47" font-size="10.5" opacity=".75">(simple cases like even numbers ruled out first)</text>
+              <text x="240" y="118">Factor: n &minus; 1 = u &times; 2<tspan font-size="8" dy="-4">l</tspan><tspan dy="4"> (u is odd)</tspan></text>
+              <text x="240" y="198">Question witness a, compute v = a<tspan font-size="8" dy="-4">u</tspan><tspan dy="4"> mod n</tspan></text>
+              <text x="240" y="278">Square v repeatedly, up to l times</text>
+            </g>
+            <g fill="currentColor" text-anchor="middle" font-size="11">
+              <text x="185" y="335">no flaws found</text>
+              <text x="330" y="335" class="accent">caught a flaw!</text>
+            </g>
+            <g fill="currentColor" text-anchor="middle" font-size="11.5">
+              <text x="120" y="410">Witness clears n</text>
+              <text x="120" y="428" font-size="10.5" opacity=".8">&rarr; ruled, for now,</text>
+              <text x="120" y="444" font-size="10.5" opacity=".8">"probably prime"</text>
+              <text x="360" y="410">Illegal square root</text>
+              <text x="360" y="428" font-size="10.5" opacity=".8">&rarr; proof:</text>
+              <text x="360" y="444" font-size="10.5" opacity=".8">n is not prime</text>
+            </g>
+          </svg>
+          <figcaption>Figure 3: the Miller-Rabin interrogation flow &mdash; one extra "squaring check" step is enough to expose perfect impostors like Carmichael numbers.</figcaption>
+        </figure>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>miller_rabin.py</div>
+        <pre><code>import random
+
+def is_probably_prime(n, tries=8):
+    if n == 0 or n == 1:
+        return False
+    for small_prime in [2, 3, 5, 7, 11, 13]:
+        if n == small_prime:
+            return True
+        if n % small_prime == 0:
+            return False
+
+    # Step 1: write n-1 as u * 2^l
+    u, l = n - 1, 0
+    while u % 2 == 0:
+        u = u // 2
+        l = l + 1
+
+    # Steps 2-5: cross-examine several witnesses
+    for _ in range(tries):
+        a = random.randrange(2, n - 1)
+        v = pow(a, u, n)
+        if v == 1 or v == n - 1:
+            continue                 # this witness found nothing suspicious, for now
+        caught = False
+        for _ in range(l - 1):
+            v = v * v % n
+            if v == n - 1:
+                caught = False
+                break
+            caught = True
+        if caught:
+            return False              # caught a flaw -- n is not prime
+    return True                       # no witness ever caught a flaw
+
+print(is_probably_prime(561))            # False -- the impostor is caught!
+print(is_probably_prime(999999999989))   # True, and it comes back almost instantly</code></pre>
+      </div>
+      <p>For any impostor number, at most <strong>1/4</strong> of possible witnesses can be fooled by the Miller-Rabin test. That means with just a few more witnesses (say, 8), the odds of fooling every single one drop lower than <strong>your odds of being struck by lightning</strong> &mdash; which is why it's called a "probabilistic" test, even though in practice it's just about as reliable as a guaranteed one.</p>
+    </section>
+
+    <!-- ============ QUIZ ============ -->
+    <section class="case" id="quiz">
+      <div class="case-head">
+        <span class="case-idx">Case Self-Check</span>
+        <span class="badge mid">Quiz</span>
+      </div>
+      <h2>Are You a Real Detective?</h2>
+      <p class="lead">Three questions to test what you cracked this case.</p>
+
+      <div class="widget">
+        <div class="quiz-q" id="q1">
+          <p class="qtext">1. What is the remainder when 17 is divided by 5?</p>
+          <div class="quiz-opts">
+            <label><input type="radio" name="q1" value="a"> 2</label>
+            <label><input type="radio" name="q1" value="b"> 3</label>
+            <label><input type="radio" name="q1" value="c"> 5</label>
+            <label><input type="radio" name="q1" value="d"> 12</label>
+          </div>
+        </div>
+        <div class="quiz-q" id="q2">
+          <p class="qtext">2. Which of these is a genuine prime (no accomplices hiding inside)?</p>
+          <div class="quiz-opts">
+            <label><input type="radio" name="q2" value="a"> 21</label>
+            <label><input type="radio" name="q2" value="b"> 51</label>
+            <label><input type="radio" name="q2" value="c"> 91</label>
+            <label><input type="radio" name="q2" value="d"> 97</label>
+          </div>
+        </div>
+        <div class="quiz-q" id="q3">
+          <p class="qtext">3. Mathematically speaking, what is 561, the "perfect impostor"?</p>
+          <div class="quiz-opts">
+            <label><input type="radio" name="q3" value="a"> A genuine prime</label>
+            <label><input type="radio" name="q3" value="b"> A Carmichael number</label>
+            <label><input type="radio" name="q3" value="c"> An emirp (reversible prime)</label>
+            <label><input type="radio" name="q3" value="d"> A highly composite number</label>
+          </div>
+        </div>
+        <button class="btn" id="quizBtn">Submit and see how you did</button>
+        <div id="quizResult"></div>
+      </div>
+    </section>
+
+    <!-- ============ CLOSING ============ -->
+    <section class="case" id="closing">
+      <div class="case-head">
+        <span class="case-idx">Case Closed</span>
+        <span class="badge easy">Wrap-Up</span>
+      </div>
+      <h2>Case Closed + New Cases</h2>
+      <p class="lead">Here's every clue you cracked on this investigation:</p>
+      <ul class="checklist">
+        <li>The remainder operator <strong>%</strong> is a "loop-around algorithm" &mdash; the cure for anything that repeats in cycles</li>
+        <li><strong>Fast exponentiation</strong> replaces "brute force" with "doubling," computing astronomical powers in just a few dozen steps</li>
+        <li>The <strong>Sieve of Eratosthenes</strong> nets every prime in a range in one sweep</li>
+        <li>Checking a single number for primality can be optimized from "check up to n" down to just "check up to <strong>&radic;n</strong>"</li>
+        <li><strong>Fermat's Little Theorem</strong> gives you a fast lie detector &mdash; but it can be fooled by perfect impostors called <strong>Carmichael numbers</strong></li>
+        <li>The <strong>Miller-Rabin test</strong> adds one extra "squaring flaw check," leaving impostors almost nowhere to hide</li>
+      </ul>
+
+      <h3>New Case Files &middot; Your Turn</h3>
+      <div class="chal"><span class="tag easy">Beginner</span><p>Write a function <code>is_leap_year(year)</code> that uses <code>%</code> to determine whether a year is a leap year. (Hint: divisible by 4 but not by 100, or divisible by 400.)</p></div>
+      <div class="chal"><span class="tag mid">Intermediate</span><p>Adapt case 05's <code>sieve_of_eratosthenes</code> to find the <strong>largest</strong> prime under 1000.</p></div>
+      <div class="chal"><span class="tag mid">Intermediate</span><p>Run <code>fermat_test</code> against 561 several times with different witnesses <code>a</code>, and see whether it really can keep fooling the lie detector.</p></div>
+      <div class="chal"><span class="tag hard">Hardcore</span><p>Write a function that checks whether a number is an <strong>emirp</strong>: first confirm the number itself is prime, then reverse its digits (13 reversed is 31) and confirm that's prime too &mdash; and make sure the two numbers aren't the same.</p></div>
+      <div class="chal"><span class="tag hard">Hardcore</span><p>Run <code>is_probably_prime</code> on a really big number, like <code>999999999989</code>, and see how fast the "smart test" handles it. Then try something even bigger and see how long it takes before the computer starts to struggle.</p></div>
+
+      <div class="callout fact" style="margin-top:32px;">
+        <div class="ctitle">Case-Closed Extras</div>
+        <p>Two more fun number-theory facts before you go: a prime like 31 that becomes a <em>different</em> prime when its digits are reversed (31 &rarr; 13) is called an <strong>emirp</strong> (that's "prime" spelled backwards). And a number with more divisors than any smaller number is called a <strong>highly composite number</strong> &mdash; also nicknamed an <strong>anti-prime</strong>, because it's basically the opposite of a prime: practically nothing but accomplices.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>Case archived &middot; The Prime Number Detective Agency &middot; Adapted from a lecture on Modular Arithmetic &amp; Primality Testing</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- syntax highlighter ---------- */
+  function highlightPy(raw){
+    var code = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var keywords = ['def','return','if','elif','else','for','while','in','import','from','as',
+      'not','and','or','is','True','False','None','class','break','continue','pass'];
+    var kwPattern = keywords.join('|');
+    var pattern = new RegExp(
+      '(#.*$)' + '|' +
+      '(\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*")' + '|' +
+      '\\b(' + kwPattern + ')\\b' + '|' +
+      '\\b(\\d+\\.?\\d*)\\b',
+      'gm'
+    );
+    return code.replace(pattern, function(m,c,s,k,n){
+      if(c!==undefined) return '<span class="cm">'+c+'</span>';
+      if(s!==undefined) return '<span class="st">'+s+'</span>';
+      if(k!==undefined) return '<span class="kw">'+k+'</span>';
+      if(n!==undefined) return '<span class="nu">'+n+'</span>';
+      return m;
+    });
+  }
+  document.querySelectorAll('.codebox code').forEach(function(el){
+    el.innerHTML = highlightPy(el.textContent);
+  });
+
+  /* ---------- clock widget ---------- */
+  var clockState = { start: 0 };
+  var handEl = document.getElementById('clockHand');
+  var resultEl = document.getElementById('clockResult');
+  var stepsInput = document.getElementById('stepsInput');
+  var nums = document.querySelectorAll('.clock-num');
+
+  function handPoint(r){
+    var angle = (r*30 - 90) * Math.PI/180;
+    return { x: 100 + 55*Math.cos(angle), y: 100 + 55*Math.sin(angle) };
+  }
+  function setHand(r){
+    var p = handPoint(r);
+    handEl.setAttribute('x2', p.x.toFixed(1));
+    handEl.setAttribute('y2', p.y.toFixed(1));
+  }
+  function updateResult(){
+    var steps = parseInt(stepsInput.value, 10);
+    if(isNaN(steps)) steps = 0;
+    var r = ((clockState.start + steps) % 12 + 12) % 12;
+    resultEl.innerHTML = 'Start <span class="r">'+clockState.start+'</span>, move <span class="r">'+steps+'</span> steps &rarr; <span class="r">'+clockState.start+' + '+steps+' ≡ '+r+' (mod 12)</span>';
+    setHand(r);
+  }
+  nums.forEach(function(g){
+    g.addEventListener('click', function(){
+      nums.forEach(function(x){ x.classList.remove('active'); });
+      g.classList.add('active');
+      clockState.start = parseInt(g.getAttribute('data-val'), 10);
+      updateResult();
+    });
+  });
+  document.getElementById('clockBtn').addEventListener('click', function(){ updateResult(); });
+  setHand(5);
+
+  /* ---------- sieve widget ---------- */
+  var LIMIT = 100;
+  var grid = document.getElementById('sieveGrid');
+  var cells = [];
+  for(var n=1; n<=LIMIT; n++){
+    var c = document.createElement('div');
+    c.className = 'cell' + (n===1 ? ' one' : '');
+    c.textContent = n;
+    grid.appendChild(c);
+    cells[n] = c;
+  }
+  var sieveBtn = document.getElementById('sieveBtn');
+  var sieveStatus = document.getElementById('sieveStatus');
+  var sieveRunning = false;
+
+  function buildActions(){
+    var composite = new Array(LIMIT+1).fill(false);
+    var actions = [];
+    for(var p=2; p<=LIMIT; p++){
+      if(!composite[p]){
+        actions.push({type:'prime', n:p});
+        for(var m=p*p; m<=LIMIT; m+=p){
+          if(!composite[m]){
+            composite[m] = true;
+            actions.push({type:'composite', n:m});
+          }
+        }
+      }
+    }
+    return actions;
+  }
+
+  sieveBtn.addEventListener('click', function(){
+    if(sieveRunning) return;
+    sieveRunning = true;
+    sieveBtn.disabled = true;
+    for(var n=2;n<=LIMIT;n++){ cells[n].className = 'cell'; }
+    var actions = buildActions();
+    var i = 0;
+    var primeCount = 0;
+    sieveStatus.textContent = 'Sweeping the net…';
+    var timer = setInterval(function(){
+      if(i >= actions.length){
+        clearInterval(timer);
+        sieveStatus.textContent = 'Case closed! There are ' + primeCount + ' primes between 1 and 100.';
+        sieveBtn.disabled = false;
+        sieveBtn.textContent = 'Sweep again';
+        sieveRunning = false;
+        return;
+      }
+      var act = actions[i];
+      if(act.type === 'prime'){
+        cells[act.n].classList.add('is-prime');
+        primeCount++;
+        sieveStatus.textContent = 'Locked onto prime ' + act.n + ', crossing out its accomplices…';
+      } else {
+        cells[act.n].classList.remove('is-prime');
+        cells[act.n].classList.add('is-composite');
+      }
+      i++;
+    }, 35);
+  });
+
+  /* ---------- quiz ---------- */
+  var ANSWERS = { q1:'a', q2:'d', q3:'b' };
+  document.getElementById('quizBtn').addEventListener('click', function(){
+    var score = 0, total = 0;
+    Object.keys(ANSWERS).forEach(function(qname){
+      var qDiv = document.getElementById(qname);
+      var checked = document.querySelector('input[name="'+qname+'"]:checked');
+      qDiv.classList.remove('correct','wrong');
+      total++;
+      if(checked){
+        if(checked.value === ANSWERS[qname]){
+          qDiv.classList.add('correct');
+          score++;
+        } else {
+          qDiv.classList.add('wrong');
+        }
+      } else {
+        qDiv.classList.add('wrong');
+      }
+    });
+    var msg;
+    if(score === total) msg = "Perfect score! You're officially a certified prime detective.";
+    else if(score >= total - 1) msg = 'So close to perfect -- flip back through the case files and you will nail it.';
+    else msg = 'Head back into the case files for more clues -- you will crack it soon.';
+    document.getElementById('quizResult').textContent = 'Score: ' + score + ' / ' + total + '. ' + msg;
+  });
+})();
+</script>

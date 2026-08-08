@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>翻倍的超能力：快速幂 —— 写给普通人看的详解</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">质数侦探社 &middot; 技能强化教程</div>
+      <h1>翻倍的超能力：<em>快速幂</em></h1>
+      <p class="sub">在正式案卷里，这个技巧三两段话就带过去了。这里我们把它重新讲一遍——放慢节奏，用小数字打比方，用方块拼成连环画，外加一个可以让你反复摆弄、直到彻底想通的小工具。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">只用小数字</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>问题所在：一步一步乘，实在太慢</h2></div>
+      <p class="lead">任务是这样的：算出 <code>2</code> 的 <code>1,000,000</code> 次方。也就是把 <code>2 &times; 2 &times; 2 &times; 2&hellip;</code> 连续乘上一百万次。</p>
+      <p>如果电脑老老实实按部就班地算——先乘一次 2，再乘一次，再乘一次——那么每往前推进一步，就要花掉<strong>一次乘法</strong>。想要 <code>2</code><sup>10</sup>？那得乘 9 次。想要 <code>2</code><sup>1,000,000</sup>？那就是连续 <strong>999,999 次乘法</strong>，一次都省不掉。</p>
+
+      <div class="callout warn">
+        <div class="ctitle">这跟你有什么关系？</div>
+        <p>这可不只是数学课上的花活儿。保护你的密码、消息、网购交易安全的加密技术（案卷后面会认识的 RSA 一类算法）全都要靠把巨大的数字乘到巨大的次方。如果电脑每次都得算上百万步，互联网早就瘫痪了。它没瘫痪，正是因为这一页要讲的技巧。</p>
+      </div>
+
+      <p>所以这一课的挑战是：能不能用远远少于一百万次乘法，算出 <code>2</code><sup>1,000,000</sup>？剧透一下——能，大约 <strong>20</strong> 次就够了。来看看这是怎么做到的。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">999,999</div><div class="lbl">次乘法，一步一步硬算</div></div>
+        <div class="stat fast"><div class="num">~20</div><div class="lbl">次乘法，用你即将学到的翻倍技巧</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>核心思路：平方就是抄近道</h2></div>
+      <p class="lead">这一招你其实早就在别处见过——细胞分裂。一个细胞分裂成 2 个，这 2 个再分裂成 4 个，4 个变 8 个……每一轮数量都会翻倍，数字爆炸得飞快：只要 20 轮，就已经超过一百万个细胞了。</p>
+      <p>指数运算换个角度看，其实是同一回事。看看只做"平方"（自己乘自己）会发生什么：</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">a&sup1;</div><div class="v">a</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>平方</div>
+        <div class="chain-box"><div class="p">a&sup2;</div><div class="v">a&times;a</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>平方</div>
+        <div class="chain-box"><div class="p">a&#8308;</div><div class="v">(a&sup2;)&sup2;</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>平方</div>
+        <div class="chain-box"><div class="p">a&#8312;</div><div class="v">(a&#8308;)&sup2;</div></div>
+      </div>
+
+      <p>仔细看：从 <code>a</code>&sup1; 一路走到 <code>a</code>&#8312;（也就是 <code>a</code> 的 <strong>8</strong> 次方），只用了 <strong>3 次乘法</strong>——而不是 7 次！每平方一次，指数不是加 1，而是直接<strong>翻倍</strong>：1 &rarr; 2 &rarr; 4 &rarr; 8。这和细胞分裂的翻倍速度一模一样，也正是数字能爆炸得这么快的原因：只要 20 次平方，指数就能一路冲到 <code>2</code><sup>20</sup>，也就是超过一百万。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">全篇最重要的一句话</div>
+        <p>乘一次 <code>a</code>，指数加 1。平方一次，指数直接<strong>翻倍</strong>。翻倍比一步步加快得多得多——这就是整个秘密。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>可指数是 13 这种数字怎么办？认识一下二进制</h2></div>
+      <p class="lead">光靠平方，只能到达 2 的整数次幂：1、2、4、8、16、32&hellip; 可我们要的不只是 <code>a</code><sup>8</sup>，说不定还要 <code>a</code><sup>13</sup>。13 不是 2 的整数次幂。那只用平方，怎么凑到 13 呢？</p>
+      <p>秘诀在这里：<strong>任何一个整数，都能由若干个 2 的次幂相加拼出来。</strong>这正是"二进制"的含义。以 13 为例：</p>
+
+      <div class="bits" aria-label="13 的二进制表示：8 + 4 + 0 + 1">
+        <div class="bit on"><div class="cell">1</div><div class="pw">8</div></div>
+        <div class="bit on"><div class="cell">1</div><div class="pw">4</div></div>
+        <div class="bit"><div class="cell">0</div><div class="pw">2</div></div>
+        <div class="bit on"><div class="cell">1</div><div class="pw">1</div></div>
+      </div>
+      <p><code>13 = 8 + 4 + 1</code>。写成"二进制"就是 <code>1101</code>——用到的那几个次幂（8、4、1）底下写 1，跳过的那个（2）底下写 0。</p>
+
+      <p>这为什么对指数运算有用呢？幂运算有条基本规则：<strong>同一个数的几个幂相乘，指数会直接相加</strong>：<code>a</code><sup>8</sup> <code>&times; a</code><sup>4</sup> <code>&times; a</code><sup>1</sup> <code>= a</code><sup>8+4+1</sup> <code>= a</code><sup>13</sup>。所以与其把 <code>a</code> 自己乘上 12 次，不如：</p>
+      <ol style="padding-left:1.3em;font-size:15.5px;">
+        <li>靠平方造出 <code>a</code>&sup1;、<code>a</code>&sup2;、<code>a</code>&#8308;、<code>a</code>&#8312;——只需要 <strong>3 次乘法</strong></li>
+        <li>把和 <code>1101</code> 里"1"对应的那几项乘起来：也就是 <code>a</code>&#8312;、<code>a</code>&#8308;、<code>a</code>&sup1;——再加 <strong>2 次乘法</strong></li>
+      </ol>
+      <p>一共 <strong>5 次乘法</strong>就能算出 <code>a</code><sup>13</sup>，而不是 12 次。而且指数越大，省下来的比例就越夸张——因为二进制数字的"位数"增长，比数字本身慢得多得多。这就是整套魔术的全部秘密。</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>顺带聊聊"取余"（钟表算术）</h2></div>
+      <p class="lead">真正的代码不只是算巨大的幂，还会做一件事，叫"<code>mod m</code>"，意思是"除以 m，求余数"。其实你一辈子都在用这一招，只是没人给它起过这么正式的名字——它就是<strong>钟表算术</strong>。</p>
+      <p>一个钟表只有 12 个数字。现在是 10 点，再过 5 个小时，你不会说"15 点"，而是绕回去说 3 点。这正是 <code>15 mod 12 = 3</code>。一旦超过顶点，就绕回起点重新数。</p>
+      <p>在我们的代码里，每一次乘法后面都紧跟着"<code>% m</code>"（取余）。这能让计算过程中的每一个数字都保持很小、很好管理——永远介于 0 和 <code>m &minus; 1</code> 之间——哪怕"真实"的答案（不取余的话）会有成百上千位数字。这正是为什么这个技巧能应付像一百万这么大的指数：数字根本没机会爆炸式增长。</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面是案卷里真正用到的函数。不用一下子全部看懂——先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fast_power.py</div>
+        <pre><code><span class="kw">def</span> fast_power(a, b, m):
+    <span class="cm"># 计算 (a 的 b 次方) % m，但绝不会真的把那个巨大的数字算出来</span>
+    result = <span class="nu">1</span>
+    base = a % m
+    <span class="kw">while</span> b:                      <span class="cm"># b 变成 0 就停下</span>
+        <span class="kw">if</span> b % <span class="nu">2</span> == <span class="nu">1</span>:
+            result = result * base % m
+        base = base * base % m    <span class="cm"># 这一行就是"翻倍"</span>
+        b = b // <span class="nu">2</span>
+    <span class="kw">return</span> result
+
+<span class="kw">print</span>(fast_power(<span class="nu">2</span>, <span class="nu">1000000</span>, <span class="nu">1000000007</span>))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">result = 1
+base = a % m</div>
+          <div class="annot-note"><span><b>result</b> 一开始是空的（乘以 1 不会改变任何东西）。<b>base</b> 一开始就是我们的第一个幂，也就是 a&sup1;——而且已经先做过取余了。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while b:</div>
+          <div class="annot-note"><span>只要指数还没处理完，就继续循环。每绕一圈，处理的都是 b 的<b>二进制里的一位</b>。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if b % 2 == 1:
+    result = result * base % m</div>
+          <div class="annot-note"><span>看看当前这一位是不是 <b>1</b>？如果是，说明这个幂要用在最终答案里——把它乘进去。如果是 0，就跳过，用不上。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">base = base * base % m</div>
+          <div class="annot-note"><span>这就是第二关讲的翻倍动作：把 <b>base</b> 平方一下，变成下一级的幂——a&sup1; 变 a&sup2;，a&sup2; 变 a&#8308;，a&#8308; 变 a&#8312;&hellip;</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">b = b // 2</div>
+          <div class="annot-note"><span>把指数砍掉一半（丢掉刚用过的那一位）。这样只要大约 <code>log&#8322;(b)</code> 轮，b 就能归零——对一百万来说，大约只要 20 轮。</span></div>
+        </div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">冷知识档案</div>
+        <p>其实 Python 早就把这个超能力内置好了，你都不用自己写：<code>pow(a, b, m)</code> 是一个自带函数，第三个参数的意思正是"顺便取余"，底层用的正是你刚学的快速幂技巧！</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>一起手把手推演一遍：3&sup1;&sup3; mod 7</h2></div>
+      <p class="lead">光说不练假把式——用小数字亲手把代码走一遍：<code>a = 3</code>，<code>b = 13</code>，<code>m = 7</code>。留意标<span style="color:var(--clue);font-weight:700;">绿</span>的格子——那些是某一位是 1、把某个幂乘进了结果的那几轮。</p>
+
+      <table class="trace">
+        <thead><tr><th>轮次</th><th>b</th><th>b 是奇数？</th><th>操作</th><th>base &rarr; base&sup2; mod 7</th><th>result</th><th>下一轮 b</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>13</td><td class="odd">是</td><td>result = 1&times;3 mod 7 = <b>3</b></td><td>3 &rarr; 2</td><td>3</td><td>6</td></tr>
+          <tr><td>2</td><td>6</td><td class="even">否</td><td>跳过</td><td>2 &rarr; 4</td><td>3</td><td>3</td></tr>
+          <tr><td>3</td><td>3</td><td class="odd">是</td><td>result = 3&times;4 mod 7 = <b>5</b></td><td>4 &rarr; 2</td><td>5</td><td>1</td></tr>
+          <tr><td>4</td><td>1</td><td class="odd">是</td><td>result = 5&times;2 mod 7 = <b>3</b></td><td>2 &rarr; 4</td><td>3</td><td>0 &mdash; 停止</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="7">最终答案：3&sup1;&sup3; mod 7 = <span style="font-size:16px;">3</span></td></tr></tfoot>
+      </table>
+
+      <p>留意"b 是奇数？"这一列，从上往下读：<strong>是、否、是、是</strong>——也就是 <code>1, 0, 1, 1</code>。倒过来读（从下往上，因为循环是从二进制的最低位开始一位位剥离的），就是 <code>1101</code>——正是第三关里看到的 13 的二进制形式！代码并没有玩什么花招——它只是一位一位地读 13 的二进制数字，每一位都决定要不要把对应的幂乘进去。</p>
+
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">a&sup1; mod 7</div><div class="v">3</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>平方</div>
+        <div class="chain-box"><div class="p">a&sup2; mod 7</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>平方</div>
+        <div class="chain-box picked"><div class="p">a&#8308; mod 7</div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>平方</div>
+        <div class="chain-box picked"><div class="p">a&#8312; mod 7</div><div class="v">2</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">高亮的方块（1、4、8 次幂）正是 13 的二进制形式要用到的那几项。把它们乘起来：2 &times; 4 &times; 3 mod 7 = 24 mod 7 = <strong>3</strong>。对上了！</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>该你上场了：换成你自己的数字</h2></div>
+      <p class="lead">挑几个不太大的 <code>a</code>、<code>b</code>、<code>m</code>。下面的工具会跑一模一样的算法，把每一轮都摆出来，就像上面那张表一样。</p>
+
+      <div class="widget">
+        <h3>快速幂推演器</h3>
+        <div class="hint">小提示：b 尽量控制在几十万以内，表格才不会太长。最后不妨试试 b = 1,000,000，看看到底要几轮就够了！</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a（底数）</label><input type="number" id="inA" value="3" min="0" max="1000000"></div>
+          <div class="field"><label for="inB">b（指数）</label><input type="number" id="inB" value="13" min="0" max="1000000"></div>
+          <div class="field"><label for="inM">m（模数）</label><input type="number" id="inM" value="7" min="1" max="1000000"></div>
+          <div class="field"><button class="btn" id="runBtn">运行推演</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>课后挑战（先自己试，别偷看答案）</h2></div>
+      <p class="lead">在用上面的工具验证之前，先自己在纸上把翻倍超能力试一遍。</p>
+
+      <details>
+        <summary>挑战一：只用平方算出 2&sup1;&sup0;（不需要取余）</summary>
+        <div class="reveal">
+          <p><code>2</code>&sup1;<code> = 2</code>，<code>2</code>&sup2;<code> = 4</code>，<code>2</code>&#8308;<code> = 16</code>，<code>2</code>&#8312;<code> = 256</code>。因为 <code>10 = 8 + 2</code>，答案就是 <code>2</code>&#8312; <code>&times; 2</code>&sup2; <code>= 256 &times; 4 = 1024</code>。验证一下：<code>2</code><sup>10</sup> 确实是 <code>1024</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：手算 5&#8310; mod 11，再用工具核对</summary>
+        <div class="reveal">
+          <table class="trace" style="margin:0;">
+            <thead><tr><th>轮次</th><th>b</th><th>是否为奇</th><th>result</th><th>base&rarr;base&sup2; mod 11</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>6</td><td class="even">否</td><td>1</td><td>5 &rarr; 3</td></tr>
+              <tr><td>2</td><td>3</td><td class="odd">是</td><td>3</td><td>3 &rarr; 9</td></tr>
+              <tr><td>3</td><td>1</td><td class="odd">是</td><td>5</td><td>9 &rarr; 4</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:10px;">最终答案：<code>5</code><sup>6</sup> mod 11 = <strong>5</strong>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么循环只要大约 log&#8322;(b) 轮，而不是 b 轮？</summary>
+        <div class="reveal">
+          <p>每一轮都会把 <code>b</code> 除以 2（<code>b = b // 2</code>）。从一个大数字开始不断对半砍，直到砍到 0 为止——这正是"<code>log</code>&#8322;"衡量的东西：它问的是"这个数能被对半砍多少次？"对 b = 1,000,000 来说，答案大约是 20，因为 <code>2</code><sup>20</sup> 已经超过一百万了。这就是为什么 20 轮就够了——每一轮做的事情，都相当于把上一轮能覆盖的范围再翻一倍。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>回到主案卷：<strong>《质数侦探社》</strong>案卷档案，案卷&nbsp;03。这个技巧会在案卷&nbsp;07 和&nbsp;08 里再次登场，成为费马测谎仪和 Miller&ndash;Rabin 测谎仪背后的引擎。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function trace(a, b, m){
+    var steps = [];
+    var result = 1;
+    var base = ((a % m) + m) % m;
+    var bb = b;
+    while (bb > 0){
+      var bit = bb % 2;
+      var resultBefore = result;
+      if (bit === 1){ result = (result * base) % m; }
+      var baseBefore = base;
+      var baseAfter = (base * base) % m;
+      base = baseAfter;
+      var bBefore = bb;
+      bb = Math.floor(bb / 2);
+      steps.push({
+        round: steps.length + 1,
+        bBefore: bBefore,
+        bit: bit,
+        resultBefore: resultBefore,
+        resultAfter: result,
+        baseBefore: baseBefore,
+        baseAfter: baseAfter,
+        bAfter: bb
+      });
+    }
+    if (b === 0){ result = 1 % m; }
+    return { steps: steps, result: result };
+  }
+
+  function binaryBits(b){
+    if (b === 0) return [0];
+    var bits = [];
+    var n = b;
+    while (n > 0){ bits.unshift(n % 2); n = Math.floor(n / 2); }
+    return bits;
+  }
+
+  function renderBits(b){
+    var bits = binaryBits(b);
+    var html = '<div class="bits">';
+    for (var i = 0; i < bits.length; i++){
+      var power = Math.pow(2, bits.length - 1 - i);
+      html += '<div class="bit ' + (bits[i] === 1 ? 'on' : '') + '"><div class="cell">' + bits[i] + '</div><div class="pw">' + power.toLocaleString() + '</div></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function run(){
+    var a = parseInt(document.getElementById('inA').value, 10);
+    var b = parseInt(document.getElementById('inB').value, 10);
+    var m = parseInt(document.getElementById('inM').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(a) || isNaN(b) || isNaN(m) || a < 0 || b < 0 || m < 1){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>a 和 b 需要是 0 或更大的数，m 至少要是 1。</p></div>';
+      return;
+    }
+    if (b > 1000000 || a > 1000000 || m > 1000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">这个演示装不下这么大的数字</div><p>把 a、b、m 都控制在 1,000,000 以内 &mdash; 超过这个范围，浏览器的运算就会开始出现精度误差（上面那段 Python 代码没有这个限制，只有这个网页里的演示工具才有）。</p></div>';
+      return;
+    }
+
+    var t = trace(a, b, m);
+
+    var html = '';
+    html += '<p style="margin-top:16px;font-size:13.5px;color:var(--ink-soft);"><b>' + b.toLocaleString() + '</b> 的二进制表示，从最高位开始：</p>';
+    html += renderBits(b);
+
+    html += '<table class="trace"><thead><tr><th>轮次</th><th>b</th><th>是否为奇</th><th>操作</th><th>base&rarr;base&sup2; mod ' + m + '</th><th>result</th><th>下一轮 b</th></tr></thead><tbody>';
+    for (var i = 0; i < t.steps.length; i++){
+      var s = t.steps[i];
+      var oddCell = s.bit === 1
+        ? '<td class="odd">是</td>'
+        : '<td class="even">否</td>';
+      var actionCell = s.bit === 1
+        ? '<td>result = ' + s.resultBefore + '&times;' + s.baseBefore + ' mod ' + m + ' = <b>' + s.resultAfter + '</b></td>'
+        : '<td>跳过</td>';
+      html += '<tr><td>' + s.round + '</td><td>' + s.bBefore + '</td>' + oddCell + actionCell +
+              '<td>' + s.baseBefore + ' &rarr; ' + s.baseAfter + '</td><td>' + s.resultAfter + '</td><td>' + s.bAfter + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="answer-line">' + a + '<sup>' + b.toLocaleString() + '</sup> mod ' + m + ' = <b>' + t.result + '</b></div>';
+
+    var slowSteps = Math.max(b - 1, 0);
+    var fastSteps = t.steps.length;
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowSteps.toLocaleString() + '</div><div class="lbl">次乘法，一步一步硬算</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastSteps.toLocaleString() + '</div><div class="lbl">次乘法，用翻倍技巧</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>
