@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codelab — 图解教程合集</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --radius:12px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#12181a;
+      --paper-raised:#1b2327;
+      --paper-raised-2:#1f2a26;
+      --ink:#e8e6db;
+      --ink-soft:#a6b0a8;
+      --line:#2c3630;
+      --accent:#e2a13e;
+      --accent-strong:#f0b65b;
+      --accent-soft:#3c2f16;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:4vh 5vw 6vh;
+  }
+  .lang-switch{
+    align-self:flex-end;
+    margin-bottom:2rem;
+  }
+  .lang-switch a{
+    display:inline-flex;
+    align-items:center;
+    gap:.4em;
+    text-decoration:none;
+    color:var(--ink-soft);
+    font-size:.92rem;
+    padding:.45em .9em;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:var(--paper-raised);
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .lang-switch a:hover{
+    color:var(--accent-strong);
+    border-color:var(--accent);
+  }
+  header{
+    text-align:center;
+    max-width:640px;
+    margin-bottom:3rem;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-size:clamp(1.9rem,4vw,2.7rem);
+    margin:0 0 .5rem;
+    letter-spacing:.01em;
+  }
+  header p{
+    color:var(--ink-soft);
+    font-size:1.05rem;
+    margin:0;
+  }
+  main{
+    width:100%;
+    max-width:720px;
+    display:flex;
+    flex-direction:column;
+    gap:1.1rem;
+  }
+  .card{
+    display:block;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:1.5rem 1.7rem;
+    text-decoration:none;
+    color:inherit;
+    box-shadow:var(--shadow);
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .card:hover{
+    transform:translateY(-2px);
+    border-color:var(--accent);
+  }
+  .card .kicker{
+    font-size:.78rem;
+    letter-spacing:.08em;
+    color:var(--accent-strong);
+    font-weight:600;
+    margin-bottom:.5rem;
+  }
+  .card h2{
+    font-family:var(--font-display);
+    font-size:1.3rem;
+    margin:0 0 .4rem;
+    line-height:1.5;
+  }
+  .card .arrow{
+    color:var(--accent);
+    font-size:.95rem;
+  }
+  footer{
+    margin-top:3rem;
+    color:var(--ink-soft);
+    font-size:.85rem;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+  <div class="lang-switch">
+    <a href="index.html">&#x2190; English</a>
+  </div>
+
+  <header>
+    <h1>Codelab</h1>
+    <p>用图解和互动的方式，把值得弄懂的知识讲清楚。</p>
+  </header>
+
+  <main>
+    <a class="card" href="fast_exponentiation_zh.html">
+      <div class="kicker">算法</div>
+      <h2>翻倍的超能力：快速幂 —— 写给普通人看的详解</h2>
+      <div class="arrow">阅读全文 &#x2192;</div>
+    </a>
+
+    <a class="card" href="prime_detective_cn.html">
+      <div class="kicker">数论</div>
+      <h2>质数侦探社：模运算与素数判定破案指南</h2>
+      <div class="arrow">阅读全文 &#x2192;</div>
+    </a>
+  </main>
+
+  <footer>
+    Also available in <a href="index.html" style="color:var(--accent-strong);">English</a>.
+  </footer>
+</body>
+</html>
