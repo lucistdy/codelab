@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miller-Rabin: The Cross-Examination That Exposes Even the Cleverest Impostor</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Squaring chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:18px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:88px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.legal{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box.illegal{background:var(--alert-soft);border-color:var(--alert);}
+  .chain-box .p{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:19px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+  .chain-label{font-size:12.5px;color:var(--ink-soft);margin:6px 0 -8px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.liar{background:var(--alert-soft);color:var(--alert);font-weight:700;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input#inN{width:110px;}
+  .field input#inW{width:220px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .chainstr{font-family:var(--font-mono);font-size:12.5px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Prime Detective Agency &middot; Skill Refresher &middot; Case 08</div>
+      <h1>The <em>Miller&ndash;Rabin</em> Cross-Examination</h1>
+      <p class="sub">The Fermat Lie Detector catches almost every impostor &mdash; except the professional con artists. Here's the follow-up interrogation trick that catches those too, worked out slowly with small numbers and a tool you can interrogate suspects with yourself.</p>
+      <div class="stampbar">
+        <span class="stamp hot">Builds on the Fermat Lie Detector (Case 07)</span>
+        <span class="stamp">Uses fast exponentiation (Case 03)</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The weak spot in our lie detector</h2></div>
+      <p class="lead">In <a href="fermat_lie_en.html">the Fermat Lie Detector</a> (Case 07), you met a fast trick for catching fake primes: pick a random witness <code>a</code>, check whether <code>a</code><sup>n&minus;1</sup> <code>mod n</code> equals 1. If it doesn't, <code>n</code> is guilty, guaranteed.</p>
+      <p>But you also met the one criminal who beats it almost every time: <strong>561</strong> <code>(= 3 &times; 11 &times; 17)</code>, a <strong>Carmichael number</strong>. Witnesses 2, 5, 7, and 13 all vouch for it. In fact, <em>almost every</em> witness vouches for it. The Fermat test alone just can't tell it apart from a real prime.</p>
+
+      <div class="callout warn">
+        <div class="ctitle">The detective's next move</div>
+        <p>If a suspect can beat one lie-detector question, you don't give up &mdash; you ask a <strong>trickier follow-up</strong>. That's exactly the idea behind the <strong>Miller&ndash;Rabin test</strong>. It still checks <code>a</code><sup>n&minus;1</sup> <code>mod n</code>, but along the way, it also inspects a much subtler tell that a Carmichael number can't hide.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>A new kind of clue: square roots of 1</h2></div>
+      <p class="lead">Here's a question that sounds strange at first: on a clock with <code>n</code> hours, which numbers <code>x</code> give you <code>x</code><sup>2</sup> <code>mod n = 1</code>? In other words, which numbers "square back around" to exactly 1?</p>
+      <p>Let's check every number from 1 to 6, mod 7 (a real prime):</p>
+
+      <table class="trace">
+        <thead><tr><th>x</th><th>x&sup2;</th><th>x&sup2; mod 7</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>1</td><td class="odd">1</td></tr>
+          <tr><td>2</td><td>4</td><td class="even">4</td></tr>
+          <tr><td>3</td><td>9</td><td class="even">2</td></tr>
+          <tr><td>4</td><td>16</td><td class="even">2</td></tr>
+          <tr><td>5</td><td>25</td><td class="even">4</td></tr>
+          <tr><td>6</td><td>36</td><td class="odd">1</td></tr>
+        </tbody>
+      </table>
+
+      <p>Only <strong>two</strong> numbers land on 1: <code>x = 1</code>, and <code>x = 6</code> (which is <code>7 &minus; 1</code>, or "&minus;1" on this 7-hour clock). Now let's try the exact same question, but mod 15 (definitely <em>not</em> a prime &mdash; it's <code>3 &times; 5</code>):</p>
+
+      <table class="trace">
+        <thead><tr><th>x</th><th>x&sup2;</th><th>x&sup2; mod 15</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>1</td><td class="odd">1</td></tr>
+          <tr><td>4</td><td>16</td><td class="liar">1</td></tr>
+          <tr><td>11</td><td>121</td><td class="liar">1</td></tr>
+          <tr><td>14</td><td>196</td><td class="odd">1</td></tr>
+        </tbody>
+      </table>
+
+      <p>This time <strong>four</strong> numbers land on 1: <code>1</code>, <code>4</code>, <code>11</code>, and <code>14</code>. The 1 and the 14 (<code>= 15 &minus; 1</code>) are the "normal" ones you'd expect. But <code>4</code> and <code>11</code> are extras &mdash; numbers that have <strong>no business squaring to 1</strong>. Their existence alone is proof that 15 can't be prime (which, of course, we already knew).</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The pattern</div>
+        <p>A real prime only ever has <strong>two</strong> square roots of 1: <code>1</code> and <code>n &minus; 1</code>. A composite number can have <strong>extra, "illegal" ones</strong> hiding inside. Finding an illegal square root of 1 is an even sneakier way to unmask a fake than the plain Fermat check &mdash; and it's exactly what lets Miller&ndash;Rabin catch Carmichael numbers.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>The theorem that cracks the case</h2></div>
+      <div class="callout tip">
+        <div class="ctitle">The theorem</div>
+        <p>If <code>p</code> is prime, then the equation <code>x</code><sup>2</sup> <code>&equiv; 1 (mod p)</code> has <strong>exactly two</strong> solutions: <code>x = 1</code> or <code>x = p &minus; 1</code>.</p>
+      </div>
+
+      <p>Why is this always true? Here's the single most useful fact about prime numbers, and it's simpler than it sounds: <strong>if a prime number divides a product of two numbers, it must divide at least one of them</strong> &mdash; it can never be satisfied by splitting the blame between both. Since <code>x</code><sup>2</sup> <code>&minus; 1</code> factors into <code>(x &minus; 1)(x + 1)</code>, if a prime <code>p</code> divides that product, it has to fully divide <code>(x &minus; 1)</code> or fully divide <code>(x + 1)</code> &mdash; giving you <code>x = 1</code> or <code>x = p &minus; 1</code>, and nothing else. A composite number doesn't play by that rule, which is exactly why 15 could sneak in the extra impostors 4 and 11.</p>
+
+      <p style="text-align:center;color:var(--ink-soft);font-family:var(--font-stamp);letter-spacing:.06em;font-size:12px;">FLIP IT AROUND &darr;</p>
+      <div class="callout warn">
+        <div class="ctitle">The rule that catches liars</div>
+        <p>If you're checking a mystery number <code>n</code>, and you find a <strong>third</strong> solution to <code>x</code><sup>2</sup> <code>&equiv; 1 (mod n)</code> &mdash; some <code>x</code> that isn't 1 and isn't <code>n &minus; 1</code> &mdash; then <code>n</code> is <strong>definitely, 100% not prime</strong>. No exceptions, not even for Carmichael numbers.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Turning the clue into an algorithm</h2></div>
+      <p class="lead">So we need to go hunting for illegal square roots of 1. Here's the clever part: we don't need to check <em>every</em> number &mdash; we can find them <strong>for free</strong>, hiding inside the same repeated-squaring calculation from Case 03 that computes <code>a</code><sup>n&minus;1</sup> <code>mod n</code>.</p>
+      <ol style="padding-left:1.3em;font-size:15.5px;">
+        <li>Write <code>n &minus; 1</code> as <code>u &times; 2</code><sup>l</sup> (<code>u</code> is odd &mdash; pull every factor of 2 out of the even part).</li>
+        <li>Pick a witness <code>a</code> and compute <code>v = a</code><sup>u</sup> <code>mod n</code>.</li>
+        <li>Square <code>v</code> repeatedly, up to <code>l</code> times &mdash; each squaring doubles the exponent, so this walks <code>v</code> step by step from <code>a</code><sup>u</sup> all the way up to <code>a</code><sup>u&middot;2<sup>l</sup></sup> <code>= a</code><sup>n&minus;1</sup>.</li>
+        <li>If <code>n</code> is really prime, Fermat guarantees the <em>last</em> value in that chain has to be 1. So somewhere along the way, the chain flips from "not 1" to "1" for the very first time. By Level 3's theorem, the value <em>right before</em> that flip is only allowed to be <code>1</code> or <code>n &minus; 1</code>. If it's anything else, that's an <strong>illegal square root</strong> &mdash; airtight proof <code>n</code> is not prime.</li>
+        <li>If nothing suspicious ever shows up, this witness lets <code>n</code> go &mdash; for now, treat it as a "probable prime."</li>
+      </ol>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>miller_rabin.py</div>
+        <pre><code><span class="kw">import</span> random
+
+<span class="kw">def</span> is_probably_prime(n, tries=<span class="nu">8</span>):
+    <span class="kw">if</span> n == <span class="nu">0</span> <span class="kw">or</span> n == <span class="nu">1</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> small_prime <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>]:
+        <span class="kw">if</span> n == small_prime:
+            <span class="kw">return</span> <span class="kw">True</span>
+        <span class="kw">if</span> n % small_prime == <span class="nu">0</span>:
+            <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="cm"># Step 1: write n-1 as u * 2^l</span>
+    u, l = n - <span class="nu">1</span>, <span class="nu">0</span>
+    <span class="kw">while</span> u % <span class="nu">2</span> == <span class="nu">0</span>:
+        u = u // <span class="nu">2</span>
+        l = l + <span class="nu">1</span>
+
+    <span class="cm"># Steps 2-5: cross-examine several witnesses</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> range(tries):
+        a = random.randrange(<span class="nu">2</span>, n - <span class="nu">1</span>)
+        v = pow(a, u, n)
+        <span class="kw">if</span> v == <span class="nu">1</span> <span class="kw">or</span> v == n - <span class="nu">1</span>:
+            <span class="kw">continue</span>                 <span class="cm"># this witness found nothing suspicious, for now</span>
+        caught = <span class="kw">False</span>
+        <span class="kw">for</span> _ <span class="kw">in</span> range(l - <span class="nu">1</span>):
+            v = v * v % n
+            <span class="kw">if</span> v == n - <span class="nu">1</span>:
+                caught = <span class="kw">False</span>
+                <span class="kw">break</span>
+            caught = <span class="kw">True</span>
+        <span class="kw">if</span> caught:
+            <span class="kw">return</span> <span class="kw">False</span>              <span class="cm"># caught a flaw -- n is not prime</span>
+    <span class="kw">return</span> <span class="kw">True</span>                       <span class="cm"># no witness ever caught a flaw</span>
+
+<span class="kw">print</span>(is_probably_prime(<span class="nu">561</span>))            <span class="cm"># False -- the impostor is caught!</span>
+<span class="kw">print</span>(is_probably_prime(<span class="nu">999999999989</span>))   <span class="cm"># True, and it comes back almost instantly</span></code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">u, l = n - 1, 0
+while u % 2 == 0:
+    u = u // 2
+    l = l + 1</div>
+          <div class="annot-note"><span>Keep dividing <b>n&minus;1</b> by 2 until it's odd, counting how many times &mdash; that count is <b>l</b>, and what's left over is <b>u</b>. Now <code>n&minus;1 = u &times; 2</code><sup>l</sup>.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">v = pow(a, u, n)
+if v == 1 or v == n - 1:
+    continue</div>
+          <div class="annot-note"><span>Compute the very first checkpoint in the chain. If it's already a legal square root (1 or n&minus;1), nothing to see yet &mdash; move on to the squaring rounds (or the next witness).</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for _ in range(l - 1):
+    v = v * v % n
+    if v == n - 1:
+        caught = False
+        break
+    caught = True</div>
+          <div class="annot-note"><span>Walk the rest of the chain, squaring each time. The moment <b>v</b> hits <b>n&minus;1</b>, that's a legal checkpoint &mdash; clear this witness immediately. If the chain finishes without ever hitting n&minus;1, <b>caught</b> stays True &mdash; somewhere in there, v snuck straight to 1 (or never got there at all) illegally.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if caught:
+    return False</div>
+          <div class="annot-note"><span>An illegal square root was found &mdash; case closed, <b>n is not prime</b>, no more witnesses needed.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Three suspects, three outcomes</h2></div>
+      <p class="lead">Let's run this interrogation by hand on three suspects, watching the squaring chain each time.</p>
+
+      <h3 style="font-size:16px;margin:8px 0 2px;">Suspect A: n = 13 (a genuine prime), witness a = 2</h3>
+      <p><code>n &minus; 1 = 12 = 3 &times; 2</code><sup>2</sup>, so <code>u = 3</code>, <code>l = 2</code>. First checkpoint: <code>v</code> = 2<sup>3</sup> mod 13 = 8.</p>
+      <div class="chain">
+        <div class="chain-box"><div class="p">v (=a&#7488; mod n)</div><div class="v">8</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box legal"><div class="p">n&minus;1 = 12</div><div class="v">12</div></div>
+      </div>
+      <p>The very next square lands exactly on <code>12</code> (<code>= n &minus; 1</code>) &mdash; a perfectly legal checkpoint. Witness cleared, no flaw found. (13 really is prime, so no surprise.)</p>
+
+      <h3 style="font-size:16px;margin:20px 0 2px;">Suspect B: n = 9 (composite, but a lazy fake), witness a = 2</h3>
+      <p><code>n &minus; 1 = 8 = 1 &times; 2</code><sup>3</sup>, so <code>u = 1</code>, <code>l = 3</code>. First checkpoint: <code>v</code> = 2<sup>1</sup> mod 9 = 2.</p>
+      <div class="chain">
+        <div class="chain-box"><div class="p">v (=a&#7488; mod n)</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box illegal"><div class="p">round 1</div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box illegal"><div class="p">round 2</div><div class="v">7</div></div>
+      </div>
+      <p>The chain never touches <code>n &minus; 1 = 8</code>, and it never even reaches 1 at all. No legal checkpoint ever shows up &mdash; caught, flagged composite. (Correct: <code>9 = 3 &times; 3</code>.)</p>
+
+      <h3 style="font-size:16px;margin:20px 0 2px;">Suspect C: n = 561 (the Carmichael impostor), witness a = 2</h3>
+      <p><code>n &minus; 1 = 560 = 35 &times; 2</code><sup>4</sup>, so <code>u = 35</code>, <code>l = 4</code>. First checkpoint: <code>v</code> = 2<sup>35</sup> mod 561 = 263.</p>
+      <div class="chain">
+        <div class="chain-box"><div class="p">v (=a&#7488; mod n)</div><div class="v">263</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box"><div class="p">round 1</div><div class="v">166</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box illegal"><div class="p">round 2</div><div class="v">67</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>square</div>
+        <div class="chain-box illegal"><div class="p">round 3</div><div class="v">1</div></div>
+      </div>
+      <p>Watch that last jump closely: <code>67</code> squares straight to <code>1</code> &mdash; but <code>67</code> is neither <code>1</code> nor <code>n &minus; 1 = 560</code>! That makes <code>67</code> an <strong>illegal square root of 1 mod 561</strong>, exactly the kind of extra impostor you saw with 4 and 11 back in Level 2. Remember, witness <code>a = 2</code> completely fooled the plain Fermat test on 561 (Case 07) &mdash; but Miller&ndash;Rabin's tougher follow-up question catches the very same witness telling on it.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>This is the whole trick in one sentence: Miller&ndash;Rabin computes the exact same power as Fermat, but instead of only checking the final answer, it also checks every "stepping stone" square root along the way &mdash; and a Carmichael number can rig the final answer, but it can't rig every stepping stone too.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Why it's nearly impossible to fool</h2></div>
+      <p class="lead">Mathematicians have proven something remarkable: for any impostor number, <strong>at most 1/4</strong> of all possible witnesses can be fooled by the Miller&ndash;Rabin test (compare that to the Fermat test, where a Carmichael number can fool <em>almost all</em> of them). That means calling in a few more witnesses shrinks the danger extremely fast.</p>
+
+      <table class="trace">
+        <thead><tr><th>witnesses called (tries)</th><th>worst-case chance ALL of them get fooled</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="even">1 in 4</td></tr>
+          <tr><td>2</td><td class="even">1 in 16</td></tr>
+          <tr><td>4</td><td class="even">1 in 256</td></tr>
+          <tr><td>8 <span style="color:var(--ink-soft);">(the code's default)</span></td><td class="odd">1 in 65,536</td></tr>
+          <tr><td>20</td><td class="odd">1 in about a trillion</td></tr>
+        </tbody>
+      </table>
+
+      <p>By the time you've called in just <strong>8</strong> witnesses (the default in the code above), the odds of every single one being fooled are already lower than your odds of being struck by lightning. That's why the Miller&ndash;Rabin test is technically called "probabilistic" &mdash; but in practice, real software (and real cryptography) treats it as good as certain.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you run the cross-examination</h2></div>
+      <p class="lead">Pick a suspect number <code>n</code> and a list of witnesses. The tool factors <code>n &minus; 1 = u &times; 2</code><sup>l</sup>, walks the squaring chain for each witness exactly like Level 5, and shows whether it ever finds an illegal square root.</p>
+
+      <div class="widget">
+        <h3>Miller&ndash;Rabin cross-examiner</h3>
+        <div class="hint">Start with the default &mdash; the same 561, and the exact same witnesses (2, 5, 7, 13) that all vouched for it in the Fermat Lie Detector. Watch what happens this time. Then try 1105 = 5&times;13&times;17 (another Carmichael number), and 97 or 13 (genuine primes) for comparison.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n (suspect)</label><input type="number" id="inN" value="561" min="4" max="1000000"></div>
+          <div class="field"><label for="inW">witnesses (a, comma-separated)</label><input type="text" id="inW" value="2,5,7,13"></div>
+          <div class="field"><button class="btn" id="runBtn">Cross-examine</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Quick challenges (no peeking until you've tried)</h2></div>
+      <p class="lead">Work these out before you check with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Write n &minus; 1 as u &times; 2<sup>l</sup> for n = 13.</summary>
+        <div class="reveal">
+          <p><code>n &minus; 1 = 12</code>. Divide by 2 repeatedly: <code>12 &rarr; 6 &rarr; 3</code> (3 is odd, stop). That's 2 divisions, and 3 is left over. So <code>u = 3</code>, <code>l = 2</code>, and indeed <code>3 &times; 2</code><sup>2</sup> <code>= 3 &times; 4 = 12</code>. &check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Mod 11 (a real prime), which x from 1 to 10 satisfy x&sup2; &equiv; 1 (mod 11)?</summary>
+        <div class="reveal">
+          <p>Only <code>x = 1</code> (since <code>1</code><sup>2</sup> <code>= 1</code>) and <code>x = 10</code> (since <code>10</code><sup>2</sup> <code>= 100 = 9 &times; 11 + 1</code>). Exactly two solutions &mdash; exactly what the theorem in Level 3 guarantees, since 11 really is prime.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: In your own words, why does finding a third square root of 1 mod n prove n isn't prime?</summary>
+        <div class="reveal">
+          <p>Because Level 3's theorem says a genuine prime can only ever have <em>exactly two</em> numbers that square to 1: <code>1</code> and <code>n &minus; 1</code>. If you find any other number that also squares to 1, n has broken a rule that every real prime obeys without exception &mdash; so n cannot be a real prime. It's the same "flip the always-true rule around" logic from the Fermat test, just applied to a sneakier, harder-to-fake clue.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4 (use the tool above): Cross-examine n = 1105 = 5 &times; 13 &times; 17 with witnesses 2, 3, 7. What happens, and how is it different from what you'd have seen with the plain Fermat test?</summary>
+        <div class="reveal">
+          <p>1105 is another Carmichael number &mdash; it fools the plain Fermat test almost completely, just like 561. But Miller&ndash;Rabin catches every one of those witnesses (2, 3, and 7 all expose an illegal square root along the way). It's the same story as 561: the final Fermat answer can be rigged, but the stepping-stones on the way there give it away.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5 (hardcore, no tool needed): The case file's code prints <code>is_probably_prime(999999999989)</code> and gets an answer almost instantly. Why doesn't the size of this 12-digit number slow it down much, compared to trial division?</summary>
+        <div class="reveal">
+          <p>Every step of Miller&ndash;Rabin &mdash; factoring out the 2s from n&minus;1, and computing each <code>a</code><sup>u</sup> <code>mod n</code> &mdash; relies on the fast exponentiation trick from Case 03, which only needs about <code>log</code><sub>2</sub><code>(n)</code> squarings, not n of them. For a 12-digit number that's still only around 40 squarings per witness, times a handful of witnesses &mdash; a few hundred multiplications total, instead of trial-dividing by billions of candidates.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Back to the main file: <strong>The Prime Number Detective Agency</strong> case archive, Case&nbsp;08 &mdash; the final case. Revisit <a href="fermat_lie_en.html">the Fermat Lie Detector</a> (Case 07) or <a href="fast_exponentiation_en.html">the Doubling Superpower</a> (Case 03) for a refresher on the earlier clues this case relies on.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function modpow(base, exp, mod){
+    var result = 1;
+    base = base % mod;
+    while (exp > 0){
+      if (exp % 2 === 1){ result = (result * base) % mod; }
+      base = (base * base) % mod;
+      exp = Math.floor(exp / 2);
+    }
+    return result;
+  }
+
+  function factorOut2(n){
+    var u = n, l = 0;
+    while (u % 2 === 0){ u = u / 2; l++; }
+    return { u: u, l: l };
+  }
+
+  function smallestFactor(n){
+    if (n < 2) return null;
+    for (var i = 2; i * i <= n; i++){
+      if (n % i === 0) return i;
+    }
+    return null;
+  }
+
+  var CARMICHAEL = [561, 1105, 1729, 2465, 2821, 6601, 8911, 10585, 15841, 29341];
+
+  function millerRabinWitness(n, a, u, l){
+    var v = modpow(a, u, n);
+    var chain = [v];
+    if (v === 1 || v === n - 1){ return { caught: false, chain: chain }; }
+    var caught = false;
+    for (var i = 0; i < l - 1; i++){
+      v = (v * v) % n;
+      chain.push(v);
+      if (v === n - 1){ caught = false; break; }
+      caught = true;
+    }
+    return { caught: caught, chain: chain };
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var wRaw = document.getElementById('inW').value;
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 4){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on, detective</div><p>Pick a suspect n of 4 or more, so there is room for witnesses.</p></div>';
+      return;
+    }
+    if (n > 1000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Too big for this demo</div><p>Keep n at 1,000,000 or smaller so the browser can double-check the honest, slow way too.</p></div>';
+      return;
+    }
+    if (n % 2 === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Even numbers are too easy</div><p>Miller&ndash;Rabin (like Fermat) is meant for odd suspects &mdash; any even n bigger than 2 is obviously composite already. Pick an odd n.</p></div>';
+      return;
+    }
+
+    var parts = wRaw.split(',').map(function(s){ return parseInt(s.trim(), 10); }).filter(function(x){ return !isNaN(x); });
+    var witnesses = [];
+    for (var i = 0; i < parts.length && witnesses.length < 10; i++){
+      var a = parts[i];
+      if (a >= 2 && a <= n - 2 && witnesses.indexOf(a) === -1) witnesses.push(a);
+    }
+    if (witnesses.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">No valid witnesses</div><p>List a few whole numbers between 2 and ' + (n - 2) + ', separated by commas.</p></div>';
+      return;
+    }
+
+    var f = factorOut2(n - 1);
+    var html = '<p style="font-size:13.5px;color:var(--ink-soft);">n &minus; 1 = ' + (n - 1) + ' = ' + f.u + ' &times; 2<sup>' + f.l + '</sup>, so u = ' + f.u + ', l = ' + f.l + '.</p>';
+
+    var rows = [];
+    var guiltyCount = 0, vouchCount = 0, firstLiar = null;
+    for (var j = 0; j < witnesses.length; j++){
+      var w = witnesses[j];
+      var res = millerRabinWitness(n, w, f.u, f.l);
+      if (res.caught){ guiltyCount++; if (firstLiar === null) firstLiar = w; } else { vouchCount++; }
+      rows.push({ a: w, chain: res.chain, caught: res.caught });
+    }
+    var verdictComposite = (firstLiar !== null);
+
+    html += '<table class="trace"><thead><tr><th>witness a</th><th>squaring chain (v)</th><th>verdict</th></tr></thead><tbody>';
+    for (var k = 0; k < rows.length; k++){
+      var row = rows[k];
+      var vcell = row.caught ? '<td class="liar">illegal square root found</td>' : '<td class="odd">cleared (hit a legal &plusmn;1)</td>';
+      html += '<tr><td>' + row.a + '</td><td class="chainstr">' + row.chain.join(' &rarr; ') + '</td>' + vcell + '</tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="stats">' +
+      '<div class="stat fast"><div class="num">' + vouchCount + '</div><div class="lbl">witness(es) cleared n</div></div>' +
+      '<div class="stat slow"><div class="num">' + guiltyCount + '</div><div class="lbl">witness(es) found an illegal square root</div></div>' +
+    '</div>';
+
+    if (verdictComposite){
+      html += '<div class="answer-line">Cross-examination verdict: <b>n = ' + n + ' is DEFINITELY NOT PRIME</b> &mdash; witness a = ' + firstLiar + ' found an illegal square root along the way.</div>';
+    } else {
+      html += '<div class="answer-line">Cross-examination verdict: <b>n = ' + n + ' is PROBABLY PRIME</b> &mdash; every witness cleared it.</div>';
+    }
+
+    var factor = smallestFactor(n);
+    if (factor === null){
+      html += '<div class="callout fact"><div class="ctitle">Actual truth (checked the slow, sure way)</div><p>' + n + ' really is prime. No surprises here.</p></div>';
+    } else {
+      var other = n / factor;
+      html += '<div class="callout fact"><div class="ctitle">Actual truth (checked the slow, sure way)</div><p>' + n + ' = ' + factor + ' &times; ' + other + ' &mdash; it is composite.</p></div>';
+    }
+
+    if (verdictComposite && CARMICHAEL.indexOf(n) !== -1){
+      html += '<div class="callout tip"><div class="ctitle">Case closed on a Carmichael number</div><p>' + n + ' is a known Carmichael number &mdash; it can fool the plain Fermat test almost completely, but Miller&ndash;Rabin\'s stepping-stone check just exposed it anyway.</p></div>';
+    } else if (!verdictComposite && factor !== null){
+      html += '<div class="callout warn"><div class="ctitle">Whoa, a false alarm</div><p>Every witness you tried got fooled, even though ' + n + ' is composite! Try more witnesses, or different ones, to catch it &mdash; remember, at most 1 in 4 witnesses can be fooled, so a lucky few can occasionally sneak through.</p></div>';
+    }
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

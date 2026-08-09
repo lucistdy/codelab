@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Fermat Lie Detector: Catching Fake Primes Without Checking Every Suspect</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.liar{background:var(--alert-soft);color:var(--alert);font-weight:700;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input#inN{width:110px;}
+  .field input#inW{width:220px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Prime Detective Agency &middot; Skill Refresher &middot; Case 07</div>
+      <h1>The <em>Fermat Lie Detector</em></h1>
+      <p class="sub">In the main case file, this trick flies by in a few paragraphs. Here it is again &mdash; slowly, with small numbers, a real "wanted" impostor, and a tool you can interrogate suspects with yourself.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No advanced math needed</span>
+        <span class="stamp">Uses fast exponentiation (Case 03)</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The problem: you can't interrogate every suspect</h2></div>
+      <p class="lead">Back in Case 04, you learned the honest way to check if a number <code>n</code> is prime: try dividing it by every whole number up to &radic;n. If nothing divides evenly, it's prime. Simple &mdash; and for small numbers, totally fine.</p>
+      <p>But real secret codes (the kind protecting your passwords online) use primes that are <strong>hundreds of digits long</strong>. For a number that big, &radic;n is still a number with dozens of digits. Trying every possible divisor up to there wouldn't take minutes, or years &mdash; it would take longer than the universe has existed.</p>
+
+      <div class="callout warn">
+        <div class="ctitle">Why should you care?</div>
+        <p>Every time your phone connects to a secure website, it needs to find (or check) giant prime numbers, fast. If the only tool available was "try every divisor," the internet simply couldn't work at the speed it does. Detectives needed a shortcut &mdash; a way to get a confident answer without interrogating every single possible witness.</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">&radic;n</div><div class="lbl">divisors to check, doing it the honest way &mdash; hopeless once n has 100+ digits</div></div>
+        <div class="stat fast"><div class="num">~5</div><div class="lbl">quick "witness" checks, using the lie detector you're about to meet</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Fermat's strange, spooky pattern</h2></div>
+      <p class="lead">In the 1600s, a mathematician named <strong>Pierre de Fermat</strong> noticed something odd about prime numbers and clock math (<code>mod</code>, the remainder trick from Case 01 &mdash; if you need a refresher, it's just "what's left over after dividing").</p>
+      <p>Here's the pattern. Pick a prime number, say <code>p = 7</code>. Now pick <em>any</em> other whole number <code>a</code> from 1 to 6 &mdash; it doesn't matter which one. Raise it to the power <code>p &minus; 1</code> (that's power 6), then take the remainder after dividing by 7. Watch what happens, every single time:</p>
+
+      <table class="trace">
+        <thead><tr><th>witness a</th><th>a<sup>6</sup></th><th>a<sup>6</sup> mod 7</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>1</td><td class="odd">1</td></tr>
+          <tr><td>2</td><td>64</td><td class="odd">1</td></tr>
+          <tr><td>3</td><td>729</td><td class="odd">1</td></tr>
+          <tr><td>4</td><td>4,096</td><td class="odd">1</td></tr>
+          <tr><td>5</td><td>15,625</td><td class="odd">1</td></tr>
+          <tr><td>6</td><td>46,656</td><td class="odd">1</td></tr>
+        </tbody>
+      </table>
+
+      <p>Every single witness lands on exactly <strong>1</strong>. Not "close to 1," not "usually 1" &mdash; always, every time, no exceptions, for every prime number in the universe. Fermat proved this always happens whenever <code>p</code> is prime and <code>a</code> isn't a multiple of <code>p</code>. Mathematicians now call it <strong>Fermat's Little Theorem</strong>:</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Fermat's Little Theorem</div>
+        <p>If <code>p</code> is prime, then for any number <code>a</code> (a "witness") that shares no common factor with <code>p</code>, it must be true that:</p>
+        <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">a<sup>p&minus;1</sup> mod p <strong>=</strong> 1</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Flipping the rule into a lie detector</h2></div>
+      <p class="lead">Here's the detective move: every real prime <strong>always</strong> obeys Fermat's rule. So &mdash; what happens if you test some mystery number <code>n</code>, and it <strong>breaks</strong> the rule?</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The rule, if n really is prime</div>
+        <p>a<sup>n&minus;1</sup> mod n <strong>always equals 1</strong>, for any witness a.</p>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-family:var(--font-stamp);letter-spacing:.06em;font-size:12px;">FLIP IT AROUND &darr;</p>
+      <div class="callout warn">
+        <div class="ctitle">The catch, if n breaks the rule</div>
+        <p>If you find even <strong>one</strong> witness a where a<sup>n&minus;1</sup> mod n <strong>is not</strong> 1, then n is <strong>guaranteed, 100%, no-question-about-it</strong> not prime.</p>
+      </div>
+
+      <p>This is the whole trick! You don't need to check every possible divisor. You just need to catch <em>one</em> witness telling on it. Grab a random number <code>a</code>, do the calculation, and if it doesn't equal 1, case closed &mdash; <code>n</code> is an impostor, not a real prime. This is exactly the same "if the rule is always true for real primes, and this one broke it, it can't be a real prime" logic detectives use to rule out suspects with an alibi that doesn't add up.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>There's one thing this trick can't do: if a witness <em>doesn't</em> catch anything (the result <em>is</em> 1), that's not proof n is prime &mdash; it just means this one witness didn't rat it out. Keep that thought, you'll need it in Level 6.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Building the lie detector in Python</h2></div>
+      <p class="lead">Here's the real function from the case file. It calls in several random witnesses, one at a time, and only clears <code>n</code> if every single one of them fails to find anything suspicious.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fermat_test.py</div>
+        <pre><code><span class="kw">import</span> random
+
+<span class="kw">def</span> fermat_test(n, witness_count=<span class="nu">5</span>):
+    <span class="kw">if</span> n == <span class="nu">0</span> <span class="kw">or</span> n == <span class="nu">1</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> range(witness_count):
+        a = random.randrange(<span class="nu">2</span>, n - <span class="nu">1</span>)      <span class="cm"># pick a random witness</span>
+        <span class="kw">if</span> pow(a, n - <span class="nu">1</span>, n) != <span class="nu">1</span>:
+            <span class="kw">return</span> <span class="kw">False</span>                     <span class="cm"># the witness blew the whistle -- n is not prime</span>
+    <span class="kw">return</span> <span class="kw">True</span>                              <span class="cm"># every witness let it slide -- n is probably prime</span></code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">def fermat_test(n, witness_count=5):</div>
+          <div class="annot-note"><span>Interrogate the suspect <b>n</b>. By default we call in <b>5</b> witnesses &mdash; more witnesses means it's harder for an impostor to sneak past all of them.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if n == 0 or n == 1:
+    return False</div>
+          <div class="annot-note"><span>0 and 1 aren't prime by definition &mdash; toss those cases out before wasting anyone's time.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">a = random.randrange(2, n - 1)</div>
+          <div class="annot-note"><span>Pull in a random witness, somewhere between 2 and <b>n&minus;2</b>.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if pow(a, n - 1, n) != 1:
+    return False</div>
+          <div class="annot-note"><span>This is the Fermat check from Level 3. Notice <code>pow(a, n-1, n)</code> is Python's built-in <b>fast exponentiation</b> &mdash; the same doubling trick from <a href="fast_exponentiation_en.html">the Doubling Superpower page</a> (Case 03). It's why this whole test finishes almost instantly, even for enormous n.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">return True</div>
+          <div class="annot-note"><span>Nobody blew the whistle after <b>witness_count</b> tries &mdash; n is <b>probably</b> prime.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Catching a liar red-handed: n = 15</h2></div>
+      <p class="lead">Let's run the interrogation by hand on <code>n = 15</code> (which we happen to know is <code>3 &times; 5</code> &mdash; definitely not prime) using witness <code>a = 2</code>. We need <code>2</code><sup>14</sup> mod 15, computed with the same square-and-double trick from Case 03.</p>
+
+      <table class="trace">
+        <thead><tr><th>Round</th><th>b</th><th>b odd?</th><th>action</th><th>base &rarr; base&sup2; mod 15</th><th>result</th><th>next b</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>14</td><td class="even">no</td><td>skip</td><td>2 &rarr; 4</td><td>1</td><td>7</td></tr>
+          <tr><td>2</td><td>7</td><td class="odd">yes</td><td>result = 1&times;4 mod 15 = <b>4</b></td><td>4 &rarr; 1</td><td>4</td><td>3</td></tr>
+          <tr><td>3</td><td>3</td><td class="odd">yes</td><td>result = 4&times;1 mod 15 = <b>4</b></td><td>1 &rarr; 1</td><td>4</td><td>1</td></tr>
+          <tr><td>4</td><td>1</td><td class="odd">yes</td><td>result = 4&times;1 mod 15 = <b>4</b></td><td>1 &rarr; 1</td><td>4</td><td>0 &mdash; stop</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="7">2<sup>14</sup> mod 15 = <span style="font-size:16px;">4</span></td></tr></tfoot>
+      </table>
+
+      <p><strong>4 is not 1</strong> &mdash; witness <code>a = 2</code> just blew the whistle! The lie detector correctly declares <code>15</code> guilty: not prime. Case closed, and honestly, we already knew that (<code>15 = 3 &times; 5</code>). The real test is what happens with a <em>genuine</em> prime, so nobody gets falsely accused.</p>
+
+      <p>Let's re-run the same interrogation on <code>n = 13</code> (a real prime), same witness <code>a = 2</code>. We need <code>2</code><sup>12</sup> mod 13:</p>
+
+      <table class="trace">
+        <thead><tr><th>Round</th><th>b</th><th>b odd?</th><th>action</th><th>base &rarr; base&sup2; mod 13</th><th>result</th><th>next b</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>12</td><td class="even">no</td><td>skip</td><td>2 &rarr; 4</td><td>1</td><td>6</td></tr>
+          <tr><td>2</td><td>6</td><td class="even">no</td><td>skip</td><td>4 &rarr; 3</td><td>1</td><td>3</td></tr>
+          <tr><td>3</td><td>3</td><td class="odd">yes</td><td>result = 1&times;3 mod 13 = <b>3</b></td><td>3 &rarr; 9</td><td>3</td><td>1</td></tr>
+          <tr><td>4</td><td>1</td><td class="odd">yes</td><td>result = 3&times;9 mod 13 = <b>1</b></td><td>9 &rarr; 3</td><td>1</td><td>0 &mdash; stop</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="7">2<sup>12</sup> mod 13 = <span style="font-size:16px;">1</span></td></tr></tfoot>
+      </table>
+
+      <p>Exactly 1, just like Fermat promised. Witness <code>a = 2</code> found nothing wrong &mdash; and this time, that's the correct call, because 13 really is prime.</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>The perfect impostor: Carmichael numbers</h2></div>
+      <p class="lead">Remember the loose end from Level 3: passing the test doesn't <em>prove</em> a number is prime, it just means one witness didn't catch anything. Most of the time that's not a big deal &mdash; but a few numbers are professional con artists.</p>
+
+      <div class="callout warn">
+        <div class="ctitle">Wanted &middot; 561</div>
+        <p><code>561 = 3 &times; 11 &times; 17</code> &mdash; a bona fide composite number that fools <strong>nearly every</strong> witness in the Fermat lie detector. For every witness <code>a</code> that shares no common factor with it, <code>a</code><sup>560</sup> <code>mod 561 = 1</code> holds, acting exactly like a real prime.</p>
+      </div>
+
+      <p>Mathematicians call this breed of "perfect impostor" a <strong>Carmichael number</strong>. It's not that Fermat's theorem is wrong &mdash; it's that a Carmichael number has cleverly arranged its factors (in this case <code>3</code>, <code>11</code>, and <code>17</code>) so that the disguise works against almost every possible witness. Try witness after witness, and it keeps passing &mdash; until, by pure bad luck for the impostor, you happen to pick a witness that <em>is</em> secretly one of its hidden factors (like <code>a = 3</code>, <code>a = 11</code>, or <code>a = 17</code>). That witness always catches it instantly, because a number can never disguise itself from one of its own factors.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>This is exactly why <code>fermat_test</code> uses <em>several random</em> witnesses instead of just one &mdash; and why real cryptography software doesn't rely on the Fermat test alone. Case 08 in the main file introduces the <strong>Miller&ndash;Rabin test</strong>, a tougher cross-examination that catches Carmichael numbers almost every time.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you run the interrogation</h2></div>
+      <p class="lead">Pick a suspect number <code>n</code> and a list of witnesses to question (comma-separated). The tool runs the exact same Fermat check as the Python code above, and also double-checks the honest, slow way so you can see if the lie detector got it right.</p>
+
+      <div class="widget">
+        <h3>Fermat lie detector</h3>
+        <div class="hint">Try the default first &mdash; 561 was the case file's most wanted impostor. Then try witnesses that include 3, 11, or 17 to see it finally get caught. Other suspects worth interrogating: 97 (an honest prime), 91 = 7&times;13 (an easy catch), and 341 = 11&times;31 (try witness 2 alone, then add witness 3&hellip;).</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n (suspect)</label><input type="number" id="inN" value="561" min="4" max="1000000"></div>
+          <div class="field"><label for="inW">witnesses (a, comma-separated)</label><input type="text" id="inW" value="2,5,7,13"></div>
+          <div class="field"><button class="btn" id="runBtn">Interrogate</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Quick challenges (no peeking until you've tried)</h2></div>
+      <p class="lead">Work these out on paper (or in your head) before you check with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Use p = 5 (prime) and witness a = 2. Does Fermat's theorem hold?</summary>
+        <div class="reveal">
+          <p>We need <code>2</code><sup>4</sup> mod 5. <code>2</code><sup>4</sup><code> = 16</code>, and <code>16 mod 5 = 1</code>. Yes &mdash; exactly what the theorem promises, since 5 really is prime.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Test n = 9 with witness a = 2. What does the lie detector conclude?</summary>
+        <div class="reveal">
+          <p>We need <code>2</code><sup>8</sup> mod 9. <code>2</code><sup>8</sup><code> = 256</code>, and <code>256 mod 9 = 4</code> (since <code>9 &times; 28 = 252</code>, leaving 4). Since <code>4 &ne; 1</code>, witness a = 2 blows the whistle: <strong>9 is not prime</strong>. Correct &mdash; <code>9 = 3 &times; 3</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why can the lie detector only ever say "probably prime," never "100% definitely prime," even when every witness passes?</summary>
+        <div class="reveal">
+          <p>Passing doesn't <em>prove</em> anything &mdash; it just means that particular witness didn't happen to catch anything. There's no way to rule out that a smarter impostor (a Carmichael number, like 561) is fooling every witness you happened to pick. Only a <strong>failing</strong> witness gives 100% proof &mdash; a passing witness is just one more vote of confidence.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: 561 = 3 &times; 11 &times; 17. In your own words, why do detectives call it a "perfect impostor"?</summary>
+        <div class="reveal">
+          <p>Because for almost every valid witness a (any a that doesn't happen to be 3, 11, or 17, or a multiple of them), <code>a</code><sup>560</sup> <code>mod 561</code> comes out to exactly 1 &mdash; behaving just like a genuine prime would, even though 561 is clearly composite. It can pass interrogation after interrogation, right up until you get lucky and pick one of its own hidden factors as a witness.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5 (use the tool above): Interrogate n = 341 with only witness 2. Then add witness 3 and re-run. What happened?</summary>
+        <div class="reveal">
+          <p>With just witness <code>a = 2</code>, <code>341</code> passes &mdash; <code>2</code><sup>340</sup> <code>mod 341 = 1</code> &mdash; even though <code>341 = 11 &times; 31</code> is composite! (341 is actually famous among mathematicians as the smallest number that fools witness 2 this way.) Add witness <code>a = 3</code>, though, and it gets caught immediately, since <code>3</code><sup>340</sup> <code>mod 341 &ne; 1</code>. The lesson: never trust a single witness &mdash; the more (random) witnesses you call in, the smaller the chance any impostor slips through.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Back to the main file: <strong>The Prime Number Detective Agency</strong> case archive, Case&nbsp;07. Case&nbsp;08 reveals the Miller&ndash;Rabin cross-examination &mdash; a tougher interrogation that catches the Carmichael impostors this lie detector misses.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function gcd(a, b){
+    while (b){ var t = b; b = a % b; a = t; }
+    return a;
+  }
+
+  function modpow(base, exp, mod){
+    var result = 1;
+    base = base % mod;
+    while (exp > 0){
+      if (exp % 2 === 1){ result = (result * base) % mod; }
+      base = (base * base) % mod;
+      exp = Math.floor(exp / 2);
+    }
+    return result;
+  }
+
+  function smallestFactor(n){
+    if (n < 2) return null;
+    for (var i = 2; i * i <= n; i++){
+      if (n % i === 0) return i;
+    }
+    return null;
+  }
+
+  var CARMICHAEL = [561, 1105, 1729, 2465, 2821, 6601, 8911, 10585, 15841, 29341];
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var wRaw = document.getElementById('inW').value;
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 4){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on, detective</div><p>Pick a suspect n of 4 or more, so there is room for witnesses.</p></div>';
+      return;
+    }
+    if (n > 1000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Too big for this demo</div><p>Keep n at 1,000,000 or smaller so the browser can double-check the honest, slow way too.</p></div>';
+      return;
+    }
+
+    var parts = wRaw.split(',').map(function(s){ return parseInt(s.trim(), 10); }).filter(function(x){ return !isNaN(x); });
+    var witnesses = [];
+    for (var i = 0; i < parts.length && witnesses.length < 12; i++){
+      var a = parts[i];
+      if (a >= 2 && a <= n - 2 && witnesses.indexOf(a) === -1) witnesses.push(a);
+    }
+    if (witnesses.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">No valid witnesses</div><p>List a few whole numbers between 2 and ' + (n - 2) + ', separated by commas.</p></div>';
+      return;
+    }
+
+    var rows = [];
+    var guiltyCount = 0, vouchCount = 0, firstLiar = null;
+    for (var j = 0; j < witnesses.length; j++){
+      var w = witnesses[j];
+      var r = modpow(w, n - 1, n);
+      var passed = (r === 1);
+      if (passed){ vouchCount++; } else { guiltyCount++; if (firstLiar === null) firstLiar = w; }
+      rows.push({ a: w, r: r, passed: passed });
+    }
+    var verdictComposite = (firstLiar !== null);
+
+    var html = '';
+    html += '<table class="trace"><thead><tr><th>witness a</th><th>a<sup>' + (n - 1) + '</sup> mod ' + n + '</th><th>verdict</th></tr></thead><tbody>';
+    for (var k = 0; k < rows.length; k++){
+      var row = rows[k];
+      var vcell = row.passed ? '<td class="odd">vouches (= 1)</td>' : '<td class="liar">blows the whistle (&ne; 1)</td>';
+      html += '<tr><td>' + row.a + '</td><td>' + row.r + '</td>' + vcell + '</tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="stats">' +
+      '<div class="stat fast"><div class="num">' + vouchCount + '</div><div class="lbl">witness(es) vouched (result = 1)</div></div>' +
+      '<div class="stat slow"><div class="num">' + guiltyCount + '</div><div class="lbl">witness(es) blew the whistle (result &ne; 1)</div></div>' +
+    '</div>';
+
+    if (verdictComposite){
+      html += '<div class="answer-line">Lie detector\'s verdict: <b>n = ' + n + ' is DEFINITELY NOT PRIME</b> &mdash; witness a = ' + firstLiar + ' caught it red-handed.</div>';
+    } else {
+      html += '<div class="answer-line">Lie detector\'s verdict: <b>n = ' + n + ' is PROBABLY PRIME</b> &mdash; every witness vouched for it.</div>';
+    }
+
+    var factor = smallestFactor(n);
+    if (factor === null){
+      html += '<div class="callout fact"><div class="ctitle">Actual truth (checked the slow, sure way)</div><p>' + n + ' really is prime. No surprises here.</p></div>';
+    } else {
+      var other = n / factor;
+      html += '<div class="callout fact"><div class="ctitle">Actual truth (checked the slow, sure way)</div><p>' + n + ' = ' + factor + ' &times; ' + other + ' &mdash; it is composite.</p></div>';
+    }
+
+    if (!verdictComposite && factor !== null){
+      var carmMsg = CARMICHAEL.indexOf(n) !== -1
+        ? 'This is a known <b>Carmichael number</b> &mdash; a genuine perfect impostor. It fools almost every witness that shares no common factor with it. Try adding a witness that IS a factor of ' + n + ' (like ' + factor + ') to see it finally get caught.'
+        : 'Every witness you tried got fooled, even though ' + n + ' is composite! Add more witnesses, or try different ones, to catch it.';
+      html += '<div class="callout warn"><div class="ctitle">Whoa, a false alarm</div><p>' + carmMsg + '</p></div>';
+    }
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>费马测谎仪：不用挨个审问，也能抓到假质数</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.liar{background:var(--alert-soft);color:var(--alert);font-weight:700;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input#inN{width:110px;}
+  .field input#inW{width:220px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">质数侦探社 &middot; 技能强化教程 &middot; 案卷 07</div>
+      <h1><em>费马测谎仪</em></h1>
+      <p class="sub">在正式案卷里，这个技巧几段话就带过去了。这里我们把它重新讲一遍——放慢节奏，用小数字打比方，请出那个真实存在的"通缉犯"，外加一个可以让你亲自审问嫌疑人的小工具。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要高深数学</span>
+        <span class="stamp">用到快速幂（案卷 03）</span>
+        <span class="stamp">可交互</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>难题：不可能挨个审问所有嫌疑人</h2></div>
+      <p class="lead">在案卷 04 里，你学过判断一个数 <code>n</code> 是不是质数的老实办法：用从 2 到 &radic;n 的每一个整数去试除。只要没有一个能整除，它就是质数。简单直接——数字小的时候完全没问题。</p>
+      <p>但真正的加密系统（保护你的密码和聊天记录的那种）用的质数常常有<strong>几百位数字那么长</strong>。这么大的数字，它的 &radic;n 也依然是个几十位的天文数字。把它所有可能的除数都试一遍，不是要花几分钟或者几年，而是要比宇宙存在的时间还要长。</p>
+
+      <div class="callout warn">
+        <div class="ctitle">这跟你有什么关系？</div>
+        <p>每次手机连上一个安全网站，背后都要飞快地找到（或者验证）巨大的质数。如果唯一的办法只有"挨个试除"，互联网根本不可能跑得这么快。侦探们需要一条捷径——不用审问每一个可能的证人，也能给出足够可信的结论。</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">&radic;n</div><div class="lbl">用老实办法要试的除数个数——n 有 100+ 位时完全不现实</div></div>
+        <div class="stat fast"><div class="num">~5</div><div class="lbl">用接下来要学的测谎仪，只需几次快速的"证人问询"</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>费马发现的诡异规律</h2></div>
+      <p class="lead">17 世纪，数学家<strong>皮埃尔·德·费马</strong>发现了质数和"钟表数学"（也就是 <code>mod</code>，案卷 01 里讲过的余数把戏——如果忘了，它就是"除完之后剩下多少"）之间一个奇怪的规律。</p>
+      <p>规律是这样的：随便挑一个质数，比如 <code>p = 7</code>。再随便挑一个从 1 到 6 的整数 <code>a</code>——挑哪个都无所谓。把它算到 <code>p &minus; 1</code> 次方（也就是 6 次方），再除以 7 取余数。看看每次会发生什么：</p>
+
+      <table class="trace">
+        <thead><tr><th>证人 a</th><th>a<sup>6</sup></th><th>a<sup>6</sup> mod 7</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>1</td><td class="odd">1</td></tr>
+          <tr><td>2</td><td>64</td><td class="odd">1</td></tr>
+          <tr><td>3</td><td>729</td><td class="odd">1</td></tr>
+          <tr><td>4</td><td>4,096</td><td class="odd">1</td></tr>
+          <tr><td>5</td><td>15,625</td><td class="odd">1</td></tr>
+          <tr><td>6</td><td>46,656</td><td class="odd">1</td></tr>
+        </tbody>
+      </table>
+
+      <p>每一个证人都恰好落在 <strong>1</strong> 上。不是"接近 1"，也不是"大多数时候是 1"——而是每一次、毫无例外，对宇宙里任何一个质数都成立。费马证明了：只要 <code>p</code> 是质数，并且 <code>a</code> 不是 <code>p</code> 的倍数，这个规律就一定成立。后人把它叫做<strong>费马小定理</strong>：</p>
+
+      <div class="callout tip">
+        <div class="ctitle">费马小定理</div>
+        <p>如果 <code>p</code> 是质数，那么对任何一个和 <code>p</code> 没有公因数的数字 <code>a</code>（也就是"证人"），一定有：</p>
+        <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">a<sup>p&minus;1</sup> mod p <strong>=</strong> 1</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>把规律反过来，变成一台测谎仪</h2></div>
+      <p class="lead">这里是侦探的关键一步：任何真正的质数<strong>永远</strong>遵守费马的规律。那么——如果我们审问一个神秘数字 <code>n</code>，结果它<strong>违反</strong>了这条规律，会怎么样？</p>
+
+      <div class="callout tip">
+        <div class="ctitle">规律：如果 n 真的是质数</div>
+        <p>a<sup>n&minus;1</sup> mod n <strong>永远等于 1</strong>，不管选哪个证人 a。</p>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-family:var(--font-stamp);letter-spacing:.06em;font-size:12px;">反过来想 &darr;</p>
+      <div class="callout warn">
+        <div class="ctitle">破绽：如果 n 违反了规律</div>
+        <p>只要你找到<strong>哪怕一个</strong>证人 a，使得 a<sup>n&minus;1</sup> mod n <strong>不等于</strong> 1，那么 n <strong>百分之百、毫无悬念</strong>不是质数。</p>
+      </div>
+
+      <p>这就是整个诀窍！你不需要检查每一个可能的除数，只需要抓到<em>一个</em>证人举报它。随便找个数字 <code>a</code> 算一算，如果结果不是 1，案子就结了——<code>n</code> 是个冒牌货，不是真正的质数。这跟侦探常用的逻辑一模一样："真凶的不在场证明永远说得通；这个人的不在场证明说不通；所以他不可能是真凶。"</p>
+
+      <div class="callout fact">
+        <div class="ctitle">冷案档案</div>
+        <p>但这招也有做不到的事：如果某个证人<em>没有</em>抓到任何破绽（结果<em>确实</em>是 1），这并<strong>不能证明</strong> n 是质数——只能说明这一个证人没举报而已。记住这句话，第六关会用到。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>用 Python 搭建这台测谎仪</h2></div>
+      <p class="lead">下面是案卷里的真实代码。它会随机请来好几位证人，一个接一个盘问，只有当每一位证人都没查出问题时，才会放行 <code>n</code>。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fermat_test.py</div>
+        <pre><code><span class="kw">import</span> random
+
+<span class="kw">def</span> fermat_test(n, witness_count=<span class="nu">5</span>):
+    <span class="kw">if</span> n == <span class="nu">0</span> <span class="kw">or</span> n == <span class="nu">1</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> range(witness_count):
+        a = random.randrange(<span class="nu">2</span>, n - <span class="nu">1</span>)      <span class="cm"># 随机找一个证人</span>
+        <span class="kw">if</span> pow(a, n - <span class="nu">1</span>, n) != <span class="nu">1</span>:
+            <span class="kw">return</span> <span class="kw">False</span>                     <span class="cm"># 证人举报了，n 不是质数</span>
+    <span class="kw">return</span> <span class="kw">True</span>                              <span class="cm"># 所有证人都放行，n 可能是质数</span></code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">def fermat_test(n, witness_count=5):</div>
+          <div class="annot-note"><span>审问嫌疑人 <b>n</b>。默认请来 <b>5</b> 位证人——证人越多，冒牌货想蒙混过所有人就越难。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if n == 0 or n == 1:
+    return False</div>
+          <div class="annot-note"><span>0 和 1 根据定义都不是质数——先把这些情况排除掉，省得白费功夫。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">a = random.randrange(2, n - 1)</div>
+          <div class="annot-note"><span>随机请来一位证人，取值在 2 到 <b>n&minus;2</b> 之间。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if pow(a, n - 1, n) != 1:
+    return False</div>
+          <div class="annot-note"><span>这就是第三关讲的费马判定。注意 <code>pow(a, n-1, n)</code> 正是 Python 内置的<b>快速幂</b>——和<a href="fast_exponentiation_zh.html">《翻倍的超能力》</a>（案卷 03）里那个倍增技巧完全一样。这也是为什么就算 n 大得离谱，这一行代码也几乎瞬间跑完。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">return True</div>
+          <div class="annot-note"><span>问了 <b>witness_count</b> 位证人，没人举报——n <b>可能</b>是质数。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>当场抓包：n = 15</h2></div>
+      <p class="lead">我们手动审问一下 <code>n = 15</code>（我们已经知道它是 <code>3 &times; 5</code>，绝对不是质数），用证人 <code>a = 2</code>。需要算的是 <code>2</code><sup>14</sup> mod 15，用的是案卷 03 里那套"平方再翻倍"的算法。</p>
+
+      <table class="trace">
+        <thead><tr><th>轮次</th><th>b</th><th>b 是奇数？</th><th>动作</th><th>base &rarr; base&sup2; mod 15</th><th>result</th><th>下一个 b</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>14</td><td class="even">否</td><td>跳过</td><td>2 &rarr; 4</td><td>1</td><td>7</td></tr>
+          <tr><td>2</td><td>7</td><td class="odd">是</td><td>result = 1&times;4 mod 15 = <b>4</b></td><td>4 &rarr; 1</td><td>4</td><td>3</td></tr>
+          <tr><td>3</td><td>3</td><td class="odd">是</td><td>result = 4&times;1 mod 15 = <b>4</b></td><td>1 &rarr; 1</td><td>4</td><td>1</td></tr>
+          <tr><td>4</td><td>1</td><td class="odd">是</td><td>result = 4&times;1 mod 15 = <b>4</b></td><td>1 &rarr; 1</td><td>4</td><td>0 &mdash; 停止</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="7">2<sup>14</sup> mod 15 = <span style="font-size:16px;">4</span></td></tr></tfoot>
+      </table>
+
+      <p><strong>4 不等于 1</strong>——证人 <code>a = 2</code> 当场举报！测谎仪正确判定 <code>15</code> 有罪：不是质数。案子结了，其实我们本来就知道（<code>15 = 3 &times; 5</code>）。真正的考验，是遇到<em>真正的</em>质数时会怎样，可别冤枉了好人。</p>
+
+      <p>我们对 <code>n = 13</code>（一个真正的质数）用同一位证人 <code>a = 2</code> 再审一遍。需要算 <code>2</code><sup>12</sup> mod 13：</p>
+
+      <table class="trace">
+        <thead><tr><th>轮次</th><th>b</th><th>b 是奇数？</th><th>动作</th><th>base &rarr; base&sup2; mod 13</th><th>result</th><th>下一个 b</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>12</td><td class="even">否</td><td>跳过</td><td>2 &rarr; 4</td><td>1</td><td>6</td></tr>
+          <tr><td>2</td><td>6</td><td class="even">否</td><td>跳过</td><td>4 &rarr; 3</td><td>1</td><td>3</td></tr>
+          <tr><td>3</td><td>3</td><td class="odd">是</td><td>result = 1&times;3 mod 13 = <b>3</b></td><td>3 &rarr; 9</td><td>3</td><td>1</td></tr>
+          <tr><td>4</td><td>1</td><td class="odd">是</td><td>result = 3&times;9 mod 13 = <b>1</b></td><td>9 &rarr; 3</td><td>1</td><td>0 &mdash; 停止</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="7">2<sup>12</sup> mod 13 = <span style="font-size:16px;">1</span></td></tr></tfoot>
+      </table>
+
+      <p>正好是 1，跟费马承诺的一模一样。证人 <code>a = 2</code> 什么破绽都没查到——这次它没查错，因为 13 真的是质数。</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>完美骗子：卡迈克尔数</h2></div>
+      <p class="lead">还记得第三关留下的伏笔吗：测试通过并不能<em>证明</em>一个数是质数，只能说明这一位证人没查出问题。大多数时候这不是什么大事——但有那么几个数字，是职业骗子。</p>
+
+      <div class="callout warn">
+        <div class="ctitle">通缉令 &middot; 561</div>
+        <p><code>561 = 3 &times; 11 &times; 17</code>——一个不折不扣的合数，却能骗过费马测谎仪的<strong>几乎所有</strong>证人。对每一个和它没有公因数的证人 <code>a</code>，都满足 <code>a</code><sup>560</sup> <code>mod 561 = 1</code>，表现得和真正的质数一模一样。</p>
+      </div>
+
+      <p>数学家把这种"完美骗子"叫做<strong>卡迈克尔数</strong>。这不是说费马定理错了——而是卡迈克尔数恰好把自己的因数（这里是 <code>3</code>、<code>11</code>、<code>17</code>）安排得非常巧妙，让这套伪装几乎能骗过所有可能的证人。换一个证人再试，它照样过关——直到某次，冒牌货运气不好，你恰好挑中了它自己藏起来的一个因数（比如 <code>a = 3</code>、<code>a = 11</code> 或 <code>a = 17</code>）当证人。那位证人会立刻抓到它，因为一个数字永远没办法在自己的因数面前伪装。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">冷案档案</div>
+        <p>这正是 <code>fermat_test</code> 要请来<em>好几位随机</em>证人、而不是只问一个的原因——也是真正的加密软件不会只依赖费马测试的原因。主案卷案卷 08 会介绍<strong>Miller&ndash;Rabin 测试</strong>，一套更狠的盘问方式，几乎每次都能抓到卡迈克尔数这种冒牌货。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7：互动环节 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>轮到你来审问了</h2></div>
+      <p class="lead">挑一个嫌疑数字 <code>n</code>，再列出一批想盘问的证人（用逗号隔开）。这个工具会运行和上面 Python 代码完全一样的费马判定，同时也会用老实、缓慢的办法再核实一遍，让你看看测谎仪判断得对不对。</p>
+
+      <div class="widget">
+        <h3>费马测谎仪</h3>
+        <div class="hint">先试试默认值——561 就是案卷里那个头号通缉犯。然后把证人换成包含 3、11 或 17 的组合，看它最终是怎么被抓到的。还可以审问一下：97（一个诚实的质数）、91 = 7&times;13（很容易被抓到）、以及 341 = 11&times;31（先只用证人 2 试一次，再加上证人 3……）。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n（嫌疑人）</label><input type="number" id="inN" value="561" min="4" max="1000000"></div>
+          <div class="field"><label for="inW">证人（a，用逗号隔开）</label><input type="text" id="inW" value="2,5,7,13"></div>
+          <div class="field"><button class="btn" id="runBtn">开始审问</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>小测验（先自己做，别急着看答案）</h2></div>
+      <p class="lead">用纸笔（或者心算）先做一遍，再用上面的工具核对答案。</p>
+
+      <details>
+        <summary>题目 1：用 p = 5（质数）和证人 a = 2。费马小定理成立吗？</summary>
+        <div class="reveal">
+          <p>需要算 <code>2</code><sup>4</sup> mod 5。<code>2</code><sup>4</sup><code> = 16</code>，<code>16 mod 5 = 1</code>。成立——正如定理承诺的那样，因为 5 真的是质数。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>题目 2：用证人 a = 2 测试 n = 9，测谎仪会得出什么结论？</summary>
+        <div class="reveal">
+          <p>需要算 <code>2</code><sup>8</sup> mod 9。<code>2</code><sup>8</sup><code> = 256</code>，<code>256 mod 9 = 4</code>（因为 <code>9 &times; 28 = 252</code>，剩下 4）。由于 <code>4 &ne; 1</code>，证人 a = 2 当场举报：<strong>9 不是质数</strong>。判断正确——<code>9 = 3 &times; 3</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>题目 3：为什么就算每一位证人都放行，测谎仪也只能说"可能是质数"，不能说"百分百确定是质数"？</summary>
+        <div class="reveal">
+          <p>放行并不能<em>证明</em>什么——只能说明这位证人恰好没抓到破绽。没有办法排除有更聪明的冒牌货（比如卡迈克尔数 561）刚好骗过了你挑的所有证人。只有<strong>举报</strong>才是百分百的铁证；放行只是又多了一票信任而已。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>题目 4：561 = 3 &times; 11 &times; 17。用你自己的话说说，为什么侦探们叫它"完美骗子"？</summary>
+        <div class="reveal">
+          <p>因为对几乎每一个合法的证人 a（只要不是 3、11、17 或它们的倍数），<code>a</code><sup>560</sup> <code>mod 561</code> 都恰好等于 1——表现得和真正的质数一模一样，尽管 561 明明是合数。它能一次又一次通过审讯，直到你运气好，挑中了它自己藏起来的某个因数当证人。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>题目 5（用上面的工具）：只用证人 2 审问 n = 341，然后再加上证人 3 重新运行。发生了什么？</summary>
+        <div class="reveal">
+          <p>只用证人 <code>a = 2</code> 时，<code>341</code> 通过了测试——<code>2</code><sup>340</sup> <code>mod 341 = 1</code>——尽管 <code>341 = 11 &times; 31</code> 明明是合数！（341 在数学家中很有名，是能骗过证人 2 的最小数字。）但只要加上证人 <code>a = 3</code>，它立刻就露馅了，因为 <code>3</code><sup>340</sup> <code>mod 341 &ne; 1</code>。教训是：永远别只信一个证人——请来的（随机）证人越多，冒牌货蒙混过关的可能性就越小。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>回到主案卷：<strong>《质数侦探社》</strong>案卷档案，案卷&nbsp;07。案卷&nbsp;08 会揭晓 Miller&ndash;Rabin 交叉盘问法——一套更狠的审讯方式，能抓到这台测谎仪漏掉的卡迈克尔冒牌货。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function gcd(a, b){
+    while (b){ var t = b; b = a % b; a = t; }
+    return a;
+  }
+
+  function modpow(base, exp, mod){
+    var result = 1;
+    base = base % mod;
+    while (exp > 0){
+      if (exp % 2 === 1){ result = (result * base) % mod; }
+      base = (base * base) % mod;
+      exp = Math.floor(exp / 2);
+    }
+    return result;
+  }
+
+  function smallestFactor(n){
+    if (n < 2) return null;
+    for (var i = 2; i * i <= n; i++){
+      if (n % i === 0) return i;
+    }
+    return null;
+  }
+
+  var CARMICHAEL = [561, 1105, 1729, 2465, 2821, 6601, 8911, 10585, 15841, 29341];
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var wRaw = document.getElementById('inW').value;
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 4){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下，侦探</div><p>请选一个 4 以上的嫌疑数字 n，这样才有空间容纳证人。</p></div>';
+      return;
+    }
+    if (n > 1000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">这个演示装不下这么大的数</div><p>把 n 控制在 1,000,000 以内，这样浏览器才能用老实、缓慢的办法再核实一遍。</p></div>';
+      return;
+    }
+
+    var parts = wRaw.split(',').map(function(s){ return parseInt(s.trim(), 10); }).filter(function(x){ return !isNaN(x); });
+    var witnesses = [];
+    for (var i = 0; i < parts.length && witnesses.length < 12; i++){
+      var a = parts[i];
+      if (a >= 2 && a <= n - 2 && witnesses.indexOf(a) === -1) witnesses.push(a);
+    }
+    if (witnesses.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">没有有效的证人</div><p>请列出几个 2 到 ' + (n - 2) + ' 之间的整数，用逗号隔开。</p></div>';
+      return;
+    }
+
+    var rows = [];
+    var guiltyCount = 0, vouchCount = 0, firstLiar = null;
+    for (var j = 0; j < witnesses.length; j++){
+      var w = witnesses[j];
+      var r = modpow(w, n - 1, n);
+      var passed = (r === 1);
+      if (passed){ vouchCount++; } else { guiltyCount++; if (firstLiar === null) firstLiar = w; }
+      rows.push({ a: w, r: r, passed: passed });
+    }
+    var verdictComposite = (firstLiar !== null);
+
+    var html = '';
+    html += '<table class="trace"><thead><tr><th>证人 a</th><th>a<sup>' + (n - 1) + '</sup> mod ' + n + '</th><th>结论</th></tr></thead><tbody>';
+    for (var k = 0; k < rows.length; k++){
+      var row = rows[k];
+      var vcell = row.passed ? '<td class="odd">放行（= 1）</td>' : '<td class="liar">举报（&ne; 1）</td>';
+      html += '<tr><td>' + row.a + '</td><td>' + row.r + '</td>' + vcell + '</tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="stats">' +
+      '<div class="stat fast"><div class="num">' + vouchCount + '</div><div class="lbl">位证人放行（结果 = 1）</div></div>' +
+      '<div class="stat slow"><div class="num">' + guiltyCount + '</div><div class="lbl">位证人举报（结果 &ne; 1）</div></div>' +
+    '</div>';
+
+    if (verdictComposite){
+      html += '<div class="answer-line">测谎仪的结论：<b>n = ' + n + ' 绝对不是质数</b>——证人 a = ' + firstLiar + ' 当场抓包。</div>';
+    } else {
+      html += '<div class="answer-line">测谎仪的结论：<b>n = ' + n + ' 可能是质数</b>——所有证人都放行了。</div>';
+    }
+
+    var factor = smallestFactor(n);
+    if (factor === null){
+      html += '<div class="callout fact"><div class="ctitle">真相（用老实、缓慢的办法核实过）</div><p>' + n + ' 确实是质数，没有意外。</p></div>';
+    } else {
+      var other = n / factor;
+      html += '<div class="callout fact"><div class="ctitle">真相（用老实、缓慢的办法核实过）</div><p>' + n + ' = ' + factor + ' &times; ' + other + '——它是合数。</p></div>';
+    }
+
+    if (!verdictComposite && factor !== null){
+      var carmMsg = CARMICHAEL.indexOf(n) !== -1
+        ? '这是一个已知的<b>卡迈克尔数</b>——一个真正的完美骗子。它能骗过几乎每一个和它没有公因数的证人。试着加入一个是 ' + n + ' 因数的证人（比如 ' + factor + '），看它最终会不会露馅。'
+        : '你试的每一位证人都被骗了，尽管 ' + n + ' 明明是合数！再多加几位证人，或者换几个试试，就能抓到它。';
+      html += '<div class="callout warn"><div class="ctitle">等等，这是个假警报</div><p>' + carmMsg + '</p></div>';
+    }
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>
