@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>足球赛季：重建比分记录（Codeforces 1244C）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1244C &middot; 题目精讲</div>
+      <h1>足球赛季：<em>重建比分记录</em></h1>
+      <p class="sub">一支球队踢了 n 场比赛，得到 p 分，可惜所有的赛果记录都弄丢了。你只知道赢一场和平一场各值多少分。Codeforces 1244C 问的是：你能不能拼出一份说得通的胜、平、负记录？就算 n 有一万亿、p 有一亿亿那么大，也能做到吗？</p>
+      <div class="stampbar">
+        <span class="stamp hot">建立在埃博尼和艾沃丽之上</span>
+        <span class="stamp">一个新技巧：mod d</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标</h2></div>
+      <p class="lead">一支球队踢了 <code>n</code> 场比赛，最终得到 <code>p</code> 分。每赢一场值 <code>w</code> 分，每平一场值 <code>d</code> 分，每输一场值 <code>0</code> 分。找出非负整数 <code>x</code>（胜场数）、<code>y</code>（平场数）、<code>z</code>（负场数），使得：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">x&times;w + y&times;d = p　　并且　　x + y + z = n</p>
+      <p>任何一组合法的答案都可以，没有唯一的"正确答案"。如果不存在合法的组合，就报告 <code>-1</code>。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>n=30, p=60, w=3, d=1</code> &rarr; <b>17 9 4</b>（17&times;3 + 9&times;1 = 60，17+9+4 = 30）。其实还有别的合法答案，比如 20 胜 0 平 10 负。<br>
+        <code>n=10, p=51, w=5, d=4</code> &rarr; <b>-1</b>（10 场比赛最多能拿到 10&times;5 = 50 分，51 已经超出上限）。<br>
+        <code>n=20, p=0, w=15, d=5</code> &rarr; <b>0 0 20</b>（0 分意味着每一场都输了）。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">这跟你有什么关系？</div>
+        <p><code>n</code> 最大可以到 <strong>1,000,000,000,000</strong>（一万亿！），<code>p</code> 最大可以到 <strong>100,000,000,000,000,000</strong>。任何一场一场去试的计划，还没试完所有可能，程序早就超时了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>你其实已经解决了一半</h2></div>
+      <p class="lead">仔细看第一个方程：<code>x&times;w + y&times;d = p</code>。这跟 <a href="ebony_and_ivory_zh.html">埃博尼和艾沃丽</a>（Codeforces 1036A）里的谜题<em>一模一样</em>——两种"面额"（这里是赢的分数和平的分数）要凑出一个精确的总数。</p>
+      <p>这次的新花样是：只让 <code>x</code> 和 <code>y</code> 存在还不够，还需要 <code>x + y &le; n</code>，因为每一场胜或平都会用掉 <code>n</code> 场比赛里的一场，剩下的（<code>z = n &minus; x &minus; y</code>）必须是 0 或更多——总不能有负数场的失利！</p>
+
+      <div class="callout fact">
+        <div class="ctitle">冷知识档案</div>
+        <p>如果在 <code>x&times;w + y&times;d = p</code> 里寻找 x 和 y 这件事让你觉得陌生，<a href="ebony_and_ivory_zh.html">埃博尼和艾沃丽</a>那一页从头讲起。这一页假设你已经掌握了那部分，重点讲这次新增的"比赛场次预算"。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>为什么旧招数在这里不够快</h2></div>
+      <p class="lead">在《埃博尼和艾沃丽》里，制胜的招数是把 <code>x</code> 从 0 开始往上循环，检查剩下的伤害能不能被 <code>b</code> 整除。那样管用，是因为目标最大也就 10,000，循环很小。</p>
+      <p>而这里，<code>x</code> 可能需要一路循环到 <code>n</code>，最大能到<strong>一万亿</strong>。一个要跑一万亿次的循环，就算每一步几乎什么都不做，也没法在 1 秒的时间限制里跑完。我们需要一种办法，直接跳到有用的 x 值上，中间那些没用的全部跳过。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">1,000,000,000,000</div><div class="lbl">最坏情况下要检查的 x 值数量，像之前那样一个一个循环</div></div>
+        <div class="stat fast"><div class="num">100,000</div><div class="lbl">最坏情况下要检查的数量，用下面的新技巧</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>关键洞察：真正重要的起点只有 d 个</h2></div>
+      <p class="lead">诀窍分两部分。</p>
+      <p><strong>第一部分——余数每隔 d 步就会重复。</strong>拿任意一个 x，给它加上 <code>d</code>。赢得的分数会变化 <code>d&times;w</code>——而这正好是 <code>d</code> 的倍数，所以完全不会改变除以 <code>d</code> 之后的<em>余数</em>（就像时钟上的 3 点和 15 点其实指向同一个位置，因为 12 是时钟大小的倍数）。所以 <code>x&times;w mod d</code> 只取决于 <code>x mod d</code>——这意味着真正不同的起点只有 <code>d</code> 个，而不是 <code>n</code> 个。</p>
+
+      <p><strong>第二部分——一旦落在一个可行的余数上，就把 x 尽量往大推。</strong>比较两种拿到同样 <code>w&times;d</code> 分的方式：<code>d</code> 场胜利（<code>d&times;w</code> 分）或者 <code>w</code> 场平局（<code>w&times;d</code> 分）——分数一样，因为乘法不在乎顺序。但 <code>d</code> 场胜利只用掉 <code>d</code> 场比赛，而 <code>w</code> 场平局要用掉 <code>w</code> 场比赛——题目保证 <code>w &gt; d</code>。所以用胜利换掉平局（分数不变！）总能省出比赛场次。</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">w 场平局</div><div class="v">w&times;d 分</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>分数相同</div>
+        <div class="chain-box picked"><div class="p">d 场胜利</div><div class="v">d&times;w 分</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">分数一样，但 d 场胜利只用 d 场比赛，w 场平局要用 w 场比赛——而且 w &gt; d，所以用胜利拿下同样的分数"更划算"。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">全篇最重要的一句话</div>
+        <p>只需要检查 x 的 <code>d</code> 种可能余数。对每一种能凑出分数的余数，用上面的"交换"把 x 尽量往大推——这样用掉的比赛场次最少，最有希望塞进 n 场比赛里。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面就是完整的解法。不用一下子全懂——先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>football_season.py</div>
+        <pre><code>n, p, w, d = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+best_m = <span class="kw">min</span>(n, p // w)   <span class="cm"># 最多能负担得起多少场胜利</span>
+answer = <span class="kw">None</span>
+
+<span class="kw">for</span> r <span class="kw">in</span> <span class="kw">range</span>(d):
+    <span class="kw">if</span> (r * w) % d == p % d <span class="kw">and</span> r &lt;= best_m:
+        x = r + d * ((best_m - r) // d)   <span class="cm"># 把 x 尽量往大推</span>
+        y = (p - x * w) // d
+        <span class="kw">if</span> x + y &lt;= n:
+            answer = (x, y, n - x - y)
+            <span class="kw">break</span>
+
+<span class="kw">if</span> answer <span class="kw">is</span> <span class="kw">None</span>:
+    <span class="kw">print</span>(-<span class="nu">1</span>)
+<span class="kw">else</span>:
+    <span class="kw">print</span>(*answer)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">best_m = min(n, p // w)</div>
+          <div class="annot-note"><span>胜场数不可能超过总场次（<b>n</b>），也不可能多到光靠胜场的分数就超过 <b>p</b>。这个数给我们尝试的每一个 x 都设了上限。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for r in range(d):
+    if (r * w) % d == p % d and r <= best_m:</div>
+          <div class="annot-note"><span>把 x 所有可能的余数 <b>r</b> 都试一遍（第四关的第一部分）。只有胜场分数的余数和 p 的余数一致，这个余数才可能行得通。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">x = r + d * ((best_m - r) // d)</div>
+          <div class="annot-note"><span>在所有这个余数的 x 里，直接跳到不超过 best_m 的最大那个（第二部分——用胜利换平局的交换）。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">y = (p - x * w) // d
+if x + y <= n:</div>
+          <div class="annot-note"><span>算出还需要多少场平局才能凑够剩下的分数，再检查胜场加平局是不是还能塞进 n 场比赛里。</span></div>
+        </div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">冷知识档案</div>
+        <p>"余数每隔 d 步就重复"这个想法，其实就是<a href="fast_exponentiation_zh.html">快速幂</a>那一页里出现过的钟表算术（<code>mod</code>）——同一个技巧，换了个新任务。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>一起手把手推演一遍：n=10, p=32, w=5, d=3</h2></div>
+      <p class="lead"><code>best_m = min(10, 32 // 5) = min(10, 6) = 6</code>。我们需要 <code>p mod d = 32 mod 3 = 2</code>。逐个检查余数。</p>
+
+      <table class="trace">
+        <thead><tr><th>余数 r</th><th>r&times;w mod d</th><th>等于 2？</th><th>x（推到最大）</th><th>y</th><th>x+y &le; 10？</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0&times;5 mod 3 = 0</td><td class="even">否</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>1</td><td>1&times;5 mod 3 = 2</td><td class="odd">是</td><td>1 + 3&times;((6&minus;1)//3) = 4</td><td>(32&minus;20)/3 = 4</td><td>4+4=8 &le; 10——找到了！</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="6">答案：x=4, y=4, z=10&minus;8=2。验证：4&times;5 + 4&times;3 = 20+12 = 32，4+4+2 = 10。</td></tr></tfoot>
+      </table>
+
+      <p>余数 <code>r=0</code> 根本不匹配，直接跳过，不用再算别的。紧接着的 <code>r=1</code> 第一次尝试就成功了。最坏情况下要检查全部 <code>d</code> 个余数，但 <code>d</code> 最大也就 100,000——离一万亿还差得远。</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>该你上场了：换成你自己的 n、p、w、d</h2></div>
+      <p class="lead">挑一组自己的数字，看看搜索是怎么进行的。这个演示把输入范围压到了题目真实上限之下（n 最大 1,000,000,000，p 最大 1,000,000,000,000,000），好让浏览器的运算保持精确——上面的 Python 代码可没有这个限制。</p>
+
+      <div class="widget">
+        <h3>足球赛季重建器</h3>
+        <div class="hint">小提示：试试 n=10, p=51, w=5, d=4，看看 -1 的情况（10 场比赛按 5 分和 4 分算，分数已经超了）；或者 n=20, p=0, w=15, d=5，看看"全部输掉"的情况。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="10" min="1" max="1000000000"></div>
+          <div class="field"><label for="inP">p</label><input type="number" id="inP" value="32" min="0" max="1000000000000000"></div>
+          <div class="field"><label for="inW">w</label><input type="number" id="inW" value="5" min="1" max="100000"></div>
+          <div class="field"><label for="inD">d</label><input type="number" id="inD" value="3" min="1" max="100000"></div>
+          <div class="field"><button class="btn" id="runBtn">重建比分记录</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>课后挑战（先自己试，别偷看答案）</h2></div>
+      <p class="lead">在用上面的工具验证之前，先自己在纸上把这个搜索试一遍。</p>
+
+      <details>
+        <summary>挑战一：n=20, p=0, w=15, d=5。答案是什么？为什么循环在 r=0 就立刻找到了？</summary>
+        <div class="reveal">
+          <p><code>best_m = min(20, 0 // 15) = 0</code>。在 <code>r=0</code> 时：<code>0&times;15 mod 5 = 0</code>，而 <code>p mod 5 = 0</code>——匹配！既然 <code>best_m</code> 已经是 0，x 没法再往大推：<code>x = 0</code>。接着 <code>y = (0 &minus; 0) / 5 = 0</code>，<code>0 + 0 = 0 &le; 20</code>。答案：<b>0 0 20</b>——记分板上一分都没有，说明没有一场是赢的或平的。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：n=10, p=51, w=5, d=4。走一遍为什么每个余数最终都失败了。</summary>
+        <div class="reveal">
+          <p><code>best_m = min(10, 51 // 5) = 10</code>。<code>p mod 4 = 3</code>。逐个检查余数：r=0 得到 0，r=1 得到 1，r=2 得到 2，r=3 得到 <code>3&times;5 mod 4 = 3</code>——匹配！把 x 往大推：<code>x = 3 + 4&times;((10&minus;3)//4) = 3 + 4 = 7</code>。接着 <code>y = (51&minus;35)/4 = 4</code>，<code>7+4=11 &gt; 10</code>——需要的场次太多了。没有别的余数匹配，所以答案是 <b>-1</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么只需要检查 d 种不同的余数，而不是从 0 到 n 的每一个 x？</summary>
+        <div class="reveal">
+          <p>因为 <code>x&times;w mod d</code> 只取决于 <code>x mod d</code>（第四关，第一部分）——给 x 加上 d，总是给 x&times;w 加上 d 的倍数，永远不会改变余数。所以每一个 x 的"匹配或不匹配"结果，都和 <code>d</code> 个可能余数中的某一个完全一样。检查全部 <code>n</code> 个 x，其实就是把同样的 <code>d</code> 种结果反反复复地检查了最多 n/d 遍——纯属重复劳动。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：这道题接受任何合法的答案。你能不能改一下代码，从所有合法的余数里，找出胜场数最多的那一组？</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>football_season_max_wins.py</div>
+            <pre><code>n, p, w, d = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+best_m = <span class="kw">min</span>(n, p // w)
+best_answer = <span class="kw">None</span>
+
+<span class="kw">for</span> r <span class="kw">in</span> <span class="kw">range</span>(d):
+    <span class="kw">if</span> (r * w) % d == p % d <span class="kw">and</span> r &lt;= best_m:
+        x = r + d * ((best_m - r) // d)
+        y = (p - x * w) // d
+        <span class="kw">if</span> x + y &lt;= n:
+            <span class="kw">if</span> best_answer <span class="kw">is</span> <span class="kw">None</span> <span class="kw">or</span> x &gt; best_answer[<span class="nu">0</span>]:
+                best_answer = (x, y, n - x - y)
+
+<span class="kw">print</span>(-<span class="nu">1</span> <span class="kw">if</span> best_answer <span class="kw">is</span> <span class="kw">None</span> <span class="kw">else</span> <span class="st">" "</span>.join(<span class="kw">map</span>(<span class="kw">str</span>, best_answer)))</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1244C &mdash; 足球赛季。还没见过 x&times;w + y&times;d = p 这个方程？先去看看<a href="ebony_and_ivory_zh.html">埃博尼和艾沃丽</a>（Codeforces 1036A）。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(n, p, w, d){
+    var bestM = Math.min(n, Math.floor(p / w));
+    var rows = [];
+    var found = null;
+    for (var r = 0; r < d; r++){
+      var matches = (r * w) % d === p % d;
+      var row = { r: r, rw: (r * w) % d, matches: matches };
+      if (matches && r <= bestM){
+        var x = r + d * Math.floor((bestM - r) / d);
+        var y = (p - x * w) / d;
+        row.x = x; row.y = y; row.fits = (x + y <= n);
+        if (row.fits){ found = { x: x, y: y, z: n - x - y }; }
+      }
+      rows.push(row);
+      if (found){ break; }
+    }
+    return { rows: rows, found: found, pMod: p % d };
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var p = parseInt(document.getElementById('inP').value, 10);
+    var w = parseInt(document.getElementById('inW').value, 10);
+    var d = parseInt(document.getElementById('inD').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || isNaN(p) || isNaN(w) || isNaN(d) ||
+        n < 1 || n > 1000000000 || p < 0 || p > 1000000000000000 ||
+        w < 1 || w > 100000 || d < 1 || d > 100000 || d >= w){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>n 需要在 1 到 1,000,000,000 之间；p 需要在 0 到 1,000,000,000,000,000 之间；并且 1 &le; d &lt; w &le; 100,000。</p></div>';
+      return;
+    }
+
+    var r = solve(n, p, w, d);
+
+    var html = '';
+    if (r.rows.length <= 40){
+      html += '<table class="trace"><thead><tr><th>余数 r</th><th>r&times;w mod d</th><th>等于 ' + r.pMod + '？</th><th>x</th><th>y</th><th>x+y &le; n？</th></tr></thead><tbody>';
+      for (var i = 0; i < r.rows.length; i++){
+        var row = r.rows[i];
+        var matchCell = row.matches ? '<td class="odd">是</td>' : '<td class="even">否</td>';
+        var xCell = ('x' in row) ? row.x : '&mdash;';
+        var yCell = ('y' in row) ? row.y : '&mdash;';
+        var fitCell = ('fits' in row) ? (row.fits ? '<b>' + (row.x + row.y) + ' &le; ' + n + '——找到了！</b>' : (row.x + row.y) + ' &gt; ' + n + '，继续找') : '&mdash;';
+        html += '<tr><td>' + row.r + '</td><td>' + row.rw + '</td>' + matchCell + '<td>' + xCell + '</td><td>' + yCell + '</td><td>' + fitCell + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    if (r.found){
+      html += '<div class="answer-line">x=<b>' + r.found.x + '</b>, y=<b>' + r.found.y + '</b>, z=<b>' + r.found.z + '</b> &mdash; ' + r.found.x + '&times;' + w + ' + ' + r.found.y + '&times;' + d + ' = ' + p + '，且 ' + r.found.x + '+' + r.found.y + '+' + r.found.z + ' = ' + n + '</div>';
+    } else {
+      html += '<div class="answer-line"><b>-1</b> &mdash; 没有任何胜、平、负的组合能在 ' + n + ' 场比赛里刚好拿到 ' + p + ' 分</div>';
+    }
+
+    var slowChecks = n;
+    var fastChecks = r.rows.length;
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowChecks.toLocaleString() + '</div><div class="lbl">个 x 值，从 0 一直循环到 n</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastChecks.toLocaleString() + '</div><div class="lbl">个实际检查过的余数</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

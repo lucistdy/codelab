@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Football Season: Rebuild the Scoreboard (Codeforces 1244C)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1244C &middot; Problem Walkthrough</div>
+      <h1>The Football Season: <em>Rebuild the Scoreboard</em></h1>
+      <p class="sub">A team played n games and scored p points, but every scoresheet got lost. All you know is how many points a win and a draw were worth. Codeforces 1244C asks: can you reconstruct a believable record of wins, draws, and losses? And can you do it even when n is a trillion and p is a hundred quadrillion?</p>
+      <div class="stampbar">
+        <span class="stamp hot">Builds on Ebony &amp; Ivory</span>
+        <span class="stamp">One new trick: mod d</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission</h2></div>
+      <p class="lead">A team played <code>n</code> games and finished with <code>p</code> points. Every win is worth <code>w</code> points, every draw is worth <code>d</code> points, and every loss is worth <code>0</code>. Find non-negative whole numbers <code>x</code> (wins), <code>y</code> (draws), and <code>z</code> (losses) such that:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">x&times;w + y&times;d = p&nbsp;&nbsp;&nbsp;and&nbsp;&nbsp;&nbsp;x + y + z = n</p>
+      <p>Any valid triple is accepted &mdash; there's no single "correct" answer. If no triple works, report <code>-1</code>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>n=30, p=60, w=3, d=1</code> &rarr; <b>17 9 4</b> (17&times;3 + 9&times;1 = 60, and 17+9+4 = 30). Other valid answers exist too, like 20 wins, 0 draws, 10 losses.<br>
+        <code>n=10, p=51, w=5, d=4</code> &rarr; <b>-1</b> (the most points possible in 10 games is 10&times;5 = 50, and 51 is already too many).<br>
+        <code>n=20, p=0, w=15, d=5</code> &rarr; <b>0 0 20</b> (zero points means every single game was a loss).</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why should you care?</div>
+        <p><code>n</code> can be as large as <strong>1,000,000,000,000</strong> (a trillion!) and <code>p</code> can be as large as <strong>100,000,000,000,000,000</strong>. Any plan that tries out possibilities one game at a time is going to run out of time long before it runs out of games to check.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>You've basically solved half of this already</h2></div>
+      <p class="lead">Look closely at that first equation: <code>x&times;w + y&times;d = p</code>. That's <em>exactly</em> the shape of the puzzle from <a href="ebony_and_ivory_en.html">Ebony and Ivory</a> (Codeforces 1036A) &mdash; two "denominations" (here, win-points and draw-points) that need to add up to an exact total.</p>
+      <p>The twist this time: it's not enough for <code>x</code> and <code>y</code> to exist. You also need <code>x + y &le; n</code>, because every win and draw uses up one of your <code>n</code> games, and whatever's left over (<code>z = n &minus; x &minus; y</code>) has to be zero or more &mdash; you can't have a negative number of losses!</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>If the idea of searching for x and y in <code>x&times;w + y&times;d = p</code> feels unfamiliar, the <a href="ebony_and_ivory_en.html">Ebony and Ivory</a> page builds it up from scratch. This page assumes you've got that part down and focuses on the new twist: the games budget.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Why the old trick alone is too slow here</h2></div>
+      <p class="lead">In Ebony and Ivory, the winning move was to loop <code>x</code> from 0 upward and check whether the leftover damage divided evenly by <code>b</code>. That worked because the target was never bigger than 10,000, so the loop was tiny.</p>
+      <p>Here, <code>x</code> could need to run all the way up to <code>n</code>, which is up to <strong>a trillion</strong>. A loop that runs a trillion times, even doing almost nothing each step, will not finish inside a 1-second time limit. We need a way to skip straight to the useful values of <code>x</code>, without visiting the useless ones in between.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">1,000,000,000,000</div><div class="lbl">values of x to check, worst case, looping one at a time like before</div></div>
+        <div class="stat fast"><div class="num">100,000</div><div class="lbl">values to check, worst case, using the new trick below</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The key insight: only d starting points actually matter</h2></div>
+      <p class="lead">Here's the trick, in two parts.</p>
+      <p><strong>Part 1 &mdash; remainders repeat every d steps.</strong> Take any value of <code>x</code> and add <code>d</code> to it. The points from wins change by <code>d&times;w</code> &mdash; and since that's a multiple of <code>d</code>, it doesn't change the <em>remainder</em> when you divide by <code>d</code> at all (just like how 3 o'clock and 15 o'clock point to the same spot on a 12-hour clock, because 12 is a multiple of the clock's size). So <code>x&times;w mod d</code> only depends on <code>x mod d</code> &mdash; meaning there are only <code>d</code> genuinely different starting points to try, not <code>n</code> of them.</p>
+
+      <p><strong>Part 2 &mdash; once you're on a working remainder, push x as high as it'll go.</strong> Compare two ways of scoring the same <code>w&times;d</code> points: <code>d</code> wins (<code>d&times;w</code> points) or <code>w</code> draws (<code>w&times;d</code> points) &mdash; same score, since multiplication doesn't care about order. But <code>d</code> wins only take <code>d</code> games, while <code>w</code> draws take <code>w</code> games &mdash; and <code>w &gt; d</code> is guaranteed by the problem. So trading draws for wins (same score!) always frees up games.</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">w draws</div><div class="v">w&times;d points</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>same score</div>
+        <div class="chain-box picked"><div class="p">d wins</div><div class="v">d&times;w points</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">Same points, but d wins use only d games while w draws use w games &mdash; and w &gt; d, so wins are the more "efficient" way to bank the same score.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>Check only the <code>d</code> possible remainders for x. For each one that can reach the score, push x as high as possible (using the trade above) &mdash; that uses the fewest total games, giving you the best shot at fitting inside n.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Reading the code, line by line</h2></div>
+      <p class="lead">Here's the entire solution. Don't worry about understanding it all at once &mdash; read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>football_season.py</div>
+        <pre><code>n, p, w, d = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+best_m = <span class="kw">min</span>(n, p // w)   <span class="cm"># the most wins you could ever afford</span>
+answer = <span class="kw">None</span>
+
+<span class="kw">for</span> r <span class="kw">in</span> <span class="kw">range</span>(d):
+    <span class="kw">if</span> (r * w) % d == p % d <span class="kw">and</span> r &lt;= best_m:
+        x = r + d * ((best_m - r) // d)   <span class="cm"># push x as high as it'll go</span>
+        y = (p - x * w) // d
+        <span class="kw">if</span> x + y &lt;= n:
+            answer = (x, y, n - x - y)
+            <span class="kw">break</span>
+
+<span class="kw">if</span> answer <span class="kw">is</span> <span class="kw">None</span>:
+    <span class="kw">print</span>(-<span class="nu">1</span>)
+<span class="kw">else</span>:
+    <span class="kw">print</span>(*answer)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">best_m = min(n, p // w)</div>
+          <div class="annot-note"><span>You can't have more wins than games (<b>n</b>), and you can't have so many wins that their points alone blow past <b>p</b>. This caps every x we'll ever try.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for r in range(d):
+    if (r * w) % d == p % d and r <= best_m:</div>
+          <div class="annot-note"><span>Try every possible remainder <b>r</b> for x (Part 1 from Level 4). Only remainders whose win-points match p's own remainder can ever work.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">x = r + d * ((best_m - r) // d)</div>
+          <div class="annot-note"><span>Among all x with this remainder, jump straight to the biggest one that's still &le; best_m (Part 2 &mdash; the draws-for-wins trade).</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">y = (p - x * w) // d
+if x + y <= n:</div>
+          <div class="annot-note"><span>Work out how many draws are needed to make up the rest of the score, then check whether wins + draws still fit inside n games.</span></div>
+        </div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>That "remainders repeat every d steps" idea is the same clock-math (<code>mod</code>) concept from the <a href="fast_exponentiation_en.html">Fast Exponentiation</a> page &mdash; same trick, brand-new job.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Let's trace it together: n=10, p=32, w=5, d=3</h2></div>
+      <p class="lead"><code>best_m = min(10, 32 // 5) = min(10, 6) = 6</code>. We need <code>p mod d = 32 mod 3 = 2</code>. Let's check remainders one at a time.</p>
+
+      <table class="trace">
+        <thead><tr><th>remainder r</th><th>r&times;w mod d</th><th>matches 2?</th><th>x (pushed up)</th><th>y</th><th>x+y &le; 10?</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0&times;5 mod 3 = 0</td><td class="even">no</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>1</td><td>1&times;5 mod 3 = 2</td><td class="odd">yes</td><td>1 + 3&times;((6&minus;1)//3) = 4</td><td>(32&minus;20)/3 = 4</td><td>4+4=8 &le; 10 &mdash; <b>found!</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="6">Answer: x=4, y=4, z=10&minus;8=2. Check: 4&times;5 + 4&times;3 = 20+12 = 32, and 4+4+2 = 10.</td></tr></tfoot>
+      </table>
+
+      <p>Remainder <code>r=0</code> didn't even match, so we skipped straight past it &mdash; no need to compute anything else for it. The very next remainder, <code>r=1</code>, worked on the first try. In the worst case we'd check all <code>d</code> remainders, but <code>d</code> is at most 100,000 &mdash; nowhere near a trillion.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you drive: try your own n, p, w, d</h2></div>
+      <p class="lead">Pick your own numbers and watch the search happen. This demo caps its inputs below the problem's true limits (n up to 1,000,000,000 and p up to 1,000,000,000,000,000) so the browser's math stays exact &mdash; the Python code above has no such limit.</p>
+
+      <div class="widget">
+        <h3>Football season reconstructor</h3>
+        <div class="hint">Tip: try n=10, p=51, w=5, d=4 to see a -1 case (points already exceed what 10 games can hold at 5-and-4), or n=20, p=0, w=15, d=5 for the "all losses" case.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="10" min="1" max="1000000000"></div>
+          <div class="field"><label for="inP">p</label><input type="number" id="inP" value="32" min="0" max="1000000000000000"></div>
+          <div class="field"><label for="inW">w</label><input type="number" id="inW" value="5" min="1" max="100000"></div>
+          <div class="field"><label for="inD">d</label><input type="number" id="inD" value="3" min="1" max="100000"></div>
+          <div class="field"><button class="btn" id="runBtn">Rebuild the scoreboard</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Quick challenges (no peeking until you've tried)</h2></div>
+      <p class="lead">Test the search on paper before you check with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: n=20, p=0, w=15, d=5. What's the answer, and why does the loop find it immediately at r=0?</summary>
+        <div class="reveal">
+          <p><code>best_m = min(20, 0 // 15) = 0</code>. At <code>r=0</code>: <code>0&times;15 mod 5 = 0</code>, and <code>p mod 5 = 0</code> &mdash; matches! Since <code>best_m</code> is already 0, x can't be pushed any higher: <code>x = 0</code>. Then <code>y = (0 &minus; 0) / 5 = 0</code>, and <code>0 + 0 = 0 &le; 20</code>. Answer: <b>0 0 20</b> &mdash; with 0 points on the board, there's no way any game was a win or a draw.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: n=10, p=51, w=5, d=4. Walk through why every remainder eventually fails.</summary>
+        <div class="reveal">
+          <p><code>best_m = min(10, 51 // 5) = 10</code>. <code>p mod 4 = 3</code>. Checking remainders: r=0 gives 0, r=1 gives 1, r=2 gives 2, r=3 gives <code>3&times;5 mod 4 = 3</code> &mdash; matches! Push x up: <code>x = 3 + 4&times;((10&minus;3)//4) = 3 + 4 = 7</code>. Then <code>y = (51&minus;35)/4 = 4</code>, and <code>7+4=11 &gt; 10</code> &mdash; too many games needed. No other remainder matched, so the answer is <b>-1</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why do we only need to check d different remainders instead of every x from 0 to n?</summary>
+        <div class="reveal">
+          <p>Because <code>x&times;w mod d</code> only depends on <code>x mod d</code> (Level 4, Part 1) &mdash; adding d to x always adds a multiple of d to x&times;w, which never changes the remainder. So every value of x shares its "match or no match" verdict with exactly one of the <code>d</code> possible remainders. Checking all <code>n</code> values of x would just mean re-checking the same <code>d</code> verdicts over and over, up to n/d times each &mdash; pure repeated work.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: The problem accepts any valid triple. Can you change the code to instead find the triple with the most wins possible, out of all valid remainders?</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>football_season_max_wins.py</div>
+            <pre><code>n, p, w, d = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+best_m = <span class="kw">min</span>(n, p // w)
+best_answer = <span class="kw">None</span>
+
+<span class="kw">for</span> r <span class="kw">in</span> <span class="kw">range</span>(d):
+    <span class="kw">if</span> (r * w) % d == p % d <span class="kw">and</span> r &lt;= best_m:
+        x = r + d * ((best_m - r) // d)
+        y = (p - x * w) // d
+        <span class="kw">if</span> x + y &lt;= n:
+            <span class="kw">if</span> best_answer <span class="kw">is</span> <span class="kw">None</span> <span class="kw">or</span> x &gt; best_answer[<span class="nu">0</span>]:
+                best_answer = (x, y, n - x - y)
+
+<span class="kw">print</span>(-<span class="nu">1</span> <span class="kw">if</span> best_answer <span class="kw">is</span> <span class="kw">None</span> <span class="kw">else</span> <span class="st">" "</span>.join(<span class="kw">map</span>(<span class="kw">str</span>, best_answer)))</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1244C &mdash; The Football Season. Never met the x&times;w + y&times;d = p equation before? Start with <a href="ebony_and_ivory_en.html">Ebony and Ivory</a> (Codeforces 1036A) first.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(n, p, w, d){
+    var bestM = Math.min(n, Math.floor(p / w));
+    var rows = [];
+    var found = null;
+    for (var r = 0; r < d; r++){
+      var matches = (r * w) % d === p % d;
+      var row = { r: r, rw: (r * w) % d, matches: matches };
+      if (matches && r <= bestM){
+        var x = r + d * Math.floor((bestM - r) / d);
+        var y = (p - x * w) / d;
+        row.x = x; row.y = y; row.fits = (x + y <= n);
+        if (row.fits){ found = { x: x, y: y, z: n - x - y }; }
+      }
+      rows.push(row);
+      if (found){ break; }
+    }
+    return { rows: rows, found: found, pMod: p % d };
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var p = parseInt(document.getElementById('inP').value, 10);
+    var w = parseInt(document.getElementById('inW').value, 10);
+    var d = parseInt(document.getElementById('inD').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || isNaN(p) || isNaN(w) || isNaN(d) ||
+        n < 1 || n > 1000000000 || p < 0 || p > 1000000000000000 ||
+        w < 1 || w > 100000 || d < 1 || d > 100000 || d >= w){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Need n between 1 and 1,000,000,000; p between 0 and 1,000,000,000,000,000; and 1 &le; d &lt; w &le; 100,000.</p></div>';
+      return;
+    }
+
+    var r = solve(n, p, w, d);
+
+    var html = '';
+    if (r.rows.length <= 40){
+      html += '<table class="trace"><thead><tr><th>remainder r</th><th>r&times;w mod d</th><th>matches ' + r.pMod + '?</th><th>x</th><th>y</th><th>x+y &le; n?</th></tr></thead><tbody>';
+      for (var i = 0; i < r.rows.length; i++){
+        var row = r.rows[i];
+        var matchCell = row.matches ? '<td class="odd">yes</td>' : '<td class="even">no</td>';
+        var xCell = ('x' in row) ? row.x : '&mdash;';
+        var yCell = ('y' in row) ? row.y : '&mdash;';
+        var fitCell = ('fits' in row) ? (row.fits ? '<b>' + (row.x + row.y) + ' &le; ' + n + ' &mdash; found!</b>' : (row.x + row.y) + ' &gt; ' + n + ', keep looking') : '&mdash;';
+        html += '<tr><td>' + row.r + '</td><td>' + row.rw + '</td>' + matchCell + '<td>' + xCell + '</td><td>' + yCell + '</td><td>' + fitCell + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    if (r.found){
+      html += '<div class="answer-line">x=<b>' + r.found.x + '</b>, y=<b>' + r.found.y + '</b>, z=<b>' + r.found.z + '</b> &mdash; ' + r.found.x + '&times;' + w + ' + ' + r.found.y + '&times;' + d + ' = ' + p + ', and ' + r.found.x + '+' + r.found.y + '+' + r.found.z + ' = ' + n + '</div>';
+    } else {
+      html += '<div class="answer-line"><b>-1</b> &mdash; no valid combination of wins, draws, and losses reaches exactly p points in n games</div>';
+    }
+
+    var slowChecks = n;
+    var fastChecks = r.rows.length;
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowChecks.toLocaleString() + '</div><div class="lbl">values of x, looping one at a time up to n</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastChecks.toLocaleString() + '</div><div class="lbl">remainders actually checked</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

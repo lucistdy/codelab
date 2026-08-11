@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modified GCD: Finding the Best Common Divisor Inside a Range (Codeforces 75C)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 75C &middot; Problem Walkthrough</div>
+      <h1>Modified GCD: <em>Search Inside a Range</em></h1>
+      <p class="sub">You already know how to find the single biggest common divisor of two numbers. Codeforces 75C asks something trickier: out of all the numbers a and b have in common, what's the biggest one that also fits inside a given range &mdash; and can you answer that question 10,000 times without breaking a sweat?</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Precompute once, answer fast</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission</h2></div>
+      <p class="lead">You're given two numbers, <code>a</code> and <code>b</code>. Then you're handed <code>n</code> separate questions, each one asking: <strong>what's the biggest number that divides evenly into both a and b, while also being between low and high (inclusive)?</strong> If no such number exists, the answer is <code>-1</code>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>a = 9</code>, <code>b = 27</code>, with 3 queries:<br>
+        <code>low=1, high=5</code> &rarr; <b>3</b> (3 divides both 9 and 27, and it's the biggest such number in [1, 5]).<br>
+        <code>low=10, high=11</code> &rarr; <b>-1</b> (no common divisor of 9 and 27 lands in [10, 11]).<br>
+        <code>low=9, high=11</code> &rarr; <b>9</b> (9 divides both numbers, and it fits in [9, 11]).</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why should you care?</div>
+        <p><code>a</code> and <code>b</code> can be as large as <strong>1,000,000,000</strong>, and you can be asked up to <strong>10,000</strong> queries. If you re-solve the whole problem from scratch for every single query, you'll still be computing when the judge's patience runs out. The trick is to do the hard work exactly <strong>once</strong>, then answer every query almost instantly.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>The one fact that unlocks everything</h2></div>
+      <p class="lead">Here's the fact this whole problem is built on: <strong>every common divisor of a and b is a divisor of gcd(a, b) &mdash; and every divisor of gcd(a, b) is a common divisor of a and b.</strong> They're exactly the same set of numbers.</p>
+      <p>Check it with the sample: <code>gcd(9, 27) = 9</code>. The divisors of 9 are <code>1, 3, 9</code>. Now list the divisors of 9 and 27 separately: divisors of 9 are <code>1, 3, 9</code>; divisors of 27 are <code>1, 3, 9, 27</code>. The numbers they have in <em>common</em>? <code>1, 3, 9</code> &mdash; exactly the divisors of the gcd. No coincidence.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Haven't met GCD yet, or want a refresher on what makes it special? The <a href="max_gcd_en.html">Maximum GCD</a> page covers the basics from scratch &mdash; this page picks up right where that one leaves off.</p>
+      </div>
+
+      <p>So instead of hunting for common divisors of two possibly-huge numbers directly, we only ever need to study <strong>one</strong> number: <code>g = gcd(a, b)</code>. Every one of its divisors is automatically a common divisor of a and b, and there are no others hiding anywhere.</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Why not just scan each range directly?</h2></div>
+      <p class="lead">The obvious plan for a single query: walk through every number from <code>low</code> to <code>high</code>, check whether it divides both <code>a</code> and <code>b</code>, and remember the biggest one that does.</p>
+      <p>The problem: <code>high &minus; low</code> can be nearly <strong>1,000,000,000</strong> on its own, and you might face <strong>10,000</strong> queries like that. Redoing a billion-sized scan ten thousand times is a plan that only works if you enjoy watching progress bars.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10,000,000,000,000</div><div class="lbl">checks, worst case, testing every number in every query's range one at a time</div></div>
+        <div class="stat fast"><div class="num">13,471,623</div><div class="lbl">total steps, worst case, using the smarter plan you're about to learn</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The key insight: find every divisor of g, once</h2></div>
+      <p class="lead">Since every common divisor of <code>a</code> and <code>b</code> is a divisor of <code>g = gcd(a, b)</code>, all we need is a complete list of <code>g</code>'s divisors. And there's a neat shortcut for building that list fast: divisors always come in <strong>pairs</strong>.</p>
+
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">small divisor</div><div class="v">i</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>pairs with</div>
+        <div class="chain-box"><div class="p">large divisor</div><div class="v">g / i</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">If i divides g evenly, so does g/i &mdash; and one of that pair is always &le; &radic;g. So checking every i up to &radic;g finds every divisor, both halves of every pair.</p>
+
+      <p>For <code>g</code> up to <code>1,000,000,000</code>, <code>&radic;g</code> is only about <strong>31,623</strong> &mdash; a loop that finishes almost instantly, even though it's checking a number as big as a billion. Once you have every divisor, sort them from smallest to biggest.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>Do the expensive work &mdash; finding gcd(a, b) and every one of its divisors &mdash; exactly <strong>once</strong>. After that, each query is just a quick look through a short, sorted list.</p>
+      </div>
+
+      <p>Answering a query is then simple: walk the sorted divisor list from the <strong>biggest</strong> divisor down to the smallest, and stop at the first one that's &le; <code>high</code>. If that divisor is also &ge; <code>low</code>, it's your answer. If it's smaller than <code>low</code>, then nothing in the whole list can possibly be in range &mdash; every other divisor is even smaller &mdash; so the answer is <code>-1</code>.</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Reading the code, line by line</h2></div>
+      <p class="lead">Here's the entire solution. Don't worry about understanding it all at once &mdash; read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>modified_gcd.py</div>
+        <pre><code><span class="kw">def</span> gcd(x, y):
+    <span class="kw">while</span> y:
+        x, y = y, x % y
+    <span class="kw">return</span> x
+
+<span class="kw">def</span> divisors_of(g):
+    divs = []
+    i = <span class="nu">1</span>
+    <span class="kw">while</span> i * i &lt;= g:
+        <span class="kw">if</span> g % i == <span class="nu">0</span>:
+            divs.append(i)
+            <span class="kw">if</span> i != g // i:
+                divs.append(g // i)
+        i += <span class="nu">1</span>
+    divs.sort()
+    <span class="kw">return</span> divs
+
+a, b = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+g = gcd(a, b)
+divs = divisors_of(g)   <span class="cm"># every common divisor of a and b, smallest to biggest</span>
+
+n = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(n):
+    low, high = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+    answer = -<span class="nu">1</span>
+    <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">reversed</span>(divs):   <span class="cm"># biggest divisor first</span>
+        <span class="kw">if</span> d &lt;= high:
+            <span class="kw">if</span> d &gt;= low:
+                answer = d
+            <span class="kw">break</span>
+    <span class="kw">print</span>(answer)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">def gcd(x, y):
+    while y:
+        x, y = y, x % y
+    return x</div>
+          <div class="annot-note"><span>The classic Euclidean algorithm for gcd &mdash; the same one Python's own <code>math.gcd</code> uses under the hood.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while i * i <= g:
+    if g % i == 0:
+        divs.append(i)
+        if i != g // i:
+            divs.append(g // i)
+    i += 1</div>
+          <div class="annot-note"><span>Check every candidate <b>i</b> up to &radic;g. Each hit gives <em>two</em> divisors at once (i and g/i), unless they're equal (like i=3 for g=9, where 3 &times; 3 = 9).</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">divs.sort()</div>
+          <div class="annot-note"><span>The pairs came out of order (small ones and large ones mixed together), so sort once to get a clean, searchable list.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for d in reversed(divs):
+    if d <= high:
+        if d >= low:
+            answer = d
+        break</div>
+          <div class="annot-note"><span>Start from the biggest divisor and work down. The very first one that fits under <b>high</b> is the best possible candidate &mdash; check it against <b>low</b> and stop, since nothing smaller could ever beat it.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Let's trace it together: a=9, b=27</h2></div>
+      <p class="lead"><code>gcd(9, 27) = 9</code>, and its divisors, sorted, are <code>[1, 3, 9]</code>. Let's answer all three sample queries by scanning from the biggest divisor down.</p>
+
+      <table class="trace">
+        <thead><tr><th>query (low, high)</th><th>checking d=9</th><th>checking d=3</th><th>checking d=1</th><th>answer</th></tr></thead>
+        <tbody>
+          <tr><td>(1, 5)</td><td>9 &gt; 5, skip</td><td class="odd">3 &le; 5 and 3 &ge; 1 &mdash; stop</td><td>&mdash;</td><td><b>3</b></td></tr>
+          <tr><td>(10, 11)</td><td>9 &le; 11 but 9 &lt; 10 &mdash; stop</td><td>&mdash;</td><td>&mdash;</td><td><b>-1</b></td></tr>
+          <tr><td>(9, 11)</td><td class="odd">9 &le; 11 and 9 &ge; 9 &mdash; stop</td><td>&mdash;</td><td>&mdash;</td><td><b>9</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">Matches the judge's expected output exactly: 3, -1, 9</td></tr></tfoot>
+      </table>
+
+      <p>Notice query 2: the very first divisor that fits under <code>high=11</code> is <code>9</code>, but <code>9 &lt; 10 = low</code>. Since every other divisor (3, 1) is even smaller, none of them could possibly be &ge; 10 either &mdash; so we can stop immediately and report <code>-1</code> without checking further.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you drive: try your own a, b, and query</h2></div>
+      <p class="lead">Pick any <code>a</code>, <code>b</code>, and a <code>low</code>/<code>high</code> range. The tool below builds the divisor list and answers your query, just like the table above.</p>
+
+      <div class="widget">
+        <h3>Modified GCD finder</h3>
+        <div class="hint">Tip: try the other two sample queries (low=10,high=11 and low=9,high=11) with a=9, b=27 to check all three official answers.</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a</label><input type="number" id="inA" value="9" min="1" max="1000000000"></div>
+          <div class="field"><label for="inB">b</label><input type="number" id="inB" value="27" min="1" max="1000000000"></div>
+          <div class="field"><label for="inLow">low</label><input type="number" id="inLow" value="1" min="1" max="1000000000"></div>
+          <div class="field"><label for="inHigh">high</label><input type="number" id="inHigh" value="5" min="1" max="1000000000"></div>
+          <div class="field"><button class="btn" id="runBtn">Find the answer</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Quick challenges (no peeking until you've tried)</h2></div>
+      <p class="lead">Test the search on paper before you check with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: a=9, b=27, query low=9, high=11. What's the answer?</summary>
+        <div class="reveal">
+          <p>This is sample query 3. <code>gcd(9,27)=9</code>, divisors <code>[1, 3, 9]</code>. Scanning from the top: <code>9 &le; 11</code>, and <code>9 &ge; 9</code> &mdash; stop immediately. Answer: <b>9</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: a=12, b=18, query low=4, high=5. What's the answer?</summary>
+        <div class="reveal">
+          <p><code>gcd(12, 18) = 6</code>. Divisors of 6: <code>[1, 2, 3, 6]</code>. Scanning from the top: <code>6 &le; 5</code>? No, skip. <code>3 &le; 5</code>? Yes &mdash; but <code>3 &ge; 4</code>? No. Stop here (every remaining divisor is even smaller). Answer: <b>-1</b> &mdash; there's simply no common divisor of 12 and 18 sitting between 4 and 5.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why is it true that every common divisor of a and b must divide gcd(a, b)?</summary>
+        <div class="reveal">
+          <p>Think of it this way: <code>gcd(a, b)</code> is <em>the</em> biggest number that divides evenly into both a and b &mdash; it's built entirely out of the "shared ingredients" of a and b. Any other common divisor of a and b is made from a smaller piece of those same shared ingredients, and a smaller piece of something always divides evenly into the whole thing. That's exactly why every common divisor shows up on gcd(a, b)'s own list of divisors, and nothing else ever sneaks in.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: Can you change the code to also print how many common divisors a and b have in total, before answering the queries?</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>modified_gcd_count.py</div>
+            <pre><code>a, b = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+g = gcd(a, b)
+divs = divisors_of(g)
+<span class="kw">print</span>(<span class="st">"Total common divisors:"</span>, <span class="kw">len</span>(divs))</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 75C &mdash; Modified GCD. This page builds directly on <a href="max_gcd_en.html">Maximum GCD</a> (Codeforces 1370A) &mdash; go there first if gcd itself still feels shaky.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function gcd(x, y){
+    while (y){ var t = y; y = x % y; x = t; }
+    return x;
+  }
+
+  function divisorsOf(g){
+    var divs = [];
+    for (var i = 1; i * i <= g; i++){
+      if (g % i === 0){
+        divs.push(i);
+        if (i !== g / i){ divs.push(g / i); }
+      }
+    }
+    divs.sort(function(x, y){ return x - y; });
+    return divs;
+  }
+
+  function run(){
+    var a = parseInt(document.getElementById('inA').value, 10);
+    var b = parseInt(document.getElementById('inB').value, 10);
+    var low = parseInt(document.getElementById('inLow').value, 10);
+    var high = parseInt(document.getElementById('inHigh').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(a) || isNaN(b) || isNaN(low) || isNaN(high) ||
+        a < 1 || a > 1000000000 || b < 1 || b > 1000000000 ||
+        low < 1 || high > 1000000000 || low > high){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>a and b must be between 1 and 1,000,000,000, and low &le; high, both between 1 and 1,000,000,000.</p></div>';
+      return;
+    }
+
+    var g = gcd(a, b);
+    var divs = divisorsOf(g);
+
+    var answer = -1;
+    var stoppedAt = null;
+    for (var i = divs.length - 1; i >= 0; i--){
+      if (divs[i] <= high){
+        stoppedAt = divs[i];
+        if (divs[i] >= low){ answer = divs[i]; }
+        break;
+      }
+    }
+
+    var html = '';
+
+    if (divs.length <= 40){
+      html += '<table class="trace"><thead><tr><th>divisor of g</th><th>&le; high?</th><th>&ge; low?</th><th>verdict</th></tr></thead><tbody>';
+      for (var j = divs.length - 1; j >= 0; j--){
+        var d = divs[j];
+        var fitsHigh = d <= high;
+        var fitsLow = d >= low;
+        var cellClass = (fitsHigh && d === stoppedAt) ? 'odd' : 'even';
+        var verdict;
+        if (!fitsHigh){ verdict = 'too big, skip'; }
+        else if (fitsLow){ verdict = '<b>fits! this is the answer</b>'; }
+        else { verdict = '<b>fits under high, but below low &mdash; stop, answer is -1</b>'; }
+        html += '<tr><td>' + d + '</td><td class="' + cellClass + '">' + (fitsHigh ? 'yes' : 'no') + '</td><td>' + (fitsLow ? 'yes' : 'no') + '</td><td>' + verdict + '</td></tr>';
+        if (d === stoppedAt) break;
+      }
+      html += '</tbody></table>';
+    }
+
+    html += '<div class="answer-line">gcd(' + a + ', ' + b + ') = <b>' + g + '</b>, with <b>' + divs.length + '</b> total common divisor' + (divs.length === 1 ? '' : 's') + '. Answer for [' + low + ', ' + high + ']: <b>' + answer + '</b></div>';
+
+    var slowChecks = high - low + 1;
+    var fastChecks = Math.ceil(Math.sqrt(g)) + divs.length;
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowChecks.toLocaleString() + '</div><div class="lbl">numbers to test, brute-force scanning this one query\'s range</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastChecks.toLocaleString() + '</div><div class="lbl">steps: build the divisor list (&radic;g), then scan it for this query</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maximum GCD: Finding the Best Pair Without Checking a Single One (Codeforces 1370A)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1370A &middot; Problem Walkthrough</div>
+      <h1>Maximum GCD: <em>Pick the Best Pair</em></h1>
+      <p class="sub">Codeforces 1370A asks a deceptively simple question: among every pair of numbers from 1 to n, which pair shares the biggest common factor? There's no need to check them all &mdash; one line of code answers it instantly. Let's find out why.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">One-line formula</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission</h2></div>
+      <p class="lead">You're given a number <code>n</code>. Somewhere among all the pairs of numbers from <code>1</code> up to <code>n</code>, one pair has the biggest greatest common divisor (GCD) of them all. Your job: find that biggest GCD &mdash; fast.</p>
+      <p>The rules are simple: pick two different whole numbers <code>a</code> and <code>b</code> with <code>1 &le; a &lt; b &le; n</code>. Compute <code>gcd(a, b)</code>. Out of every pair you could possibly choose, report the largest <code>gcd</code> you can find.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>n = 3</code> &rarr; the biggest GCD is <b>1</b> (every pair among 1, 2, 3 only shares the factor 1).<br>
+        <code>n = 5</code> &rarr; the biggest GCD is <b>2</b>, from the pair <code>(2, 4)</code>.</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why should you care?</div>
+        <p>Codeforces can hand you up to 100 separate values of <code>n</code> in one go, and <code>n</code> itself can be as big as <strong>1,000,000</strong>. If your solution checks every possible pair one at a time, it will still be running long after the judge has given up on you. The real trick answers each test case in a single step.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Quick refresher: what does "GCD" mean?</h2></div>
+      <p class="lead">Before we solve the puzzle, let's make sure "GCD" isn't scary. GCD stands for <strong>Greatest Common Divisor</strong> &mdash; the biggest number that divides evenly into two other numbers, with nothing left over.</p>
+      <p>Take <code>12</code> and <code>18</code>. The numbers that divide evenly into 12 are <code>1, 2, 3, 4, 6, 12</code>. The numbers that divide evenly into 18 are <code>1, 2, 3, 6, 9, 18</code>. Which numbers show up in <em>both</em> lists? <code>1, 2, 3,</code> and <code>6</code>. The biggest one they share is <code>6</code> &mdash; so <code>gcd(12, 18) = 6</code>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Python has a shortcut, <code>math.gcd(a, b)</code>, that finds this instantly using an algorithm invented by Euclid over 2,000 years ago. But for problem 1370A, we won't even need to call it &mdash; we're about to find something even smarter.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Why not just check every pair?</h2></div>
+      <p class="lead">The obvious plan: try every pair <code>(a, b)</code>, compute <code>gcd(a, b)</code> for each one, and keep the biggest. It would definitely work &mdash; eventually.</p>
+      <p>The problem is <code>n</code> can be as large as <strong>1,000,000</strong>, and there can be up to <strong>100</strong> test cases like that. Checking every pair means checking roughly <code>n</code>&sup2;<code>/2</code> pairs per test case &mdash; and that number explodes far faster than you'd expect.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">499,999,500,000</div><div class="lbl">pairs to check, brute force, for just one test case with n = 1,000,000</div></div>
+        <div class="stat fast"><div class="num">1</div><div class="lbl">division, using the formula you're about to learn</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The key insight: let one number be double the other</h2></div>
+      <p class="lead">Here's the shortcut. If <code>b</code> is exactly double <code>a</code> (that is, <code>b = 2 &times; a</code>), then <code>a</code> divides evenly into <code>b</code> &mdash; so <code>gcd(a, b) = a</code>, automatically, every single time.</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">pick</div><div class="v">a = n // 2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>&times;2</div>
+        <div class="chain-box picked"><div class="p">get</div><div class="v">b = 2 &times; a</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">Since b is exactly two copies of a, a divides b perfectly &mdash; so gcd(a, b) = a, guaranteed.</p>
+
+      <p>So to make that shared factor as big as possible, we just want the <strong>biggest a</strong> for which <code>2 &times; a</code> still fits inside <code>n</code>. That's exactly <code>a = n // 2</code> (integer division: divide by 2, throw away any remainder).</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>The biggest GCD you can ever get from a pair inside <code>1..n</code> is exactly <code>n // 2</code> &mdash; and you get it every time by picking <code>a = n // 2</code>, <code>b = 2 &times; a</code>.</p>
+      </div>
+
+      <p><strong>But why can't anything beat n // 2?</strong> Say the winning pair shares a common divisor <code>g</code>. Because <code>g</code> divides both numbers, and the two numbers are different, the bigger one has to be at least one whole "step of g" past the smaller one &mdash; so the bigger number is at least <code>2 &times; g</code>. Since the bigger number can never exceed <code>n</code>, that forces <code>2g &le; n</code>, or <code>g &le; n // 2</code>. Try to break this with <code>n = 10</code>: could <code>g = 6</code> work? We'd need two <em>different</em> multiples of 6 that are both &le; 10 &mdash; but the only one is 6 itself; 12 is already too big. So <code>g = 6</code> is impossible, and indeed <code>10 // 2 = 5</code> is the real answer (the pair 5 and 10).</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Reading the code, line by line</h2></div>
+      <p class="lead">Here's the entire solution. Don't worry about understanding it all at once &mdash; read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>max_gcd.py</div>
+        <pre><code><span class="kw">def</span> max_gcd(n):
+    <span class="cm"># the biggest possible gcd(a, b) for 1 &le; a &lt; b &le; n</span>
+    <span class="kw">return</span> n // <span class="nu">2</span>
+
+t = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(t):
+    n = <span class="kw">int</span>(<span class="kw">input</span>())
+    <span class="kw">print</span>(max_gcd(n))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">def max_gcd(n):
+    return n // 2</div>
+          <div class="annot-note"><span>That's the entire algorithm. <b>n // 2</b> means integer division: divide by 2, then throw away the remainder.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">t = int(input())
+for _ in range(t):</div>
+          <div class="annot-note"><span>Codeforces problems often pack multiple test cases into one run. Read how many there are (<b>t</b>), then loop that many times.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">    n = int(input())
+    print(max_gcd(n))</div>
+          <div class="annot-note"><span>For every test case, read <b>n</b> and print the answer. No pairs are ever built, and <b>gcd()</b> is never even called &mdash; the formula already knows the answer.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Let's trace it together: n = 13</h2></div>
+      <p class="lead">Talk is cheap &mdash; let's search for the answer by hand, starting from the biggest candidate and working down, for <code>n = 13</code>. Follow the <span style="color:var(--clue);font-weight:700;">green</span> row &mdash; that's the first candidate that actually works.</p>
+
+      <table class="trace">
+        <thead><tr><th>Candidate g</th><th>2 &times; g</th><th>2 &times; g &le; 13?</th><th>verdict</th></tr></thead>
+        <tbody>
+          <tr><td>13</td><td>26</td><td class="even">no</td><td>too big, try smaller g</td></tr>
+          <tr><td>12</td><td>24</td><td class="even">no</td><td>too big, try smaller g</td></tr>
+          <tr><td>11</td><td>22</td><td class="even">no</td><td>too big, try smaller g</td></tr>
+          <tr><td>10</td><td>20</td><td class="even">no</td><td>too big, try smaller g</td></tr>
+          <tr><td>9</td><td>18</td><td class="even">no</td><td>too big, try smaller g</td></tr>
+          <tr><td>8</td><td>16</td><td class="even">no</td><td>too big, try smaller g</td></tr>
+          <tr><td>7</td><td>14</td><td class="even">no</td><td>too big, try smaller g</td></tr>
+          <tr><td>6</td><td>12</td><td class="odd">yes</td><td><b>picked!</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">Winner: g = 6 &rarr; a = 6, b = 12, gcd(6, 12) = <span style="font-size:16px;">6</span></td></tr></tfoot>
+      </table>
+
+      <p>Notice the winning row lands exactly at <code>g = 6</code>, and <code>13 // 2 = 6</code> too &mdash; no coincidence. This "start high, stop at the first candidate that fits" search is just another way of describing why <code>n // 2</code> works: it's the biggest <code>g</code> for which <code>2 &times; g</code> still fits inside <code>n</code>.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you drive: try your own n</h2></div>
+      <p class="lead">Pick any <code>n</code> from 2 to 1,000,000. The tool below finds the winning pair and compares brute force against the formula.</p>
+
+      <div class="widget">
+        <h3>Maximum GCD finder</h3>
+        <div class="hint">Tip: try n = 2 for the smallest possible case, or n = 1,000,000 to watch the brute-force count explode while the formula stays instant.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="13" min="2" max="1000000"></div>
+          <div class="field"><button class="btn" id="runBtn">Find the max GCD</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Quick challenges (no peeking until you've tried)</h2></div>
+      <p class="lead">Test the trick on paper before you check with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: What's the answer for n = 7, and which pair achieves it?</summary>
+        <div class="reveal">
+          <p><code>a = 7 // 2 = 3</code>, <code>b = 2 &times; 3 = 6</code>. Check: <code>gcd(3, 6) = 3</code>. Could anything beat 3? The remaining pairs look like <code>(1,7)=1</code>, <code>(2,5)=1</code>, <code>(4,6)=2</code>, <code>(5,7)=1</code>, <code>(6,7)=1</code> &mdash; none reach 3. So the answer is <b>3</b>, from the pair <code>(3, 6)</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: What's the smallest possible n in this problem, and what's the answer for it?</summary>
+        <div class="reveal">
+          <p>The smallest allowed <code>n</code> is <code>2</code> (you need at least two numbers to make a pair at all). For <code>n = 2</code>, the only pair available is <code>(1, 2)</code>, so <code>gcd(1, 2) = 1</code> is the only possible answer &mdash; and it matches the formula: <code>2 // 2 = 1</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why can't the answer ever be bigger than n // 2?</summary>
+        <div class="reveal">
+          <p>Say the winning pair shares a common divisor <code>g</code>. Because <code>g</code> divides both numbers, and the numbers are different, the bigger number has to be at least one whole "step of g" past the smaller one &mdash; so the bigger number is at least <code>2 &times; g</code>. Since the bigger number can't exceed <code>n</code>, we get <code>2g &le; n</code>, or <code>g &le; n // 2</code>. That upper limit is exactly what <code>a = n // 2</code>, <code>b = 2a</code> reaches &mdash; so it's not just a good answer, it's the best possible one.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: The judge only wants the biggest GCD, not the actual pair. Can you change max_gcd(n) to return the pair (a, b) too?</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>max_gcd_pair.py</div>
+            <pre><code><span class="kw">def</span> max_gcd_pair(n):
+    a = n // <span class="nu">2</span>
+    b = <span class="nu">2</span> * a
+    <span class="kw">return</span> a, b
+
+<span class="kw">print</span>(max_gcd_pair(<span class="nu">13</span>))  <span class="cm"># (6, 12)</span></code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1370A &mdash; Maximum GCD. Curious about more numbers and primes? Explore <a href="prime_detective_en.html">The Prime Number Detective Agency</a> case file.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function scanRows(n){
+    var rows = [];
+    var g = n;
+    while (true){
+      var twoG = 2 * g;
+      var ok = twoG <= n;
+      rows.push({ g: g, twoG: twoG, ok: ok });
+      if (ok) break;
+      g--;
+    }
+    return rows;
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 2 || n > 1000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>n needs to be between 2 and 1,000,000.</p></div>';
+      return;
+    }
+
+    var a = Math.floor(n / 2);
+    var b = 2 * a;
+    var g = a;
+
+    var html = '';
+
+    if (n <= 40){
+      var rows = scanRows(n);
+      html += '<table class="trace"><thead><tr><th>Candidate g</th><th>2&times;g</th><th>2&times;g &le; n?</th><th>verdict</th></tr></thead><tbody>';
+      for (var i = 0; i < rows.length; i++){
+        var r = rows[i];
+        var okCell = r.ok ? '<td class="odd">yes</td>' : '<td class="even">no</td>';
+        var verdict = r.ok ? '<b>picked!</b>' : 'too big, try smaller g';
+        html += '<tr><td>' + r.g + '</td><td>' + r.twoG + '</td>' + okCell + '<td>' + verdict + '</td></tr>';
+      }
+      html += '</tbody><tfoot><tr><td colspan="4">Winner: g = ' + g + ' &rarr; a = ' + a + ', b = ' + b + '</td></tr></tfoot></table>';
+    }
+
+    html += '<div class="answer-line">gcd(<b>' + a + '</b>, <b>' + b + '</b>) = <b>' + g + '</b> &mdash; the maximum possible for n = ' + n.toLocaleString() + '</div>';
+
+    var brutePairs = n * (n - 1) / 2;
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + brutePairs.toLocaleString() + '</div><div class="lbl">pairs to check, brute force</div></div>' +
+      '<div class="stat fast"><div class="num">1</div><div class="lbl">division, with the formula</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

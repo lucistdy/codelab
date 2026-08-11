@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>最大公约数：不用挨个检查，也能找到最佳数对（Codeforces 1370A）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1370A &middot; 题目精讲</div>
+      <h1>最大公约数：<em>一眼锁定最佳搭档</em></h1>
+      <p class="sub">Codeforces 1370A 问了一个看似简单的问题：在 1 到 n 之间的所有数对里，哪一对的公因数最大？其实根本不用一个个去试——一行代码就能秒出答案。我们来看看为什么。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">一行公式搞定</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标</h2></div>
+      <p class="lead">题目会给你一个数 <code>n</code>。在 1 到 n 之间所有可能的数对里，有一对的最大公约数（GCD）是所有数对里最大的。你的任务：尽快把这个最大值找出来。</p>
+      <p>规则很简单：选两个不同的整数 <code>a</code> 和 <code>b</code>，满足 <code>1 &le; a &lt; b &le; n</code>。算出 <code>gcd(a, b)</code>。在所有可能的数对里，报告你能找到的最大 <code>gcd</code>。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>n = 3</code> &rarr; 最大的 GCD 是 <b>1</b>（1、2、3 这几个数两两之间只共享因数 1）。<br>
+        <code>n = 5</code> &rarr; 最大的 GCD 是 <b>2</b>，来自数对 <code>(2, 4)</code>。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">这跟你有什么关系？</div>
+        <p>Codeforces 一次能给你多达 100 组不同的 <code>n</code>，而每个 <code>n</code> 本身可以大到 <strong>1,000,000</strong>。如果你的做法是一个个检查所有数对，程序还没跑完，评测系统早就等不及了。真正的技巧能让每组测试数据都在一步之内得出答案。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>快速复习：什么是"最大公约数"？</h2></div>
+      <p class="lead">在解开这道题之前，先确认一下"GCD"没那么可怕。GCD 全称 Greatest Common Divisor（<strong>最大公约数</strong>）——能同时整除两个数、且不留余数的那个最大的数。</p>
+      <p>以 <code>12</code> 和 <code>18</code> 为例。能整除 12 的数有 <code>1, 2, 3, 4, 6, 12</code>。能整除 18 的数有 <code>1, 2, 3, 6, 9, 18</code>。两份列表里都出现的数字有哪些？<code>1, 2, 3,</code> 和 <code>6</code>。它们之中最大的是 <code>6</code>——所以 <code>gcd(12, 18) = 6</code>。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">冷知识档案</div>
+        <p>Python 有个现成的捷径 <code>math.gcd(a, b)</code>，用的是两千多年前欧几里得发明的算法，瞬间就能算出答案。不过对付 1370A 这道题，我们连它都用不上——接下来要发现一个更聪明的办法。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>为什么不能挨个检查每一对？</h2></div>
+      <p class="lead">最直接的做法：把每一对 <code>(a, b)</code> 都试一遍，算出各自的 <code>gcd(a, b)</code>，记录最大的那个。这样做肯定管用——只是得等很久。</p>
+      <p>问题在于 <code>n</code> 最大可以到 <strong>1,000,000</strong>，而且测试数据最多可能有 <strong>100</strong> 组。挨个检查每一对，意味着每组测试数据都要检查大约 <code>n</code>&sup2;<code>/2</code> 对——这个数字爆炸的速度比想象中快得多。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">499,999,500,000</div><div class="lbl">对，光是 n = 1,000,000 这一组测试数据，暴力法就要检查这么多数对</div></div>
+        <div class="stat fast"><div class="num">1</div><div class="lbl">次除法，用你即将学到的公式</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>关键洞察：让一个数正好翻倍</h2></div>
+      <p class="lead">秘诀在这里：如果 <code>b</code> 正好是 <code>a</code> 的两倍（也就是 <code>b = 2 &times; a</code>），那么 <code>a</code> 能把 <code>b</code> 整除——所以 <code>gcd(a, b) = a</code>，每次都自动成立。</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">选</div><div class="v">a = n // 2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>&times;2</div>
+        <div class="chain-box picked"><div class="p">得到</div><div class="v">b = 2 &times; a</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">因为 b 正好是两份 a，a 能把 b 整除干净——所以 gcd(a, b) = a，稳赢。</p>
+
+      <p>所以要让这个公共因数尽量大，只需要找到<strong>最大的 a</strong>，让 <code>2 &times; a</code> 依然不超过 <code>n</code>。这正是 <code>a = n // 2</code>（整除：除以 2，扔掉余数）。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">全篇最重要的一句话</div>
+        <p>在 <code>1..n</code> 范围内，一对数能拿到的最大 GCD 正好是 <code>n // 2</code>——只要选 <code>a = n // 2</code>，<code>b = 2 &times; a</code>，每次都能拿到。</p>
+      </div>
+
+      <p><strong>但为什么没有别的组合能超过 n // 2？</strong>假设胜出的一对数共享公因数 <code>g</code>。因为 <code>g</code> 同时整除这两个数，而这两个数又不相等，较大的那个至少要比较小的那个多"跨出一整步 g"——也就是说，较大的数至少是 <code>2 &times; g</code>。既然较大的数不能超过 <code>n</code>，就必然有 <code>2g &le; n</code>，也就是 <code>g &le; n // 2</code>。拿 <code>n = 10</code> 来试着打破这个结论：<code>g = 6</code> 行不行？我们需要两个<em>不同</em>的 6 的倍数、都不超过 10——可 6 的倍数里只有 6 本身，12 已经超了。所以 <code>g = 6</code> 不可能，而 <code>10 // 2 = 5</code> 才是真正的答案（数对是 5 和 10）。</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面就是完整的解法。不用一下子全懂——先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>max_gcd.py</div>
+        <pre><code><span class="kw">def</span> max_gcd(n):
+    <span class="cm"># n 除以 2 向下取整，就是这一对能拿到的最大 gcd(a, b)</span>
+    <span class="kw">return</span> n // <span class="nu">2</span>
+
+t = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(t):
+    n = <span class="kw">int</span>(<span class="kw">input</span>())
+    <span class="kw">print</span>(max_gcd(n))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">def max_gcd(n):
+    return n // 2</div>
+          <div class="annot-note"><span>这就是全部算法。<b>n // 2</b> 表示整除：除以 2，然后扔掉余数。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">t = int(input())
+for _ in range(t):</div>
+          <div class="annot-note"><span>Codeforces 的题目经常把好几组测试数据打包在一次运行里。先读出一共有多少组（<b>t</b>），再循环这么多次。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">    n = int(input())
+    print(max_gcd(n))</div>
+          <div class="annot-note"><span>每组测试数据都读入 <b>n</b>，然后输出答案。全程没有真的构造任何数对，甚至连 <b>gcd()</b> 函数都没调用——公式早就知道答案。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>一起手把手推演一遍：n = 13</h2></div>
+      <p class="lead">光说不练假把式——从最大的候选数开始往下找，亲手把答案找出来，这次用 <code>n = 13</code>。留意标<span style="color:var(--clue);font-weight:700;">绿</span>的那一行——那是第一个真正成立的候选值。</p>
+
+      <table class="trace">
+        <thead><tr><th>候选 g</th><th>2 &times; g</th><th>2 &times; g &le; 13？</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>13</td><td>26</td><td class="even">否</td><td>太大了，换更小的 g 试试</td></tr>
+          <tr><td>12</td><td>24</td><td class="even">否</td><td>太大了，换更小的 g 试试</td></tr>
+          <tr><td>11</td><td>22</td><td class="even">否</td><td>太大了，换更小的 g 试试</td></tr>
+          <tr><td>10</td><td>20</td><td class="even">否</td><td>太大了，换更小的 g 试试</td></tr>
+          <tr><td>9</td><td>18</td><td class="even">否</td><td>太大了，换更小的 g 试试</td></tr>
+          <tr><td>8</td><td>16</td><td class="even">否</td><td>太大了，换更小的 g 试试</td></tr>
+          <tr><td>7</td><td>14</td><td class="even">否</td><td>太大了，换更小的 g 试试</td></tr>
+          <tr><td>6</td><td>12</td><td class="odd">是</td><td><b>就是它！</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">胜出：g = 6 &rarr; a = 6，b = 12，gcd(6, 12) = <span style="font-size:16px;">6</span></td></tr></tfoot>
+      </table>
+
+      <p>留意胜出的那一行正好落在 <code>g = 6</code>，而 <code>13 // 2 = 6</code> 也是一样——这不是巧合。"从大往小试、第一个成立就停下"这种搜索方式，其实只是换一种方式解释了为什么 <code>n // 2</code> 成立：它是能让 <code>2 &times; g</code> 依然不超过 <code>n</code> 的最大 <code>g</code>。</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>该你上场了：换成你自己的 n</h2></div>
+      <p class="lead">挑一个 2 到 1,000,000 之间的 <code>n</code>。下面的工具会找出胜出的数对，并对比暴力法和公式法。</p>
+
+      <div class="widget">
+        <h3>最大公约数搜索器</h3>
+        <div class="hint">小提示：试试 n = 2，看看最小的情况长什么样；再试试 n = 1,000,000，看看暴力检查的数量怎么爆炸式增长，公式却始终一步到位。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="13" min="2" max="1000000"></div>
+          <div class="field"><button class="btn" id="runBtn">找出最大 GCD</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>课后挑战（先自己试，别偷看答案）</h2></div>
+      <p class="lead">在用上面的工具验证之前，先自己在纸上把这个技巧试一遍。</p>
+
+      <details>
+        <summary>挑战一：n = 7 时答案是多少？是哪一对数达到的？</summary>
+        <div class="reveal">
+          <p><code>a = 7 // 2 = 3</code>，<code>b = 2 &times; 3 = 6</code>。验证一下：<code>gcd(3, 6) = 3</code>。有没有别的组合能超过 3？剩下的数对像 <code>(1,7)=1</code>、<code>(2,5)=1</code>、<code>(4,6)=2</code>、<code>(5,7)=1</code>、<code>(6,7)=1</code>——都够不到 3。所以答案是 <b>3</b>，来自数对 <code>(3, 6)</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：这道题里 n 最小能是多少？这种情况下答案又是多少？</summary>
+        <div class="reveal">
+          <p>题目规定的最小 <code>n</code> 是 <code>2</code>（至少要有两个数才能凑出一对）。当 <code>n = 2</code> 时，唯一能选的数对是 <code>(1, 2)</code>，所以 <code>gcd(1, 2) = 1</code> 是唯一可能的答案——这也正好符合公式：<code>2 // 2 = 1</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么答案永远不可能超过 n // 2？</summary>
+        <div class="reveal">
+          <p>假设胜出的一对数共享公因数 <code>g</code>。因为 <code>g</code> 同时整除这两个数，而两个数又不相等，较大的那个至少要比较小的那个多"跨出一整步 g"——也就是说较大的数至少是 <code>2 &times; g</code>。既然较大的数不能超过 <code>n</code>，就得到 <code>2g &le; n</code>，也就是 <code>g &le; n // 2</code>。而 <code>a = n // 2</code>，<code>b = 2a</code> 正好达到这个上限——所以它不只是一个不错的答案，而是最好的答案。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：评测系统只要最大的 GCD，不要求输出具体的数对。你能不能把 max_gcd(n) 改成同时返回数对 (a, b)？</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>max_gcd_pair.py</div>
+            <pre><code><span class="kw">def</span> max_gcd_pair(n):
+    a = n // <span class="nu">2</span>
+    b = <span class="nu">2</span> * a
+    <span class="kw">return</span> a, b
+
+<span class="kw">print</span>(max_gcd_pair(<span class="nu">13</span>))  <span class="cm"># (6, 12)</span></code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1370A &mdash; 最大公约数。想多认识一些数字和质数？欢迎读一读<a href="prime_detective_cn.html">《质数侦探社》</a>案卷档案。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function scanRows(n){
+    var rows = [];
+    var g = n;
+    while (true){
+      var twoG = 2 * g;
+      var ok = twoG <= n;
+      rows.push({ g: g, twoG: twoG, ok: ok });
+      if (ok) break;
+      g--;
+    }
+    return rows;
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 2 || n > 1000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>n 需要在 2 到 1,000,000 之间。</p></div>';
+      return;
+    }
+
+    var a = Math.floor(n / 2);
+    var b = 2 * a;
+    var g = a;
+
+    var html = '';
+
+    if (n <= 40){
+      var rows = scanRows(n);
+      html += '<table class="trace"><thead><tr><th>候选 g</th><th>2&times;g</th><th>2&times;g &le; n？</th><th>结果</th></tr></thead><tbody>';
+      for (var i = 0; i < rows.length; i++){
+        var r = rows[i];
+        var okCell = r.ok ? '<td class="odd">是</td>' : '<td class="even">否</td>';
+        var verdict = r.ok ? '<b>就是它！</b>' : '太大了，换更小的 g 试试';
+        html += '<tr><td>' + r.g + '</td><td>' + r.twoG + '</td>' + okCell + '<td>' + verdict + '</td></tr>';
+      }
+      html += '</tbody><tfoot><tr><td colspan="4">胜出：g = ' + g + ' &rarr; a = ' + a + '，b = ' + b + '</td></tr></tfoot></table>';
+    }
+
+    html += '<div class="answer-line">gcd(<b>' + a + '</b>, <b>' + b + '</b>) = <b>' + g + '</b> &mdash; n = ' + n.toLocaleString() + ' 时能拿到的最大值</div>';
+
+    var brutePairs = n * (n - 1) / 2;
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + brutePairs.toLocaleString() + '</div><div class="lbl">对，暴力法需要检查的数对数量</div></div>' +
+      '<div class="stat fast"><div class="num">1</div><div class="lbl">次除法，用公式</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

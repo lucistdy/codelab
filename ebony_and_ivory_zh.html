@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>埃博尼和艾沃丽：两把枪能刚好打出 c 点伤害吗？（Codeforces 1036A）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1036A &middot; 题目精讲</div>
+      <h1>埃博尼和艾沃丽：<em>刚好打出这个数字</em></h1>
+      <p class="sub">但丁有两把枪，埃博尼（Ebony）和艾沃丽（Ivory）。每一发埃博尼子弹造成 <code>a</code> 点伤害，每一发艾沃丽子弹造成 <code>b</code> 点伤害。Codeforces 1036A 问的是：他能不能打出一套子弹组合，正好造成 <code>c</code> 点伤害？我们一发一发地把答案找出来。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">简单搜索</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标</h2></div>
+      <p class="lead">但丁正面对"救世主"的护盾，只有正好造成 <code>c</code> 点伤害才能击破它——多一点不行，少一点也不行。他有两把枪：埃博尼每发子弹造成 <code>a</code> 点伤害，艾沃丽每发子弹造成 <code>b</code> 点伤害。两把枪各自可以开任意数量的子弹，包括 0 发。</p>
+      <p>换句话说：能不能找到两个非负整数 <code>x</code>（埃博尼的子弹数）和 <code>y</code>（艾沃丽的子弹数），使得 <code>a &times; x + b &times; y = c</code>？</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>a=4, b=6, c=15</code> &rarr; <b>No</b>（没有任何组合能凑出来）。<br>
+        <code>a=3, b=2, c=7</code> &rarr; <b>Yes</b>（1 发埃博尼 + 2 发艾沃丽：1&times;3 + 2&times;2 = 7）。<br>
+        <code>a=6, b=11, c=6</code> &rarr; <b>Yes</b>（1 发埃博尼 + 0 发艾沃丽：1&times;6 + 0&times;11 = 6）。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">这跟你有什么关系？</div>
+        <p><code>c</code> 最大可以到 <strong>10,000</strong>。瞎猜子弹组合、指望撞上答案可不是办法——那是在赌运气。我们需要一种搜索方式，既能保证检查到所有真正可能有用的组合，又不会多做无用功。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>这其实是个"凑钱"游戏</h2></div>
+      <p class="lead">把恶魔猎人的外壳剥掉，底下藏着的问题是：<strong>只用 3 元和 2 元的纸币，能不能刚好凑出 7 元？</strong>这正是样例二（<code>a=3, b=2, c=7</code>）——答案是可以，1 张 3 元加 2 张 2 元正好。</p>
+      <p>有些总数能凑出来，有些不行。只用 3 元和 2 元，能凑出 1 元吗？不行——所有组合只能是 0、2、3、4、5、6……1 永远凑不出来。这正是这道题在问的"到底行不行"，只是换了一层恶魔护盾的外壳。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">冷知识档案</div>
+        <p>这种"只用两种面额，能凑出哪些总数"的问题，有个外号叫<strong>炸鸡块问题</strong>，因为麦当劳曾经卖过 6 块、9 块、20 块一盒的炸鸡块，数学家们立刻开始琢磨：哪些数量的炸鸡块是永远点不出来的？（冷知识：如果只有 6 块装和 9 块装，你永远点不出正好 43 块。）</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>为什么不能挨个试遍每一对 (x, y)？</h2></div>
+      <p class="lead">最直接的办法：把 <code>x</code> 从 0 试到 <code>c</code>，对每一个 <code>x</code> 再把 <code>y</code> 从 0 试到 <code>c</code>，检查 <code>a&times;x + b&times;y</code> 是不是正好等于 <code>c</code>。</p>
+      <p>这样做当然管用，但浪费太多。如果 <code>a = b = 1</code>、<code>c = 10,000</code>，就要检查大约 <code>10,001 &times; 10,001</code> 对组合——差不多 <strong>一亿次</strong>检查，而且只是一组测试数据而已。其实藏着一个小得多的搜索方式。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">100,020,001</div><div class="lbl">对 (x, y) 组合，用暴力法把每一种可能都试一遍</div></div>
+        <div class="stat fast"><div class="num">10,001</div><div class="lbl">个 x 值，用你即将学到的更聪明的搜索方式</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>关键洞察：只猜 x，用公式算出 y</h2></div>
+      <p class="lead">其实根本不用去猜 <code>y</code>——一旦选定了 <code>x</code>，方程 <code>a&times;x + b&times;y = c</code> 就已经把 <code>y</code> 该是多少算得明明白白：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:17px;">y = (c &minus; a&times;x) / b</p>
+      <p>所以对每一个 <code>x</code>，真正要问的问题只有一个：<strong>这个除法能不能除尽（没有余数），而且结果是不是 &ge; 0？</strong>如果是，答案就找到了。如果不是，换下一个 x 再试。</p>
+
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">选</div><div class="v">x = 0, 1, 2&hellip;</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>求解</div>
+        <div class="chain-box"><div class="p">检查</div><div class="v">(c &minus; a&times;x) % b == 0？</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">因为 a &ge; 1，x 的取值范围永远只在 0 到 c &divide; a 之间——最多试 c+1 个值，仅此而已。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">全篇最重要的一句话</div>
+        <p>把一个"猜两个数"的游戏变成"猜一个数、算出另一个数"的游戏，就是整个诀窍——这也是竞赛编程里会反复出现的招式：<em>固定一个变量，推出剩下的。</em></p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">额外洞察</div>
+        <p>这里有个技巧，甚至能让你在开始循环之前就省下时间：如果 <code>c</code> 不是 <code>gcd(a, b)</code> 的倍数，答案立刻就是 <b>No</b>——不管怎么组合 a 和 b，都凑不出 c。（好奇这是为什么？<a href="max_gcd_zh.html">最大公约数</a>那一页正好深入讲了这个问题。）比如 <code>gcd(4, 6) = 2</code>，而 15 不是 2 的倍数——所以样例一在我们检查任何一个 x 之前，就已经注定是 No 了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面就是完整的解法。不用一下子全懂——先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ebony_and_ivory.py</div>
+        <pre><code>a, b, c = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+possible = <span class="kw">False</span>
+x = <span class="nu">0</span>
+<span class="kw">while</span> a * x &lt;= c:
+    remainder = c - a * x
+    <span class="kw">if</span> remainder % b == <span class="nu">0</span>:
+        possible = <span class="kw">True</span>
+        <span class="kw">break</span>
+    x += <span class="nu">1</span>
+
+<span class="kw">print</span>(<span class="st">"Yes"</span> <span class="kw">if</span> possible <span class="kw">else</span> <span class="st">"No"</span>)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">possible = False
+x = 0</div>
+          <div class="annot-note"><span>先假设最坏的情况（没有任何组合能行得通），除非之后被推翻。埃博尼的子弹数 <b>x</b> 从 0 开始。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while a * x <= c:</div>
+          <div class="annot-note"><span>只尝试那些自己就不会超过 c 的 x 值——一旦 a&times;x 超过了 c，不管 y 是多少（非负），都没法把它拉回来。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">remainder = c - a * x
+if remainder % b == 0:</div>
+          <div class="annot-note"><span>这就是 <b>c &minus; a&times;x</b>，也就是光靠艾沃丽还需要补上的伤害。如果它能被 b 整除，就说明找到了一个可行的 y。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">possible = True
+break</div>
+          <div class="annot-note"><span>找到了——不用再继续找。<b>break</b> 立刻跳出循环。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">x += 1</div>
+          <div class="annot-note"><span>这个 x 不行，换下一个再试。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>一起手把手推演一遍：a=4, b=6, c=15</h2></div>
+      <p class="lead">光说不练假把式——用样例一亲手把代码走一遍，这次答案会是 <b>No</b>。留意循环在 a&times;x 即将超过 15 的那一刻停下来。</p>
+
+      <table class="trace">
+        <thead><tr><th>x</th><th>a &times; x</th><th>余数 (c &minus; a&times;x)</th><th>余数 % b</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>15</td><td class="even">3</td><td>除不尽，试下一个 x</td></tr>
+          <tr><td>1</td><td>4</td><td>11</td><td class="even">5</td><td>除不尽，试下一个 x</td></tr>
+          <tr><td>2</td><td>8</td><td>7</td><td class="even">1</td><td>除不尽，试下一个 x</td></tr>
+          <tr><td>3</td><td>12</td><td>3</td><td class="even">3</td><td>除不尽，试下一个 x</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">x = 4 会让 a&times;x = 16 &gt; 15，所以循环到此停止。没有一个 x 成立 &rarr; 答案是 <span style="font-size:16px;">No</span></td></tr></tfoot>
+      </table>
+
+      <p>这次只需要检查 4 个 x 值——远远比不上第三关里那个大约 15&times;15 的暴力网格。再想想第四关的"额外洞察"：<code>gcd(4, 6) = 2</code>，而 15 不是 2 的倍数，所以其实我们什么都不用检查，就能提前猜到答案是 No。</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>该你上场了：换成你自己的 a、b、c</h2></div>
+      <p class="lead">挑一个 1 到 100 之间的 <code>a</code>、<code>b</code>，再挑一个 1 到 10,000 之间的 <code>c</code>。下面的工具会跑一模一样的搜索，把每一轮都摆出来，就像上面那张表一样。</p>
+
+      <div class="widget">
+        <h3>埃博尼与艾沃丽伤害检测器</h3>
+        <div class="hint">小提示：试试 a=1, b=1, c=10000，看看搜索能涨到多大；或者挑两个 gcd 除不尽 c 的数字，看看瞬间得到 No。</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a（埃博尼）</label><input type="number" id="inA" value="3" min="1" max="100"></div>
+          <div class="field"><label for="inB">b（艾沃丽）</label><input type="number" id="inB" value="2" min="1" max="100"></div>
+          <div class="field"><label for="inC">c（目标伤害）</label><input type="number" id="inC" value="7" min="1" max="10000"></div>
+          <div class="field"><button class="btn" id="runBtn">检查能否打出精确伤害</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>课后挑战（先自己试，别偷看答案）</h2></div>
+      <p class="lead">在用上面的工具验证之前，先自己在纸上把这个搜索试一遍。</p>
+
+      <details>
+        <summary>挑战一：a=5, b=3 能不能刚好打出 c=11 点伤害？找出 x 和 y。</summary>
+        <div class="reveal">
+          <p><code>x=0</code>：余数 11，11 % 3 = 2，不行。<code>x=1</code>：余数 6，6 % 3 = 0，<b>可以！</b>所以 <code>y = 6 / 3 = 2</code>。验证一下：<code>5&times;1 + 3&times;2 = 5 + 6 = 11</code>。答案是 <b>Yes</b>，1 发埃博尼加 2 发艾沃丽。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：样例三说 a=6, b=11, c=6 的答案是 Yes。为什么搜索第一次就能找到？</summary>
+        <div class="reveal">
+          <p><code>x=0</code>：余数是 6，6 % 11 = 6——除不尽，所以 x=0（也就是 0 发埃博尼）不行。<code>x=1</code>：<code>a&times;x = 6</code>，余数 = <code>6 &minus; 6 = 0</code>，0 % 11 = 0——除尽了！所以 <code>y = 0</code>。一发埃博尼就能搞定全部，一发艾沃丽都不需要。循环只试了 2 次。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么只搜索 x 就够了，完全不用单独去搜索 y？</summary>
+        <div class="reveal">
+          <p>因为一旦 <code>a</code>、<code>c</code> 和选定的 <code>x</code> 固定下来，方程 <code>a&times;x + b&times;y = c</code> 就只剩下唯一一个可能的 <code>y</code>：<code>y = (c &minus; a&times;x) / b</code>。已经没什么好猜的了——这个值要么是非负整数，要么不是。单独再去搜索 y，只是在把同一个数字重新算一遍，没有任何好处。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：评测系统只要"Yes"/"No"。你能不能把代码改一下，答案是 Yes 时也把找到的 x 和 y 打印出来？</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ebony_and_ivory_pair.py</div>
+            <pre><code>a, b, c = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+x = <span class="nu">0</span>
+<span class="kw">while</span> a * x &lt;= c:
+    remainder = c - a * x
+    <span class="kw">if</span> remainder % b == <span class="nu">0</span>:
+        y = remainder // b
+        <span class="kw">print</span>(<span class="st">"Yes"</span>, x, y)
+        <span class="kw">break</span>
+    x += <span class="nu">1</span>
+<span class="kw">else</span>:
+    <span class="kw">print</span>(<span class="st">"No"</span>)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1036A &mdash; 埃博尼和艾沃丽。那个关于 gcd 的"额外洞察"技巧？想深入了解，可以看看<a href="max_gcd_zh.html">最大公约数</a>那一页（Codeforces 1370A）。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(a, b, c){
+    var rows = [];
+    var x = 0;
+    var found = false, fx = 0, fy = 0;
+    while (a * x <= c){
+      var remainder = c - a * x;
+      var mod = remainder % b;
+      var ok = mod === 0;
+      rows.push({ x: x, ax: a * x, remainder: remainder, mod: mod, ok: ok });
+      if (ok){ found = true; fx = x; fy = remainder / b; break; }
+      x++;
+    }
+    return { rows: rows, found: found, fx: fx, fy: fy };
+  }
+
+  function run(){
+    var a = parseInt(document.getElementById('inA').value, 10);
+    var b = parseInt(document.getElementById('inB').value, 10);
+    var c = parseInt(document.getElementById('inC').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(a) || isNaN(b) || isNaN(c) || a < 1 || a > 100 || b < 1 || b > 100 || c < 1 || c > 10000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>a 和 b 需要在 1 到 100 之间，c 需要在 1 到 10,000 之间。</p></div>';
+      return;
+    }
+
+    var r = solve(a, b, c);
+    var html = '';
+
+    if (r.rows.length <= 40){
+      html += '<table class="trace"><thead><tr><th>x</th><th>a&times;x</th><th>余数</th><th>余数 % b</th><th>结果</th></tr></thead><tbody>';
+      for (var i = 0; i < r.rows.length; i++){
+        var row = r.rows[i];
+        var modCell = row.ok ? '<td class="odd">' + row.mod + '</td>' : '<td class="even">' + row.mod + '</td>';
+        var verdict = row.ok ? '<b>可以！就在这里停下</b>' : '除不尽，试下一个 x';
+        html += '<tr><td>' + row.x + '</td><td>' + row.ax + '</td><td>' + row.remainder + '</td>' + modCell + '<td>' + verdict + '</td></tr>';
+      }
+      html += '</tbody>';
+      if (r.found){
+        html += '<tfoot><tr><td colspan="5">胜出：x = ' + r.fx + '，y = ' + r.fy + ' &rarr; ' + a + '&times;' + r.fx + ' + ' + b + '&times;' + r.fy + ' = ' + c + '</td></tr></tfoot>';
+      } else {
+        html += '<tfoot><tr><td colspan="5">范围内没有 x 成立 &rarr; 答案是 No</td></tr></tfoot>';
+      }
+      html += '</table>';
+    }
+
+    if (r.found){
+      html += '<div class="answer-line"><b>Yes</b> &mdash; 打出 ' + r.fx + ' 发埃博尼子弹 + ' + r.fy + ' 发艾沃丽子弹 = ' + (a * r.fx) + ' + ' + (b * r.fy) + ' = ' + c + ' 点伤害</div>';
+    } else {
+      html += '<div class="answer-line"><b>No</b> &mdash; 没有任何埃博尼和艾沃丽子弹组合能打出正好 ' + c + ' 点伤害</div>';
+    }
+
+    var fastChecks = r.rows.length;
+    var slowChecks = (Math.floor(c / a) + 1) * (Math.floor(c / b) + 1);
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowChecks.toLocaleString() + '</div><div class="lbl">对 (x, y) 组合，暴力法</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastChecks.toLocaleString() + '</div><div class="lbl">个实际检查过的 x 值</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

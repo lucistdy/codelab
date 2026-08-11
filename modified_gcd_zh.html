@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>修改版最大公约数：在区间里找到最大的公共因数（Codeforces 75C）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:56px;text-align:center;}
+  .bit .cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bit .pw{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Diagram wrap ---------- */
+  .diagram-wrap{margin:22px 0;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .diagram-wrap figcaption{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:8px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 75C &middot; 题目精讲</div>
+      <h1>修改版最大公约数：<em>在区间里搜索</em></h1>
+      <p class="sub">你已经会求两个数最大的公共因数了。Codeforces 75C 问的更刁钻：在 a 和 b 所有的公共因数里，哪一个最大、又刚好落在给定的区间里——而且你能不能把这个问题连续回答 10,000 次，还面不改色？</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">预处理一次，之后飞快</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标</h2></div>
+      <p class="lead">给你两个数 <code>a</code> 和 <code>b</code>。接着会有 <code>n</code> 个独立的问题，每个问题都在问：<strong>能同时整除 a 和 b 的数里，哪一个最大，并且落在 low 到 high 之间（包含两端）？</strong>如果不存在这样的数，答案就是 <code>-1</code>。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>a = 9</code>，<code>b = 27</code>，3 个查询：<br>
+        <code>low=1, high=5</code> &rarr; <b>3</b>（3 同时整除 9 和 27，而且是 [1, 5] 区间里最大的一个）。<br>
+        <code>low=10, high=11</code> &rarr; <b>-1</b>（9 和 27 的公共因数没有一个落在 [10, 11] 里）。<br>
+        <code>low=9, high=11</code> &rarr; <b>9</b>（9 同时整除这两个数，而且落在 [9, 11] 里）。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">这跟你有什么关系？</div>
+        <p><code>a</code> 和 <code>b</code> 最大可以到 <strong>1,000,000,000</strong>，而且最多会有 <strong>10,000</strong> 个查询。如果每个查询都从头把整道题重新算一遍，程序还没算完，评测系统早就等不及了。诀窍是把最费劲的活儿只做<strong>一次</strong>，之后每个查询几乎瞬间就能回答。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>解锁一切的那一个事实</h2></div>
+      <p class="lead">整道题都建立在这一个事实上：<strong>a 和 b 的每一个公共因数，都是 gcd(a, b) 的因数；反过来，gcd(a, b) 的每一个因数，也都是 a 和 b 的公共因数。</strong>这两组数字其实完全一样。</p>
+      <p>用样例验证一下：<code>gcd(9, 27) = 9</code>。9 的因数是 <code>1, 3, 9</code>。现在分别列出 9 和 27 的因数：9 的因数是 <code>1, 3, 9</code>；27 的因数是 <code>1, 3, 9, 27</code>。它们共同拥有的数字是什么？<code>1, 3, 9</code>——正好就是 gcd 的因数。这不是巧合。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">冷知识档案</div>
+        <p>还没学过 GCD，或者想复习一下它为什么特别？<a href="max_gcd_zh.html">最大公约数</a>那一页从头讲起——这一页正好从那里接着往下讲。</p>
+      </div>
+
+      <p>所以我们不用直接在两个可能非常大的数字里翻找公共因数，只需要研究<strong>一个</strong>数：<code>g = gcd(a, b)</code>。它的每一个因数都自动是 a 和 b 的公共因数，而且不会有别的因数藏在别处。</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>为什么不能直接扫描每个区间？</h2></div>
+      <p class="lead">针对单个查询，最直接的办法：把 <code>low</code> 到 <code>high</code> 之间的每一个数都走一遍，检查它是否同时整除 <code>a</code> 和 <code>b</code>，记录下能整除的最大那个。</p>
+      <p>问题是 <code>high &minus; low</code> 本身就可能接近 <strong>1,000,000,000</strong>，而且可能有 <strong>10,000</strong> 个这样的查询。把一次十亿量级的扫描重复一万次，除非你特别喜欢盯着进度条，否则这不是个好计划。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10,000,000,000,000</div><div class="lbl">最坏情况下的检查次数，把每个查询区间里的每个数都挨个测一遍</div></div>
+        <div class="stat fast"><div class="num">13,471,623</div><div class="lbl">最坏情况下的总步数，用你即将学到的更聪明的方案</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>关键洞察：把 g 的所有因数一次性找出来</h2></div>
+      <p class="lead">既然 a 和 b 的每一个公共因数都是 <code>g = gcd(a, b)</code> 的因数，我们只需要一份 g 的完整因数列表。而快速造出这份列表还有个诀窍：因数总是<strong>成对出现</strong>的。</p>
+
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">较小因数</div><div class="v">i</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>配对</div>
+        <div class="chain-box"><div class="p">较大因数</div><div class="v">g / i</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">如果 i 能整除 g，那么 g/i 也能整除 g——而且这一对里必定有一个 &le; &radic;g。所以只要把 i 从 1 检查到 &radic;g，就能找齐每一对因数的两半。</p>
+
+      <p>g 最大可以到 <code>1,000,000,000</code>，而 <code>&radic;g</code> 也就大约 <strong>31,623</strong>——这个循环几乎瞬间就能跑完，哪怕检查的数字大到十亿。找齐所有因数之后，从小到大排个序。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">全篇最重要的一句话</div>
+        <p>把费劲的活儿——求 gcd(a, b) 以及它的每一个因数——只做<strong>一次</strong>。之后每个查询，都只是在一份简短的、排好序的列表里扫一眼而已。</p>
+      </div>
+
+      <p>回答一个查询就变得很简单：从排好序的因数列表里，从<strong>最大</strong>的因数往小里扫，第一个 &le; <code>high</code> 的因数就是最好的候选。如果它同时 &ge; <code>low</code>，那就是答案。如果它比 <code>low</code> 还小，那列表里剩下的因数只会更小，全都不可能落在区间里——所以答案就是 <code>-1</code>。</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面就是完整的解法。不用一下子全懂——先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>modified_gcd.py</div>
+        <pre><code><span class="kw">def</span> gcd(x, y):
+    <span class="kw">while</span> y:
+        x, y = y, x % y
+    <span class="kw">return</span> x
+
+<span class="kw">def</span> divisors_of(g):
+    divs = []
+    i = <span class="nu">1</span>
+    <span class="kw">while</span> i * i &lt;= g:
+        <span class="kw">if</span> g % i == <span class="nu">0</span>:
+            divs.append(i)
+            <span class="kw">if</span> i != g // i:
+                divs.append(g // i)
+        i += <span class="nu">1</span>
+    divs.sort()
+    <span class="kw">return</span> divs
+
+a, b = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+g = gcd(a, b)
+divs = divisors_of(g)   <span class="cm"># a 和 b 的每一个公共因数，从小到大排好</span>
+
+n = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(n):
+    low, high = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+    answer = -<span class="nu">1</span>
+    <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">reversed</span>(divs):   <span class="cm"># 从最大的因数开始</span>
+        <span class="kw">if</span> d &lt;= high:
+            <span class="kw">if</span> d &gt;= low:
+                answer = d
+            <span class="kw">break</span>
+    <span class="kw">print</span>(answer)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">def gcd(x, y):
+    while y:
+        x, y = y, x % y
+    return x</div>
+          <div class="annot-note"><span>经典的欧几里得算法求 gcd——Python 自带的 <code>math.gcd</code> 底层用的也是这一招。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while i * i <= g:
+    if g % i == 0:
+        divs.append(i)
+        if i != g // i:
+            divs.append(g // i)
+    i += 1</div>
+          <div class="annot-note"><span>把每个候选 <b>i</b> 从 1 检查到 &radic;g。每命中一次，就同时得到<em>两个</em>因数（i 和 g/i），除非它们相等（比如 g=9 时的 i=3，因为 3 &times; 3 = 9）。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">divs.sort()</div>
+          <div class="annot-note"><span>两两配对得到的因数是乱序的（大的小的混在一起），所以排一次序，得到一份干净、方便搜索的列表。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for d in reversed(divs):
+    if d <= high:
+        if d >= low:
+            answer = d
+        break</div>
+          <div class="annot-note"><span>从最大的因数开始往小找。第一个能挤进 <b>high</b> 以内的因数就是最好的候选——拿它跟 <b>low</b> 比一下就可以停了，因为更小的因数不可能比它更好。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>一起手把手推演一遍：a=9, b=27</h2></div>
+      <p class="lead"><code>gcd(9, 27) = 9</code>，排好序的因数是 <code>[1, 3, 9]</code>。让我们从最大的因数往下扫，把三个样例查询都回答一遍。</p>
+
+      <table class="trace">
+        <thead><tr><th>查询 (low, high)</th><th>检查 d=9</th><th>检查 d=3</th><th>检查 d=1</th><th>答案</th></tr></thead>
+        <tbody>
+          <tr><td>(1, 5)</td><td>9 &gt; 5，跳过</td><td class="odd">3 &le; 5 且 3 &ge; 1——停下</td><td>&mdash;</td><td><b>3</b></td></tr>
+          <tr><td>(10, 11)</td><td>9 &le; 11 但 9 &lt; 10——停下</td><td>&mdash;</td><td>&mdash;</td><td><b>-1</b></td></tr>
+          <tr><td>(9, 11)</td><td class="odd">9 &le; 11 且 9 &ge; 9——停下</td><td>&mdash;</td><td>&mdash;</td><td><b>9</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">和评测系统给出的期望输出完全一致：3, -1, 9</td></tr></tfoot>
+      </table>
+
+      <p>留意查询 2：第一个挤进 <code>high=11</code> 以内的因数是 <code>9</code>，但 <code>9 &lt; 10 = low</code>。既然剩下的因数（3、1）只会更小，它们也不可能 &ge; 10——所以可以立刻停下，报告 <code>-1</code>，不用再继续检查。</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>该你上场了：换成你自己的 a、b 和查询</h2></div>
+      <p class="lead">挑一个 <code>a</code>、<code>b</code>，再挑一个 <code>low</code>/<code>high</code> 区间。下面的工具会造出因数列表，并回答你的查询，就像上面那张表一样。</p>
+
+      <div class="widget">
+        <h3>修改版 GCD 搜索器</h3>
+        <div class="hint">小提示：用 a=9, b=27 试试另外两个样例查询（low=10,high=11 和 low=9,high=11），核对全部三个官方答案。</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a</label><input type="number" id="inA" value="9" min="1" max="1000000000"></div>
+          <div class="field"><label for="inB">b</label><input type="number" id="inB" value="27" min="1" max="1000000000"></div>
+          <div class="field"><label for="inLow">low</label><input type="number" id="inLow" value="1" min="1" max="1000000000"></div>
+          <div class="field"><label for="inHigh">high</label><input type="number" id="inHigh" value="5" min="1" max="1000000000"></div>
+          <div class="field"><button class="btn" id="runBtn">查找答案</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>课后挑战（先自己试，别偷看答案）</h2></div>
+      <p class="lead">在用上面的工具验证之前，先自己在纸上把这个搜索试一遍。</p>
+
+      <details>
+        <summary>挑战一：a=9, b=27，查询 low=9, high=11。答案是多少？</summary>
+        <div class="reveal">
+          <p>这是样例查询 3。<code>gcd(9,27)=9</code>，因数 <code>[1, 3, 9]</code>。从最大的开始扫：<code>9 &le; 11</code>，而且 <code>9 &ge; 9</code>——立刻停下。答案：<b>9</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：a=12, b=18，查询 low=4, high=5。答案是多少？</summary>
+        <div class="reveal">
+          <p><code>gcd(12, 18) = 6</code>。6 的因数：<code>[1, 2, 3, 6]</code>。从最大的开始扫：<code>6 &le; 5</code>？不行，跳过。<code>3 &le; 5</code>？可以——但 <code>3 &ge; 4</code>？不行。到此停下（剩下的因数只会更小）。答案：<b>-1</b>——12 和 18 的公共因数里，根本没有一个落在 4 和 5 之间。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么 a 和 b 的每一个公共因数，一定都是 gcd(a, b) 的因数？</summary>
+        <div class="reveal">
+          <p>可以这样想：<code>gcd(a, b)</code> 是同时整除 a 和 b 的<em>那个</em>最大的数——它完全是由 a 和 b "共享的原材料"拼出来的。a 和 b 的任何其他公共因数，都是从这份共享原材料里截取的更小一块，而更小的一块永远能整除完整的那一块。这正是为什么每一个公共因数都会出现在 gcd(a, b) 自己的因数列表里，不多不少，一个不落。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：能不能改一下代码，在回答查询之前，先打印出 a 和 b 一共有多少个公共因数？</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>modified_gcd_count.py</div>
+            <pre><code>a, b = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+g = gcd(a, b)
+divs = divisors_of(g)
+<span class="kw">print</span>(<span class="st">"公共因数总数："</span>, <span class="kw">len</span>(divs))</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 75C &mdash; 修改版最大公约数。这一页是直接建立在<a href="max_gcd_zh.html">最大公约数</a>（Codeforces 1370A）基础上的——如果 gcd 本身还不太熟，建议先去那一页看看。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function gcd(x, y){
+    while (y){ var t = y; y = x % y; x = t; }
+    return x;
+  }
+
+  function divisorsOf(g){
+    var divs = [];
+    for (var i = 1; i * i <= g; i++){
+      if (g % i === 0){
+        divs.push(i);
+        if (i !== g / i){ divs.push(g / i); }
+      }
+    }
+    divs.sort(function(x, y){ return x - y; });
+    return divs;
+  }
+
+  function run(){
+    var a = parseInt(document.getElementById('inA').value, 10);
+    var b = parseInt(document.getElementById('inB').value, 10);
+    var low = parseInt(document.getElementById('inLow').value, 10);
+    var high = parseInt(document.getElementById('inHigh').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(a) || isNaN(b) || isNaN(low) || isNaN(high) ||
+        a < 1 || a > 1000000000 || b < 1 || b > 1000000000 ||
+        low < 1 || high > 1000000000 || low > high){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>a 和 b 需要在 1 到 1,000,000,000 之间，并且 low &le; high，两者都在 1 到 1,000,000,000 之间。</p></div>';
+      return;
+    }
+
+    var g = gcd(a, b);
+    var divs = divisorsOf(g);
+
+    var answer = -1;
+    var stoppedAt = null;
+    for (var i = divs.length - 1; i >= 0; i--){
+      if (divs[i] <= high){
+        stoppedAt = divs[i];
+        if (divs[i] >= low){ answer = divs[i]; }
+        break;
+      }
+    }
+
+    var html = '';
+
+    if (divs.length <= 40){
+      html += '<table class="trace"><thead><tr><th>g 的因数</th><th>&le; high？</th><th>&ge; low？</th><th>结果</th></tr></thead><tbody>';
+      for (var j = divs.length - 1; j >= 0; j--){
+        var d = divs[j];
+        var fitsHigh = d <= high;
+        var fitsLow = d >= low;
+        var cellClass = (fitsHigh && d === stoppedAt) ? 'odd' : 'even';
+        var verdict;
+        if (!fitsHigh){ verdict = '太大了，跳过'; }
+        else if (fitsLow){ verdict = '<b>符合！这就是答案</b>'; }
+        else { verdict = '<b>没超过 high，但小于 low——停下，答案是 -1</b>'; }
+        html += '<tr><td>' + d + '</td><td class="' + cellClass + '">' + (fitsHigh ? '是' : '否') + '</td><td>' + (fitsLow ? '是' : '否') + '</td><td>' + verdict + '</td></tr>';
+        if (d === stoppedAt) break;
+      }
+      html += '</tbody></table>';
+    }
+
+    html += '<div class="answer-line">gcd(' + a + ', ' + b + ') = <b>' + g + '</b>，共有 <b>' + divs.length + '</b> 个公共因数。区间 [' + low + ', ' + high + '] 的答案：<b>' + answer + '</b></div>';
+
+    var slowChecks = high - low + 1;
+    var fastChecks = Math.ceil(Math.sqrt(g)) + divs.length;
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowChecks.toLocaleString() + '</div><div class="lbl">个数字，暴力扫描这一个查询的区间</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastChecks.toLocaleString() + '</div><div class="lbl">步：先建好因数列表（&radic;g），再为这个查询扫一遍</div></div>' +
+    '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>
