@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jzzhu 的回声机器：每 6 步就会重复一次的数列（Codeforces 450B）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.8;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,6vw,42px);line-height:1.3;margin:0 0 12px;letter-spacing:0;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:16px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.04em;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.05em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:22px;margin:0;}
+  .lead{font-size:16px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Echo chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;letter-spacing:.02em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:130px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.02em;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 450B &middot; 题目精讲</div>
+      <h1>Jzzhu 的回声机器：<em>每 6 步就重复一次的数列</em></h1>
+      <p class="sub">Jzzhu 造了一台奇怪的数字机器：每个新数字，都等于前两个数字相减。给它喂进一对起始数字，神奇的事情发生了——整条数列会每隔 6 步就"回声"一次，一直重复下去。Codeforces 450B 要求你算出机器打印的第 n 个数字，哪怕 n 大到 20 亿。</p>
+      <div class="stampbar">
+        <span class="stamp hot">写给爱思考的 13 岁少年</span>
+        <span class="stamp">一个新技巧：6 步回声</span>
+        <span class="stamp">可互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>认识这台机器</h2></div>
+      <p class="lead">Jzzhu 的数列从两个你自己选的数字开始：<code>f&#8321; = x</code>，<code>f&#8322; = y</code>。从此以后，每个新数字都严格遵守一条规则：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:17px;">f<sub>i</sub> = f<sub>i&minus;1</sub> &minus; f<sub>i&minus;2</sub> &nbsp;&nbsp;（对所有 i &gt; 2 成立）</p>
+      <p>说人话：要算下一个数字，就拿"紧挨着它前面的那个数"，减去"再往前一个数"。你的任务：给定 <code>x</code>、<code>y</code> 和步数 <code>n</code>，求出 <code>f<sub>n</sub></code>——但因为这些数字可能变得非常大（或者非常负），所以要对 <code>1,000,000,007</code> 取模后再输出。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原话</div>
+        <p><code>x=2, y=3, n=3</code> &rarr; <b>1</b>。题目提示写道 f&#8322; = f&#8321; + f&#8323;，也就是 3 = 2 + f&#8323;，所以 f&#8323; = 1——这正好等于 <code>y &minus; x</code>。<br>
+        <code>x=0, y=&minus;1, n=2</code> &rarr; <b>1000000006</b>。我们要的其实就是 f&#8322;，也就是 y 本身：<code>&minus;1</code>。因为答案不能是负数，我们要把它对 1,000,000,007 取模，<code>&minus;1</code> 就变成了 <code>1,000,000,006</code>（刚好在绕回 0 的前一步）。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么要在意速度？</div>
+        <p><code>n</code> 最大可以到 <strong>2,000,000,000</strong>——整整 20 亿！<code>x</code> 和 <code>y</code> 的绝对值也可能高达十亿。如果机器每一步都老老实实打印一个数字，一步一步算完 20 亿次，是绝对无法在这道题 1 秒的时间限制内跑完的。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>这闻起来很像一个时钟</h2></div>
+      <p class="lead">想想钟表上的时针。它不会一直往上数——1、2、3……47、48……——而是数到 12 就<em>绕回去</em>重新从 1 开始。如果你知道时钟每 12 小时循环一次，那你根本不需要从盘古开天地开始，一小时一小时地模拟，才能知道"第 9000 小时"指针指向哪里。你只需要知道循环规律，以及第 9000 小时落在规律里的哪个位置。</p>
+      <p>Jzzhu 的数列脾气一模一样。它不会真的重复出现数字 12——但你马上就会看到，整整六个数字组成的<em>规律</em>会永远重复下去。一旦我们找到这个规律，就再也不需要靠 998 次减法硬算出 f<sub>1000</sub>。我们只需要弄清楚第 1000 步落在这个 6 步循环里的哪个位置。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>还没接触过这种"绕圈子"的钟表数学（也叫<b>模运算</b>）？<a href="prime_detective_cn.html">质数侦探社</a>这一页从零开始搭建了余数的概念，正是这里用到的同一种"钟面思维"。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>为什么"老老实实算每一步"会失败</h2></div>
+      <p class="lead">规则 <code>f<sub>i</sub> = f<sub>i&minus;1</sub> &minus; f<sub>i&minus;2</sub></code> 写成循环很容易：在内存里存两个数字，做减法，往后移一位，重复 n 次。问题就出在这个 <strong>n</strong> 上。n 最大能到 20 亿，即便循环每一步只做一次微不足道的减法，也得跑 20 亿次——而大多数评测系统（包括这道题）期望你的程序在大约 1 秒内跑完。计算机确实很快，但还没快到"20 亿次小心翼翼的运算、1 秒内轻松搞定"的程度，更别说还要算上读入数据等额外开销了。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">2,000,000,000</div><div class="lbl">最坏情况下，一步一步循环需要的减法次数</div></div>
+        <div class="stat fast"><div class="num">6</div><div class="lbl">用下面的技巧，我们实际需要记住的数字个数</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>关键发现：摇动手柄，看它回声</h2></div>
+      <p class="lead">我们别急着抄近道——先老老实实动手摇几下手柄，看看会发生什么。我们知道 <code>f&#8321; = x</code>，<code>f&#8322; = y</code>。反复套用规则 <code>f<sub>i</sub> = f<sub>i&minus;1</sub> &minus; f<sub>i&minus;2</sub></code>：</p>
+
+      <table class="trace">
+        <thead><tr><th>步骤</th><th>套用的规则</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>f&#8321;</td><td>已知</td><td>x</td></tr>
+          <tr><td>f&#8322;</td><td>已知</td><td>y</td></tr>
+          <tr><td>f&#8323;</td><td>f&#8322; &minus; f&#8321;</td><td>y &minus; x</td></tr>
+          <tr><td>f&#8324;</td><td>f&#8323; &minus; f&#8322; = (y&minus;x) &minus; y</td><td>&minus;x</td></tr>
+          <tr><td>f&#8325;</td><td>f&#8324; &minus; f&#8323; = &minus;x &minus; (y&minus;x)</td><td>&minus;y</td></tr>
+          <tr><td>f&#8326;</td><td>f&#8325; &minus; f&#8324; = &minus;y &minus; (&minus;x)</td><td>x &minus; y</td></tr>
+          <tr><td>f&#8327;</td><td>f&#8326; &minus; f&#8325; = (x&minus;y) &minus; (&minus;y)</td><td class="odd"><b>x</b> &larr; 和 f&#8321; 一样！</td></tr>
+          <tr><td>f&#8328;</td><td>f&#8327; &minus; f&#8326; = x &minus; (x&minus;y)</td><td class="odd"><b>y</b> &larr; 和 f&#8322; 一样！</td></tr>
+        </tbody>
+      </table>
+
+      <p>看到了吧——<code>f&#8327; = f&#8321;</code>，<code>f&#8328; = f&#8322;</code>。既然每个数字都只取决于它前面紧挨着的那两个数字，那么一旦连续两个数字重新出现，<em>后面整段数列</em>也必然会跟着重复。机器已经绕回了自己最初的那一对起点，从这里开始，它就会永远地回声播放同样的六个数字。</p>
+
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">f&#8321;</div><div class="v">x</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box picked"><div class="p">f&#8322;</div><div class="v">y</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">f&#8323;</div><div class="v">y&minus;x</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">f&#8324;</div><div class="v">&minus;x</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">f&#8325;</div><div class="v">&minus;y</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">f&#8326;</div><div class="v">x&minus;y</div></div>
+        <div class="chain-arrow"><span class="sym">&#8635;</span>回声！</div>
+        <div class="chain-box picked"><div class="p">f&#8327;</div><div class="v">x</div></div>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">最重要的一句话</div>
+        <p>从头到尾只存在六个不同的取值：<code>x, y, y&minus;x, &minus;x, &minus;y, x&minus;y</code>，之后就永远重复。要求出 f<sub>n</sub>，我们不需要走 n 步——只需要知道第 n 步落在<em>这六个位置中的哪一个</em>。而"落在六个里的哪一个"，正是余数（mod 6）擅长回答的问题。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面是完整的解法。先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>jzzhu_sequence.py</div>
+        <pre><code>MOD = <span class="nu">1000000007</span>
+
+x, y = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+n = <span class="kw">int</span>(<span class="kw">input</span>())
+
+cycle = [x, y, y - x, -x, -y, x - y]   <span class="cm"># 按顺序排列的 6 个取值</span>
+answer = cycle[(n - <span class="nu">1</span>) % <span class="nu">6</span>]        <span class="cm"># 第 n 步落在这 6 个里的哪一个？</span>
+
+<span class="kw">print</span>(answer % MOD)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">cycle = [x, y, y - x, -x, -y, x - y]</div>
+          <div class="annot-note"><span>这就是我们在第四关手算出来的六个值，从 <b>f&#8321;</b> 开始按顺序存好。这个列表的下标 <b>0 到 5</b>，分别对应 f&#8321; 到 f&#8326;。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">cycle[(n - 1) % 6]</div>
+          <div class="annot-note"><span>第 n 步对应列表下标 <b>n&minus;1</b>（因为 f&#8321; 是下标 0）。对它取 <b>% 6</b>，就能把任意巨大的 n 瞬间"折叠"回 0&ndash;5 的范围——不管 n 有多大，都是一次查表搞定。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print(answer % MOD)</div>
+          <div class="annot-note"><span>即便 <code>answer</code> 是负数，Python 的 <code>%</code> 在除数为正时也总是返回非负结果——所以这一行代码同时完成了"取模"和"不允许出现负数答案"这两件事。（下一关会详细讲这个有趣的现象！）</span></div>
+        </div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>把"最大 20 亿的步数"变成"只有 6 种可能"，和<a href="fast_exponentiation_zh.html">快速幂</a>那一页里"翻倍"技巧背后的思路是同一种绕圈子思维——题目不同，直觉相同：先找到重复的结构，再动手计算。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>一个值得知道的 Python 小陷阱：负数和 %</h2></div>
+      <p class="lead">让我们手动走一遍两道题目样例，因为其中一个藏着一个有趣的小惊喜。</p>
+
+      <table class="trace">
+        <thead><tr><th>x</th><th>y</th><th>n</th><th>(n&minus;1) mod 6</th><th>循环取值</th><th>对 1e9+7 取模后</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>3</td><td>3</td><td>2 &rarr; y&minus;x</td><td>3&minus;2 = 1</td><td class="odd">1</td></tr>
+          <tr><td>0</td><td>&minus;1</td><td>2</td><td>1 &rarr; y</td><td>&minus;1</td><td class="odd">1000000006</td></tr>
+        </tbody>
+      </table>
+
+      <p>第二行才是重点。在 Python 里，<code>-1 % 1000000007</code> 得到的<em>不是</em> <code>-1</code>，而是自动变成 <code>1000000006</code>。Python 的 <code>%</code> 运算符被设计成结果的符号总是和<em>除数</em>一致（这里除数是正数），所以负数输入会被悄悄"挪"到正确的正数范围内。自己在 Python 命令行里试试看：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>python 命令行</div>
+        <pre><code>&gt;&gt;&gt; -<span class="nu">1</span> % <span class="nu">1000000007</span>
+<span class="nu">1000000006</span>
+&gt;&gt;&gt; -<span class="nu">8</span> % <span class="nu">6</span>
+<span class="nu">4</span></code></pre>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">换一种语言时要小心</div>
+        <p>这是 <em>Python 特有</em>的贴心之处！在 JavaScript、C++、Java 这类语言里，<code>-1 % 1000000007</code> 得到的还是 <code>-1</code>，而不是 <code>1000000006</code>。在那些语言里，你得自己动手用类似 <code>((answer % MOD) + MOD) % MOD</code> 的写法来修正。下面的互动小工具就是用 JavaScript 写的，翻翻它的代码，你就能在里面看到这个写法真实登场。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7：互动小工具 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>轮到你了：试试自己的 x、y、n</h2></div>
+      <p class="lead">自己挑几个数字，看看这 6 步回声规律是怎么一步步搭建出来的，再看看第 n 步究竟落在哪一格。</p>
+
+      <div class="widget">
+        <h3>回声机器</h3>
+        <div class="hint">提示：先试试 x=2, y=3, n=3 或 x=0, y=-1, n=2，重现一下题目自带的样例。然后再试一个巨大的 n，比如 2000000000，你会发现答案依然瞬间就出来了。</div>
+        <div class="field-row">
+          <div class="field"><label for="inX">x</label><input type="number" id="inX" value="2" min="-1000000000" max="1000000000"></div>
+          <div class="field"><label for="inY">y</label><input type="number" id="inY" value="3" min="-1000000000" max="1000000000"></div>
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="3" min="1" max="2000000000"></div>
+          <div class="field"><button class="btn" id="runBtn">启动机器</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>练习题：先自己算，再用工具核对</h2></div>
+      <p class="lead">每一题都先在纸上算一遍，再用上面的小工具验证答案。</p>
+
+      <details>
+        <summary>练习 1：x=5, y=8。求 f&#8323;、f&#8324; 和 f&#8327;。你发现 f&#8327; 有什么特别之处吗？</summary>
+        <div class="reveal">
+          <p><code>f&#8323; = y &minus; x = 8 &minus; 5 = 3</code>。<code>f&#8324; = &minus;x = &minus;5</code>。f&#8327; 永远等于 f&#8321;，所以 <code>f&#8327; = x = 5</code>。这正是回声在起作用——六步之后，我们又回到了出发的地方。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：x=1, y=1, n=1000000。答案落在 6 个循环取值中的哪一个？（提示：你不需要一个能减一百万次的计算器。）</summary>
+        <div class="reveal">
+          <p>我们需要算 <code>(n&minus;1) % 6 = 999999 % 6</code>。因为 <code>999999 = 6 &times; 166666 + 3</code>，余数是 <b>3</b>，对应我们列表 <code>[x, y, y-x, -x, -y, x-y]</code> 里下标为 3 的位置——也就是 <code>-x = -1</code>。对 1,000,000,007 取模后，结果是 <b>1000000006</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：为什么循环周期正好是 6，而不是其他数字？有没有可能循环周期更短，比如 3？</summary>
+        <div class="reveal">
+          <p>循环周期是由代数关系强制决定的：从 <code>(f&#8321;, f&#8322;) = (x, y)</code> 出发，套用六次减法规则，无论 x 和 y 是多少，一定会重新得到 <code>(x, y)</code>——这正是我们在第四关手算证明的。在特殊情况下，它确实可能"提前闭合"：比如 x=0 且 y=0 时，每一项都是 0，数列的周期实际上是 1（而 1 恰好能整除 6，所以这并不算矛盾——6 只是回声最晚需要多久才能返回的一个上限）。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4：修改代码，让它输出全部 6 个循环取值（f&#8321; 到 f&#8326;）对 1,000,000,007 取模后的结果，而不只是 f<sub>n</sub>。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>jzzhu_sequence_all.py</div>
+            <pre><code>MOD = <span class="nu">1000000007</span>
+
+x, y = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+cycle = [x, y, y - x, -x, -y, x - y]
+<span class="kw">for</span> value <span class="kw">in</span> cycle:
+    <span class="kw">print</span>(value % MOD)</code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5（挑战题）：x=1000000000, y=-1000000000, n=2000000000。先手算出答案，再用小工具核对。</summary>
+        <div class="reveal">
+          <p><code>(n&minus;1) % 6 = 1999999999 % 6</code>。因为 <code>1999999999 = 6 &times; 333333333 + 1</code>，余数是 <b>1</b>，也就是说答案是 <code>y = -1000000000</code>。对 1,000,000,007 取模后，这么大的负数会变成 <code>1000000007 - 1000000000 = 7</code>。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 450B &mdash; Jzzhu and Sequences。还不熟悉钟表式的"绕圈子"数学？可以先看看<a href="prime_detective_cn.html">质数侦探社</a>破案指南。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 1000000007;
+
+  function mod(v){
+    return ((v % MOD) + MOD) % MOD;
+  }
+
+  function solve(x, y, n){
+    var cycle = [x, y, y - x, -x, -y, x - y];
+    var idx = (n - 1) % 6;
+    var raw = cycle[idx];
+    return { cycle: cycle, idx: idx, raw: raw, mod: mod(raw) };
+  }
+
+  function run(){
+    var x = parseInt(document.getElementById('inX').value, 10);
+    var y = parseInt(document.getElementById('inY').value, 10);
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(x) || isNaN(y) || isNaN(n) ||
+        x < -1000000000 || x > 1000000000 ||
+        y < -1000000000 || y > 1000000000 ||
+        n < 1 || n > 2000000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>x 和 y 需要在 -1,000,000,000 到 1,000,000,000 之间，n 需要在 1 到 2,000,000,000 之间。</p></div>';
+      return;
+    }
+
+    var r = solve(x, y, n);
+    var labels = ['f₁ = x', 'f₂ = y', 'f₃ = y−x', 'f₄ = −x', 'f₅ = −y', 'f₆ = x−y'];
+
+    var html = '<table class="trace"><thead><tr><th>位置</th><th>公式</th><th>取值</th></tr></thead><tbody>';
+    for (var i = 0; i < 6; i++){
+      var isPicked = (i === r.idx);
+      html += '<tr><td>' + labels[i].split(' = ')[0] + '</td><td>' + labels[i].split(' = ')[1] + '</td>' +
+        (isPicked ? '<td class="odd"><b>' + r.cycle[i] + '</b></td>' : '<td class="even">' + r.cycle[i] + '</td>') + '</tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="answer-line">(n&minus;1) mod 6 = (' + (n - 1) + ') mod 6 = <b>' + r.idx + '</b> &mdash; 落在 <b>' + labels[r.idx] + '</b> = <b>' + r.raw + '</b></div>';
+    html += '<div class="answer-line">对 1,000,000,007 取模后的最终答案：<b>' + r.mod + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

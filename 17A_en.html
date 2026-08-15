@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Noldbach Problem: When Prime Neighbors Team Up (Codeforces 17A)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Neighbor chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 60px;min-width:52px;text-align:center;padding:10px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:16px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-word;}
+  .answer-line b{color:var(--accent-strong);}
+  .answer-line.yes{background:var(--clue-soft);border-color:var(--clue);}
+  .answer-line.no{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Table wrap for scroll ---------- */
+  .scrollbox{max-height:220px;overflow-y:auto;margin:10px 0;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 17A &middot; Problem Walkthrough</div>
+      <h1>The Noldbach Problem: <em>When Prime Neighbors Team Up</em></h1>
+      <p class="sub">Nick loves prime numbers so much that he invented his own math problem, named after a famous one. Codeforces 17A asks: if you take every pair of "neighboring" primes, add them together, and add 1 &mdash; how many prime numbers up to n can you build that way? And does that count reach at least k? This one isn't about outsmarting a huge number &mdash; it's about reading the rules *very* carefully.</p>
+      <div class="stampbar">
+        <span class="stamp hot">For curious 13-year-olds</span>
+        <span class="stamp">Builds on the Sieve of Eratosthenes</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission</h2></div>
+      <p class="lead">You may have heard of the famous, still-unsolved <strong>Goldbach conjecture</strong>: every even number greater than 2 can be written as the sum of two primes (like <code>10 = 3 + 7</code>). Nick liked that idea so much he invented his own version, which he named <strong>Noldbach's problem</strong> (get it? <em>N</em>ick's Goldbach):</p>
+      <div class="callout fact">
+        <div class="ctitle">Nick's claim</div>
+        <p>At least <code>k</code> prime numbers from <code>2</code> to <code>n</code> can be written as <strong>two neighboring primes, plus 1</strong>. For example: <code>19 = 7 + 11 + 1</code>, or <code>13 = 5 + 7 + 1</code>.</p>
+      </div>
+      <p>You're given two whole numbers, <code>n</code> and <code>k</code>. Your job: figure out whether Nick is right &mdash; print <code>YES</code> if at least <code>k</code> primes between 2 and n (inclusive) can be built this way, or <code>NO</code> if they can't.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>n=27, k=2</code> &rarr; <b>YES</b>. Both <code>13</code> (= 5+7+1) and <code>19</code> (= 7+11+1) qualify, and 2 &ge; 2.<br>
+        <code>n=45, k=7</code> &rarr; <b>NO</b>. It turns out only 5 primes up to 45 can be built this way &mdash; not enough to reach 7.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>What exactly does "neighboring" mean?</h2></div>
+      <p class="lead">This is the single most important sentence in the whole problem, so let's slow down: <strong>"Two prime numbers are called neighboring if there are no other prime numbers between them."</strong> That means: line up <em>every</em> prime number in order &mdash; <code>2, 3, 5, 7, 11, 13, 17, 19, 23, &hellip;</code> &mdash; and "neighboring" just means "next to each other in that list." It does <em>not</em> mean the two primes have to differ by exactly 2!</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">prime</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>neighbors</div>
+        <div class="chain-box"><div class="p">prime</div><div class="v">3</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>neighbors</div>
+        <div class="chain-box"><div class="p">prime</div><div class="v">5</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>neighbors</div>
+        <div class="chain-box"><div class="p">prime</div><div class="v">7</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>neighbors</div>
+        <div class="chain-box"><div class="p">prime</div><div class="v">11</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>neighbors</div>
+        <div class="chain-box"><div class="p">prime</div><div class="v">13</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">A trap worth avoiding</div>
+        <p>You might think "neighboring primes" means <em>twin primes</em> (pairs like 11 and 13 that differ by exactly 2). That's a common mix-up, but it's wrong here! <code>23</code> and <code>29</code> are neighboring primes too (nothing prime sits between them &mdash; 24, 25, 26, 27, 28 are all composite), even though they're 6 apart. "Neighboring" just means "next to each other on the list," no matter the size of the gap.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Checking the examples by hand</h2></div>
+      <p class="lead">Let's confirm the two examples the note gives us actually work, using the definition from Level 2.</p>
+      <ul>
+        <li><code>5</code> and <code>7</code> are neighboring primes (nothing prime sits at 6). <code>5 + 7 + 1 = 13</code>, and 13 is itself prime. So <strong>13</strong> is "Noldbach-expressible."</li>
+        <li><code>7</code> and <code>11</code> are neighboring primes (nothing prime sits at 8, 9, or 10). <code>7 + 11 + 1 = 19</code>, and 19 is itself prime. So <strong>19</strong> is "Noldbach-expressible" too.</li>
+      </ul>
+      <p>Notice the pattern: we're not just adding two neighboring primes and checking if <em>that sum</em> is interesting &mdash; we add 1 to the sum, and then check whether <em>that final result</em> happens to also be a prime number sitting somewhere in our 2-to-n range. Two separate primality checks are secretly hiding in this problem: the two ingredients must be neighboring primes, <em>and</em> the result must be prime too.</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Our trusty tool: the Sieve of Eratosthenes</h2></div>
+      <p class="lead">Since <code>n</code> only goes up to <strong>1,000</strong> here, this problem isn't about outrunning a huge number like some of the puzzles you may have solved before &mdash; it's refreshingly small! But we still need a fast, reliable way to find <em>every</em> prime from 2 to n, and to check "is this number prime?" instantly, over and over.</p>
+      <p>That's exactly the job of the <strong>Sieve of Eratosthenes</strong>: sweep through the numbers 2 to n once, and cross off every multiple of every prime you find, leaving only true primes standing. Building it takes barely any time at all for n up to 1,000.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Never built a sieve before, or want a refresher on exactly how it works? The <a href="prime_detective_en.html#case5">Prime Number Detective Agency</a> page walks through the Sieve of Eratosthenes step by step, with a full grid you can watch get swept.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>The recipe</h2></div>
+      <p class="lead">Now that we have every prime up to n on hand, here's the plan, step by step:</p>
+      <ol>
+        <li>Sieve to find every prime from 2 to n, and keep them in a sorted list.</li>
+        <li>Walk down that list, looking at each pair of neighbors (the 1st and 2nd, the 2nd and 3rd, the 3rd and 4th, and so on).</li>
+        <li>For each neighboring pair, compute their sum plus 1.</li>
+        <li>Check: is that result itself a prime number? If yes, we've found one more "Noldbach-expressible" prime &mdash; remember it.</li>
+        <li>After checking every neighboring pair, count how many <em>distinct</em> primes we found this way, and compare that count to k.</li>
+      </ol>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>Walk every neighboring pair of primes once, test whether "sum + 1" is prime, and count how many different primes that test successfully hits. If the count is at least k, the answer is YES.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Reading the code, line by line</h2></div>
+      <p class="lead">Here's the entire solution. Read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>noldbach.py</div>
+        <pre><code>n, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+is_prime = [<span class="kw">True</span>] * (n + <span class="nu">1</span>)
+is_prime[<span class="nu">0</span>] = is_prime[<span class="nu">1</span>] = <span class="kw">False</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, <span class="kw">int</span>(n ** <span class="nu">0.5</span>) + <span class="nu">1</span>):
+    <span class="kw">if</span> is_prime[i]:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(i * i, n + <span class="nu">1</span>, i):
+            is_prime[j] = <span class="kw">False</span>
+
+primes = [i <span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, n + <span class="nu">1</span>) <span class="kw">if</span> is_prime[i]]
+
+found = <span class="kw">set</span>()
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="kw">len</span>(primes) - <span class="nu">1</span>):
+    total = primes[i] + primes[i + <span class="nu">1</span>] + <span class="nu">1</span>
+    <span class="kw">if</span> total &lt;= n <span class="kw">and</span> is_prime[total]:
+        found.add(total)
+
+<span class="kw">print</span>(<span class="st">"YES"</span> <span class="kw">if</span> <span class="kw">len</span>(found) &gt;= k <span class="kw">else</span> <span class="st">"NO"</span>)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">is_prime = [True] * (n + 1)
+is_prime[0] = is_prime[1] = False
+for i in range(2, int(n ** 0.5) + 1):
+    if is_prime[i]:
+        for j in range(i * i, n + 1, i):
+            is_prime[j] = False</div>
+          <div class="annot-note"><span>The Sieve of Eratosthenes from Level 4: build a "prime or not" lookup table for every number 0 through n in one sweep.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">primes = [i for i in range(2, n + 1) if is_prime[i]]</div>
+          <div class="annot-note"><span>Turn the lookup table into an actual sorted list of the primes themselves, so we can grab "the next one" easily.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for i in range(len(primes) - 1):
+    total = primes[i] + primes[i + 1] + 1
+    if total <= n and is_prime[total]:
+        found.add(total)</div>
+          <div class="annot-note"><span>Walk every neighboring pair (Level 5, steps 2&ndash;4). <code>total &lt;= n</code> keeps us from peeking outside the sieve's table; <code>is_prime[total]</code> is an instant lookup, no re-checking needed.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print("YES" if len(found) >= k else "NO")</div>
+          <div class="annot-note"><span>Using a <code>set</code> for <code>found</code> means duplicate results only count once. Compare the final count to k, exactly as the problem asks.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Let's trace both judge examples</h2></div>
+
+      <p class="lead"><strong>n=27, k=2:</strong> primes up to 27 are <code>2,3,5,7,11,13,17,19,23</code>.</p>
+      <table class="trace">
+        <thead><tr><th>neighboring pair</th><th>sum + 1</th><th>prime?</th></tr></thead>
+        <tbody>
+          <tr><td>2, 3</td><td>6</td><td class="even">no</td></tr>
+          <tr><td>3, 5</td><td>9</td><td class="even">no</td></tr>
+          <tr><td>5, 7</td><td>13</td><td class="odd">yes!</td></tr>
+          <tr><td>7, 11</td><td>19</td><td class="odd">yes!</td></tr>
+          <tr><td>11, 13</td><td>25</td><td class="even">no</td></tr>
+          <tr><td>13, 17</td><td>31 (&gt; 27, skip)</td><td class="even">&mdash;</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">2 primes found (13, 19). 2 &ge; k=2, so the answer is <b>YES</b>.</td></tr></tfoot>
+      </table>
+
+      <p class="lead"><strong>n=45, k=7:</strong> continuing the same process a bit further (13, 19, 31, 37, 43 all work; 25 and 53 don't &mdash; 53 is also past 45). Only <b>5</b> primes qualify, which is less than 7, so the answer is <b>NO</b>.</p>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Now you drive: try your own n and k</h2></div>
+      <p class="lead">Pick your own numbers and watch every neighboring pair get checked.</p>
+
+      <div class="widget">
+        <h3>Noldbach checker</h3>
+        <div class="hint">Tip: try n=27, k=2 or n=45, k=7 to reproduce the judge's own examples. Then try n=1000, k=44 (the maximum possible) versus n=1000, k=45 (one too many).</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="27" min="2" max="1000"></div>
+          <div class="field"><label for="inK">k</label><input type="number" id="inK" value="2" min="0" max="1000"></div>
+          <div class="field"><button class="btn" id="runBtn">Check Nick's claim</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Practice: crack these before you check with the tool</h2></div>
+      <p class="lead">Work each one out on paper first &mdash; then verify with the widget above.</p>
+
+      <details>
+        <summary>Exercise 1: n=13, k=1. Which single prime pair makes this work, and why is the answer YES?</summary>
+        <div class="reveal">
+          <p>Primes up to 13: <code>2,3,5,7,11,13</code>. Checking neighbor sums: <code>2+3+1=6</code> (no), <code>3+5+1=9</code> (no), <code>5+7+1=13</code> (yes! and 13 &le; 13), <code>7+11+1=19</code> (too big, skip since 19&gt;13), <code>11+13+1=25</code> (too big). Only 1 prime found (13), which meets <code>k=1</code>. Answer: <b>YES</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 2: n=19, k=3. We already know 13 and 19 both qualify (Level 1). Is there a third one hiding below 19? Why is the answer NO?</summary>
+        <div class="reveal">
+          <p>Checking every neighboring pair with primes up to 19 (<code>2,3,5,7,11,13,17,19</code>): the only sums that land on a prime &le;19 are <code>5+7+1=13</code> and <code>7+11+1=19</code>. The next pair, <code>11+13+1=25</code>, isn't prime, and <code>13+17+1=31</code> is already past 19. So only 2 primes qualify, not 3. Answer: <b>NO</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 3: n=20, k=2. Does raising n from 19 to 20 change anything about the count from Exercise 2?</summary>
+        <div class="reveal">
+          <p>No new primes appear between 19 and 20 (20 isn't prime), so the achievable set is still just <code>{13, 19}</code> &mdash; still 2. Since <code>k=2</code> this time (not 3), <code>2 &ge; 2</code> holds. Answer: <b>YES</b>. This shows how sensitive these "at least k" problems are to the exact value of k!</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 4 (challenge): n=1000, k=44. It turns out exactly 44 primes up to 1000 are Noldbach-expressible &mdash; not one more. What would the answer be for n=1000, k=45, and why?</summary>
+        <div class="reveal">
+          <p>For <code>k=44</code>, we have exactly enough (<code>44 &ge; 44</code>), so the answer is <b>YES</b>. But for <code>k=45</code>, there simply aren't enough qualifying primes below 1000 &mdash; the maximum achievable count for this n is 44, so no value of k above that can ever succeed. Answer: <b>NO</b>. This is a nice reminder that "at least k" problems can have a hard ceiling that no amount of searching can beat.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 5 (challenge): Modify the code to print the actual list of Noldbach-expressible primes (sorted), instead of just YES/NO.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>noldbach_list.py</div>
+            <pre><code>n, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+is_prime = [<span class="kw">True</span>] * (n + <span class="nu">1</span>)
+is_prime[<span class="nu">0</span>] = is_prime[<span class="nu">1</span>] = <span class="kw">False</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, <span class="kw">int</span>(n ** <span class="nu">0.5</span>) + <span class="nu">1</span>):
+    <span class="kw">if</span> is_prime[i]:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(i * i, n + <span class="nu">1</span>, i):
+            is_prime[j] = <span class="kw">False</span>
+
+primes = [i <span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, n + <span class="nu">1</span>) <span class="kw">if</span> is_prime[i]]
+
+found = <span class="kw">set</span>()
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="kw">len</span>(primes) - <span class="nu">1</span>):
+    total = primes[i] + primes[i + <span class="nu">1</span>] + <span class="nu">1</span>
+    <span class="kw">if</span> total &lt;= n <span class="kw">and</span> is_prime[total]:
+        found.add(total)
+
+<span class="kw">print</span>(<span class="kw">sorted</span>(found))
+<span class="kw">print</span>(<span class="st">"YES"</span> <span class="kw">if</span> <span class="kw">len</span>(found) &gt;= k <span class="kw">else</span> <span class="st">"NO"</span>)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 17A &mdash; Noldbach problem. Need a refresher on building a sieve? Start with the <a href="prime_detective_en.html#case5">Prime Number Detective Agency</a> page first.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function sieve(n){
+    var isPrime = new Array(n + 1).fill(true);
+    isPrime[0] = false;
+    if (n >= 1) isPrime[1] = false;
+    for (var i = 2; i * i <= n; i++){
+      if (isPrime[i]){
+        for (var j = i * i; j <= n; j += i){
+          isPrime[j] = false;
+        }
+      }
+    }
+    return isPrime;
+  }
+
+  function solve(n, k){
+    var isPrime = sieve(n);
+    var primes = [];
+    for (var i = 2; i <= n; i++){
+      if (isPrime[i]) primes.push(i);
+    }
+    var rows = [];
+    var found = [];
+    var foundSet = {};
+    for (var idx = 0; idx < primes.length - 1; idx++){
+      var a = primes[idx], b = primes[idx + 1];
+      var total = a + b + 1;
+      var inRange = total <= n;
+      var prime = inRange && isPrime[total];
+      rows.push({ a: a, b: b, total: total, inRange: inRange, prime: prime });
+      if (prime && !foundSet[total]){
+        foundSet[total] = true;
+        found.push(total);
+      }
+    }
+    return { primes: primes, rows: rows, found: found.sort(function(x,y){return x-y;}) };
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var k = parseInt(document.getElementById('inK').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 2 || n > 1000 || isNaN(k) || k < 0 || k > 1000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Need n between 2 and 1000, and k between 0 and 1000.</p></div>';
+      return;
+    }
+
+    var r = solve(n, k);
+    var yes = r.found.length >= k;
+
+    var html = '';
+    html += '<div class="scrollbox"><table class="trace"><thead><tr><th>neighboring pair</th><th>sum + 1</th><th>prime &amp; &le; n?</th></tr></thead><tbody>';
+    r.rows.forEach(function(row){
+      var verdict = !row.inRange ? '<td class="even">out of range</td>' : (row.prime ? '<td class="odd">yes!</td>' : '<td class="even">no</td>');
+      html += '<tr><td>' + row.a + ', ' + row.b + '</td><td>' + row.total + '</td>' + verdict + '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    html += '<div class="answer-line">Noldbach-expressible primes found (' + r.found.length + '): <b>' + (r.found.length ? r.found.join(', ') : 'none') + '</b></div>';
+    html += '<div class="answer-line ' + (yes ? 'yes' : 'no') + '">' + r.found.length + ' ' + (yes ? '&ge;' : '&lt;') + ' k=' + k + ' &rarr; <b>' + (yes ? 'YES' : 'NO') + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

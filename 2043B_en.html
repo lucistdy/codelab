@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digits: Cracking a Number With a Factorial's Worth of Copies (Codeforces 2043B)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Digit strip (repurposed bit boxes) ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:52px;text-align:center;}
+  .bit .cell{width:52px;height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:19px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .bit .pw{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Echo chain (period-6 visual) ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 70px;min-width:64px;text-align:center;padding:12px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input,.field select{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input#inN{width:170px;}
+  .field select#inD{width:90px;}
+  .field input:focus,.field select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 2043B &middot; Problem Walkthrough</div>
+      <h1>Digits: <em>Cracking a Number With a Factorial's Worth of Copies</em></h1>
+      <p class="sub">Artem writes a single digit d on the board, over and over, exactly n! times in a row. For n as small as 8, that's already 40,320 copies &mdash; and n can be as large as a billion. Codeforces 2043B asks: which of the odd digits 1, 3, 5, 7, 9 divide that gigantic number evenly? You'll never build the number itself &mdash; you'll out-think it instead.</p>
+      <div class="stampbar">
+        <span class="stamp hot">For curious 13-year-olds</span>
+        <span class="stamp">Builds on Magic Five &amp; Jzzhu's Echo Machine</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission</h2></div>
+      <p class="lead">You're given a digit <code>d</code> (from 1 to 9) and a number <code>n</code>. Artem writes <code>d</code> on the board <code>n!</code> ("n factorial") times in a row, forming one enormous number made entirely of the digit <code>d</code> repeated over and over. Recall that <code>n! = 1 &times; 2 &times; 3 &times; &hellip; &times; n</code> &mdash; it grows unbelievably fast.</p>
+      <p>Your job: figure out which of the <em>odd</em> digits &mdash; <code>1, 3, 5, 7, 9</code> &mdash; evenly divide that giant number, and print them in increasing order. You'll be asked this for up to 100 different <code>(n, d)</code> pairs in one run.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>n=2, d=6</code> &rarr; the board reads <code>66</code> (since 2! = 2). <b>1 3</b> divide it (66 = 2&times;3&times;11).<br>
+        <code>n=7, d=1</code> &rarr; the board reads <code>111&hellip;1</code> with <code>7! = 5040</code> ones. <b>1 3 7 9</b> divide it.<br>
+        <code>n=8, d=5</code> &rarr; the board reads <code>555&hellip;5</code> with <code>8! = 40320</code> fives. <b>1 3 5 7 9</b> &mdash; every odd digit divides it!</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why should you care?</div>
+        <p><code>n</code> can be as large as <strong>1,000,000,000</strong>. <code>n!</code> for even a modest <code>n</code> is already a monster: <code>20!</code> has 19 digits, and <code>n!</code> for <code>n</code> in the billions has <em>billions upon billions</em> of digits. You could never store that number, let alone check it digit by digit within a 1-second time limit.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Dust off your divisibility toolkit</h2></div>
+      <p class="lead">Before we touch the giant number, let's remember the tricks we already know for checking divisibility without doing long division:</p>
+      <ul>
+        <li><strong>Divisible by 1:</strong> always true. Every number is divisible by 1 &mdash; free point!</li>
+        <li><strong>Divisible by 5:</strong> true exactly when the <em>last digit</em> is 0 or 5. We used this exact idea on the <a href="271C_en.html">Magic Five</a> page.</li>
+        <li><strong>Divisible by 3 or 9:</strong> add up all the digits. If that sum is divisible by 3 (or 9), so is the original number.</li>
+        <li><strong>Divisible by 7:</strong> &hellip;there's no cute digit-sum shortcut for 7. We'll need a different trick, and it's the most interesting part of this problem.</li>
+      </ul>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Never seen why these tricks work? The <a href="prime_detective_en.html">Prime Number Detective Agency</a> page builds up remainder ("clock math") thinking from scratch &mdash; exactly the toolkit we lean on for the rest of this page.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Why "just build the number" fails</h2></div>
+      <p class="lead">The most honest approach would be: compute <code>n!</code>, write out <code>d</code> that many times, and check divisibility directly. That's totally fine for tiny <code>n</code> &mdash; but <code>n</code> can be up to a billion, and <code>n!</code> explodes far faster than <code>n</code> itself. There isn't enough storage in every computer on Earth combined to hold a number with that many digits, and there certainly isn't enough time to scan through them one at a time in 1 second.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">n! for n=10&#8313;</div><div class="lbl">a number so long, writing one digit per atom in the universe still wouldn't be enough room</div></div>
+        <div class="stat fast"><div class="num">O(1)</div><div class="lbl">work needed per query, once we find the pattern</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Digit 5: the freebie we already solved</h2></div>
+      <p class="lead">Every digit of the giant number is <code>d</code> &mdash; including the very last one. So the last digit of the whole number is just <code>d</code> itself. Using the Level 2 rule: <strong>5 divides the number exactly when d = 5.</strong> That's it &mdash; no factorial math required at all for this one!</p>
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p><code>5</code> is in the answer if and only if <code>d == 5</code>. Full stop, regardless of n.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Digits 3 and 9: the digit-sum trick, supercharged by n!</h2></div>
+      <p class="lead">The digit sum of our giant number is easy: it's <code>d</code> repeated <code>n!</code> times, so the sum is just <code>d &times; n!</code>. From Level 2: 3 divides the number iff <code>3 | (d &times; n!)</code>, and 9 divides it iff <code>9 | (d &times; n!)</code>.</p>
+      <p>Here's the beautiful part: <strong>factorials collect factors of 3 automatically.</strong> The moment <code>n &ge; 3</code>, the product <code>n! = 1&times;2&times;3&times;&hellip;&times;n</code> already includes the number 3 itself as one of its factors &mdash; so <code>3 | n!</code>, which means <code>3 | (d &times; n!)</code> <em>no matter what d is</em>. For 9, we need <em>two</em> factors of 3 hiding inside <code>n!</code> (since <code>9 = 3&times;3</code>) &mdash; and that first happens once <code>n &ge; 6</code>, because <code>6!</code> is the first factorial to contain both the factor 3 <em>and</em> the factor 6 (which itself is a multiple of 3).</p>
+
+      <table class="trace">
+        <thead><tr><th>n</th><th>n!</th><th>factors of 3 inside n!</th><th>3 | n!?</th><th>9 | n!?</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>2</td><td>0</td><td class="even">no</td><td class="even">no</td></tr>
+          <tr><td>3</td><td>6</td><td>1 (from the "3")</td><td class="odd">yes</td><td class="even">no</td></tr>
+          <tr><td>4</td><td>24</td><td>1 (still just the "3")</td><td class="odd">yes</td><td class="even">no</td></tr>
+          <tr><td>5</td><td>120</td><td>1 (still just the "3")</td><td class="odd">yes</td><td class="even">no</td></tr>
+          <tr><td>6</td><td>720</td><td>2 (the "3" <em>and</em> the "6")</td><td class="odd">yes</td><td class="odd">yes</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">From n=6 onward, n! always keeps at least 2 factors of 3, so 9 | n! forever after.</td></tr></tfoot>
+      </table>
+
+      <p>So: for <code>n &ge; 3</code>, digit 3 divides our number <em>no matter what d is</em>. For <code>n &ge; 6</code>, digit 9 divides it too, <em>no matter what d is</em>. Only the small leftover cases (<code>n = 3, 4, 5</code> for the digit 9 check) actually depend on <code>d</code>.</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Digit 7: the echo strikes again</h2></div>
+      <p class="lead">No digit-sum shortcut exists for 7, so let's think about it a different way. Watch what happens to powers of 10, remainder-wise, when you keep dividing by 7:</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">10&sup1; mod 7</div><div class="v">3</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">10&sup2; mod 7</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">10&sup3; mod 7</div><div class="v">6</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">10&#8308; mod 7</div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">10&#8309; mod 7</div><div class="v">5</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box picked"><div class="p">10&#8310; mod 7</div><div class="v">1</div></div>
+        <div class="chain-arrow"><span class="sym">&#8635;</span>echo!</div>
+        <div class="chain-box"><div class="p">10&#8311; mod 7</div><div class="v">3</div></div>
+      </div>
+
+      <p>Sound familiar? Powers of 10, remainder mod 7, echo back to themselves <em>every 6 steps</em> &mdash; exactly the same "echoes forever" personality as the sequence on the <a href="450B_en.html">Jzzhu's Echo Machine</a> page, just with a different cast of numbers. This period-6 echo is the whole secret to digit 7.</p>
+      <p>Here's why it matters: a block of <code>m</code> repeated digits can be written as <code>d &times; R<sub>m</sub></code>, where <code>R<sub>m</sub></code> is the "repunit" <code>111&hellip;1</code> (<code>m</code> ones). It turns out <code>7 | R<sub>m</sub></code> exactly when <code>6 | m</code> &mdash; a direct consequence of that period-6 echo. And just like with the factor of 3 in Level 5, the moment <code>n &ge; 3</code>, the factorial <code>n!</code> already contains <em>both</em> a factor of 2 <em>and</em> a factor of 3, which together guarantee <code>6 | n!</code>. So for <code>n &ge; 3</code>, <code>m = n!</code> is automatically a multiple of 6, the echo lands exactly back on 1, and <strong>7 divides our number no matter what d is.</strong></p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Curious exactly how that "period-6 echo forces divisibility" argument works, algebra and all? It's the same repeating-cycle reasoning walked through step by step on the <a href="450B_en.html">Jzzhu's Echo Machine</a> page &mdash; give it a read if you want the full derivation.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Putting it all together: one clean rule for big n</h2></div>
+      <p class="lead">Let's collect everything we found. The thresholds where each digit's fate stops depending on <code>d</code> are: 3 and 7 lock in at <code>n &ge; 3</code>, and 9 locks in at <code>n &ge; 6</code>. Once <code>n &ge; 6</code>, <em>all three thresholds have been crossed</em>, giving one beautifully simple rule:</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>For <code>n &ge; 6</code>: the answer is always <code>{1, 3, 7, 9}</code>, plus <code>5</code> exactly when <code>d = 5</code>. The value of <code>d</code> otherwise makes zero difference!</p>
+      </div>
+
+      <p>That leaves only <code>n = 2, 3, 4, 5</code> as special cases &mdash; and here's the fun twist: those factorials are <code>2, 6, 24,</code> and <code>120</code>. All tiny! For these, there's no need for any cleverness at all &mdash; just build the actual number (at most 120 digits, no problem for Python's built-in big integers) and check divisibility for real.</p>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Reading the code, line by line</h2></div>
+      <p class="lead">Here's the entire solution. Read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>digits.py</div>
+        <pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="kw">solve</span>(n, d):
+    <span class="kw">if</span> n &gt;= <span class="nu">6</span>:
+        divisors = {<span class="nu">1</span>, <span class="nu">3</span>, <span class="nu">7</span>, <span class="nu">9</span>}
+        <span class="kw">if</span> d == <span class="nu">5</span>:
+            divisors.add(<span class="nu">5</span>)
+    <span class="kw">else</span>:
+        m = math.factorial(n)          <span class="cm"># n < 6, so m is at most 120 — tiny!</span>
+        number = <span class="kw">int</span>(<span class="kw">str</span>(d) * m)     <span class="cm"># actually build the number</span>
+        divisors = {x <span class="kw">for</span> x <span class="kw">in</span> [<span class="nu">1</span>,<span class="nu">3</span>,<span class="nu">5</span>,<span class="nu">7</span>,<span class="nu">9</span>] <span class="kw">if</span> number % x == <span class="nu">0</span>}
+    <span class="kw">return</span> <span class="kw">sorted</span>(divisors)
+
+t = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(t):
+    n, d = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+    <span class="kw">print</span>(*solve(n, d))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">if n >= 6:
+    divisors = {1, 3, 7, 9}
+    if d == 5:
+        divisors.add(5)</div>
+          <div class="annot-note"><span>Level 7's fast rule. No factorial ever gets computed here &mdash; the answer is figured out purely from whether <code>n</code> crossed the threshold and whether <code>d</code> equals 5.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">m = math.factorial(n)
+number = int(str(d) * m)</div>
+          <div class="annot-note"><span>Only reached when <code>n &lt; 6</code>, so <code>m &le; 120</code>. Python happily builds a 120-digit integer and stores it exactly &mdash; no overflow, ever.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">divisors = {x for x in [1,3,5,7,9] if number % x == 0}</div>
+          <div class="annot-note"><span>With the real number in hand, just ask Python directly: does it divide evenly? No cleverness needed for such a small case.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Let's trace all three judge examples</h2></div>
+
+      <table class="trace">
+        <thead><tr><th>n</th><th>d</th><th>path taken</th><th>answer</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>6</td><td>n &lt; 6 &rarr; build "66", check remainders</td><td class="odd">1 3</td></tr>
+          <tr><td>7</td><td>1</td><td>n &ge; 6 &rarr; {1,3,7,9}, d&ne;5 so no 5</td><td class="odd">1 3 7 9</td></tr>
+          <tr><td>8</td><td>5</td><td>n &ge; 6 &rarr; {1,3,7,9}, d=5 so add 5</td><td class="odd">1 3 5 7 9</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">All three match the judge's expected output exactly.</td></tr></tfoot>
+      </table>
+
+      <p>Notice how <code>n=7</code> and <code>n=8</code> both take the fast <code>n &ge; 6</code> path and never touch a factorial at all &mdash; they'd behave exactly the same way even if <code>n</code> were a billion.</p>
+    </section>
+
+    <!-- ============ LEVEL 10 : INTERACTIVE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">LEVEL 10</span><h2>Now you drive: try your own n and d</h2></div>
+      <p class="lead">Pick your own numbers and watch which path the solver takes &mdash; the small-number brute force, or the instant big-n shortcut.</p>
+
+      <div class="widget">
+        <h3>Digits calculator</h3>
+        <div class="hint">Tip: try n=2, d=6 or n=7, d=1 or n=8, d=5 to reproduce the judge's own examples. Then try a huge n, like 1000000000, and notice the answer still appears instantly.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="2" min="2" max="1000000000"></div>
+          <div class="field"><label for="inD">d</label>
+            <select id="inD">
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+            </select>
+          </div>
+          <div class="field"><button class="btn" id="runBtn">Find the divisors</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 11 ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">LEVEL 11</span><h2>Practice: crack these before you check with the tool</h2></div>
+      <p class="lead">Work each one out on paper first &mdash; then verify with the widget above.</p>
+
+      <details>
+        <summary>Exercise 1: n=2, d=9. The board reads "99". Which odd digits divide it?</summary>
+        <div class="reveal">
+          <p><code>99 = 9 &times; 11</code>. Check each: <code>99/1=99</code> yes, <code>99/3=33</code> yes, <code>99/5=19.8</code> no, <code>99/7&approx;14.14</code> no, <code>99/9=11</code> yes. Answer: <b>1 3 9</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 2: n=3, d=2. Without building the number, explain why 3 and 7 must divide it, and why 9 does not.</summary>
+        <div class="reveal">
+          <p>Since <code>n=3 &ge; 3</code>, both the "3 locks in" and "7 locks in" thresholds from Levels 5 and 6 have been crossed, so 3 and 7 divide the number no matter what <code>d</code> is. But <code>n=3 &lt; 6</code>, so 9 is not automatic &mdash; it needs <code>d</code> to be a multiple of 3, and <code>d=2</code> isn't. The board reads <code>222222</code> (6 twos, since 3!=6): digit sum is 12 (divisible by 3, not 9), confirming <b>1 3 7</b> and no 9.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 3: n=5, d=6. Which odd digits divide the board?</summary>
+        <div class="reveal">
+          <p><code>n=5 &ge; 3</code> locks in 3 and 7. For 9, we need <code>n &ge; 6</code> OR <code>d</code> a multiple of 3 &mdash; here <code>n=5 &lt; 6</code> but <code>d=6</code> <em>is</em> a multiple of 3, so 9 divides too! For 5, we need <code>d=5</code>, and <code>d=6&ne;5</code>, so no 5. Answer: <b>1 3 7 9</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 4 (challenge): n=1,000,000,000, d=5. You obviously can't build this number &mdash; find the answer using the Level 7 shortcut.</summary>
+        <div class="reveal">
+          <p><code>n &ge; 6</code>, so the answer is <code>{1, 3, 7, 9}</code> automatically, and since <code>d = 5</code>, we add 5 too. Answer: <b>1 3 5 7 9</b> &mdash; every single odd digit, worked out instantly with no factorial in sight.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 5 (challenge): Modify the code to also report whether the board's number is divisible by 6. (Hint: 6 = 2 &times; 3, and you already know how to check divisibility by 2 and by 3 for this problem.)</summary>
+        <div class="reveal">
+          <p>Divisibility by 2 just needs the last digit to be even &mdash; and since every digit here is <code>d</code>, that means <code>d</code> itself must be even. Divisibility by 3 is exactly what we already solved: true whenever <code>n &ge; 3</code>, or (for smaller n) whenever the built number's digit sum works out. So the number is divisible by 6 exactly when <em>both</em> conditions hold at once:</p>
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>digits_with_six.py</div>
+            <pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="kw">solve</span>(n, d):
+    <span class="kw">if</span> n &gt;= <span class="nu">6</span>:
+        divisors = {<span class="nu">1</span>, <span class="nu">3</span>, <span class="nu">7</span>, <span class="nu">9</span>}
+        <span class="kw">if</span> d == <span class="nu">5</span>:
+            divisors.add(<span class="nu">5</span>)
+        divisible_by_6 = (d % <span class="nu">2</span> == <span class="nu">0</span>)   <span class="cm"># 3 already guaranteed when n>=6</span>
+    <span class="kw">else</span>:
+        m = math.factorial(n)
+        number = <span class="kw">int</span>(<span class="kw">str</span>(d) * m)
+        divisors = {x <span class="kw">for</span> x <span class="kw">in</span> [<span class="nu">1</span>,<span class="nu">3</span>,<span class="nu">5</span>,<span class="nu">7</span>,<span class="nu">9</span>] <span class="kw">if</span> number % x == <span class="nu">0</span>}
+        divisible_by_6 = (number % <span class="nu">6</span> == <span class="nu">0</span>)
+    <span class="kw">return</span> <span class="kw">sorted</span>(divisors), divisible_by_6</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 2043B &mdash; Digits. New to the "only the last digit matters" trick, or the "powers echo every 6 steps" trick? Start with <a href="271C_en.html">Magic Five</a> and <a href="450B_en.html">Jzzhu's Echo Machine</a> first.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function factorial(n){
+    var result = 1n;
+    for (var i = 2n; i <= BigInt(n); i++){ result *= i; }
+    return result;
+  }
+
+  function solve(n, d){
+    if (n >= 6){
+      var divisors = [1, 3, 7, 9];
+      if (d === 5){ divisors.push(5); divisors.sort(function(a,b){return a-b;}); }
+      return { fast: true, divisors: divisors };
+    } else {
+      var m = factorial(n);
+      var number = BigInt(String(d).repeat(Number(m)));
+      var divs = [1, 3, 5, 7, 9].filter(function(x){ return number % BigInt(x) === 0n; });
+      return { fast: false, m: m, number: number, divisors: divs };
+    }
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var d = parseInt(document.getElementById('inD').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 2 || n > 1000000000 || isNaN(d) || d < 1 || d > 9){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Need n between 2 and 1,000,000,000, and d between 1 and 9.</p></div>';
+      return;
+    }
+
+    var r = solve(n, d);
+    var html = '';
+
+    if (r.fast){
+      html += '<div class="answer-line">n = ' + n + ' &ge; 6, so the shortcut kicks in: base set is <b>{1, 3, 7, 9}</b>' +
+        (d === 5 ? ', and since d = 5, we add <b>5</b> too.' : ', and since d &ne; 5, 5 is not included.') + '</div>';
+    } else {
+      var numStr = r.number.toString();
+      var shown = numStr.length > 40 ? (numStr.slice(0, 40) + '&hellip; (' + numStr.length + ' digits total)') : numStr;
+      html += '<div class="answer-line">n = ' + n + ' &lt; 6, so n! = ' + r.m.toString() + ' and the actual board number is built directly:<br>' + shown + '</div>';
+    }
+
+    html += '<div class="answer-line">Divisors found: <b>' + r.divisors.join(' ') + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sieve of Erato67henes: Hunting for a Prime in Disguise (Codeforces 2195A)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building-blocks chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 60px;min-width:52px;text-align:center;padding:10px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:16px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:80px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-word;}
+  .answer-line b{color:var(--accent-strong);}
+  .answer-line.yes{background:var(--clue-soft);border-color:var(--clue);}
+  .answer-line.no{background:var(--alert-soft);border-color:var(--alert);}
+  .scrollbox{max-height:260px;overflow-y:auto;margin:10px 0;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 2195A &middot; Problem Walkthrough</div>
+      <h1>Sieve of Erato67henes: <em>Hunting for a Prime in Disguise</em></h1>
+      <p class="sub">You're handed a tiny bag of up to 5 numbers, each between 1 and 67. Can you pick out some of them &mdash; maybe just one, maybe several &mdash; so that when you multiply your picks together, you get exactly 67? It sounds like it could involve tricky combinations&hellip; until you notice one thing about the number 67 itself that makes the whole problem collapse into something almost embarrassingly simple.</p>
+      <div class="stampbar">
+        <span class="stamp hot">For curious 13-year-olds</span>
+        <span class="stamp">Builds on what makes primes special</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission</h2></div>
+      <p class="lead">You're given <code>n</code> positive whole numbers (<code>1 &le; n &le; 5</code>), each one between <code>1</code> and <code>67</code>. You get to pick <em>any subset</em> of them &mdash; at least one, but you don't have to use them all &mdash; and multiply your picks together. Your job: decide whether <em>some</em> choice of picks makes the product come out to exactly <code>67</code>.</p>
+      <p>You'll be asked this for up to <code>10,000</code> separate test cases in one run, but each one only has at most 5 numbers to work with &mdash; tiny!</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>[1, 7, 6, 7, 67]</code> &rarr; <b>YES</b>. Pick the 1st and 5th numbers: <code>1 &times; 67 = 67</code>.<br>
+        <code>[1, 3, 5, 7, 8]</code> &rarr; <b>NO</b>. No matter which numbers you pick from this bag, you can't make the product land on exactly 67.</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">A tempting (wrong) first instinct</div>
+        <p>With only 5 numbers, you might think: "easy, I'll just try every possible combination of picks and check each one." That would actually work here &mdash; but before reaching for brute force, let's look closer at the target number itself. Sometimes a number has a special personality that makes the whole problem trivial once you notice it.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>67 has a secret identity: it's prime</h2></div>
+      <p class="lead">Check it yourself: does anything from 2 through 66 divide evenly into 67? Try a few &mdash; <code>67 &divide; 2</code>, <code>67 &divide; 3</code>, <code>67 &divide; 7</code>&hellip; none of them come out even. <strong>67 is a prime number.</strong> That means its <em>only</em> two positive whole-number factors are 1 and 67 itself.</p>
+      <p>Why does that matter here? Because our whole puzzle is really a question about <em>factoring</em>: "can I build 67 by multiplying some numbers together?" is exactly the same question as "what are the ways to write 67 as a product of positive integers?"</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Need a refresher on what makes a number prime, or how to test for it? The <a href="prime_detective_en.html">Prime Number Detective Agency</a> page builds up primality testing from scratch. This problem leans on the flip side of that idea: primes are numbers that <em>refuse</em> to be built out of smaller pieces (other than 1).</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Every way to build 67 out of whole numbers</h2></div>
+      <p class="lead">Let's list every way to write 67 as a product of two or more positive integers, each at least 1. Since 67's only factors are 1 and 67, here's what happens when you try:</p>
+      <ul>
+        <li><code>67 = 67</code> &mdash; just the number itself, no multiplying needed.</li>
+        <li><code>67 = 1 &times; 67</code> &mdash; works, since 1 doesn't change anything.</li>
+        <li><code>67 = 1 &times; 1 &times; 67</code>, <code>67 = 1 &times; 1 &times; 1 &times; 67</code>, &hellip; &mdash; still works, you can toss in as many extra 1's as you like.</li>
+        <li><code>67 = a &times; b</code> where both <code>a</code> and <code>b</code> are greater than 1? <strong>Impossible</strong> &mdash; that would mean 67 has a factor other than 1 and itself, contradicting that it's prime!</li>
+      </ul>
+      <p>So <em>every single way</em> to multiply positive integers together and land on 67 requires <strong>exactly one factor equal to 67</strong>, and every other factor involved must be exactly <strong>1</strong> (any number of them, including zero extra 1's).</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">factor</div><div class="v">1</div></div>
+        <div class="chain-arrow"><span class="sym">&times;</span></div>
+        <div class="chain-box"><div class="p">factor</div><div class="v">1</div></div>
+        <div class="chain-arrow"><span class="sym">&times;</span></div>
+        <div class="chain-box picked"><div class="p">factor</div><div class="v">67</div></div>
+        <div class="chain-arrow"><span class="sym">=</span></div>
+        <div class="chain-box picked"><div class="p">product</div><div class="v">67</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The whole problem in one sentence</h2></div>
+      <p class="lead">Translate Level 3 back into the language of "picking numbers from your bag": since every winning selection needs exactly one <code>67</code> and any number of <code>1</code>'s (which you're even free to leave out &mdash; picking just <code>{67}</code> alone always works on its own), the entire problem boils down to a single yes/no question about the bag you were handed.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>The answer is <b>YES</b> if and only if the number <code>67</code> appears <em>anywhere</em> in the list &mdash; and every other number in the bag is completely irrelevant to the answer!</p>
+      </div>
+
+      <p>That's the whole "aha" of this problem. It looks like it might involve clever combinations of several numbers multiplying together in interesting ways &mdash; but because the target is prime, it collapses down to a single membership check. No multiplication required at solve-time at all.</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Reading the code, line by line</h2></div>
+      <p class="lead">Here's the entire solution. Read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>erato67henes.py</div>
+        <pre><code>t = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(t):
+    n = <span class="kw">int</span>(<span class="kw">input</span>())
+    a = <span class="kw">list</span>(<span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split()))
+    <span class="kw">print</span>(<span class="st">"YES"</span> <span class="kw">if</span> <span class="nu">67</span> <span class="kw">in</span> a <span class="kw">else</span> <span class="st">"NO"</span>)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">t = int(input())
+for _ in range(t):</div>
+          <div class="annot-note"><span>The problem packs up to <code>10,000</code> independent test cases into one run &mdash; loop once per case.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">n = int(input())
+a = list(map(int, input().split()))</div>
+          <div class="annot-note"><span>Read the count (which we don't even end up needing!) and then the actual list of up to 5 numbers.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print("YES" if 67 in a else "NO")</div>
+          <div class="annot-note"><span>Level 4's entire insight, in one line. Python's <code>in</code> checks membership directly &mdash; no loops, no multiplying, no subsets required.</span></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why n never gets used</div>
+        <p>Notice the code never actually looks at <code>n</code> for any decision-making &mdash; it just reads it so it knows how many numbers come next on the input line. The size of the bag genuinely doesn't matter to the answer; only whether 67 is inside it.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Double-checking with brute force</h2></div>
+      <p class="lead">Since <code>n</code> is at most 5, we can afford to check <em>every</em> possible non-empty subset directly &mdash; there are only <code>2<sup>5</sup> &minus; 1 = 31</code> of them at most. Let's do that for the judge's first example, <code>[1, 7, 6, 7, 67]</code>, and confirm it agrees with our one-line shortcut.</p>
+
+      <table class="trace">
+        <thead><tr><th>subset (by value)</th><th>product</th><th>equals 67?</th></tr></thead>
+        <tbody>
+          <tr><td>{1}</td><td>1</td><td class="even">no</td></tr>
+          <tr><td>{7}</td><td>7</td><td class="even">no</td></tr>
+          <tr><td>{6}</td><td>6</td><td class="even">no</td></tr>
+          <tr><td>{67}</td><td>67</td><td class="odd">yes!</td></tr>
+          <tr><td>{1, 67}</td><td>67</td><td class="odd">yes!</td></tr>
+          <tr><td>{7, 6}</td><td>42</td><td class="even">no</td></tr>
+          <tr><td>{1, 7, 6}</td><td>42</td><td class="even">no</td></tr>
+          <tr><td>&hellip; (25 more subsets)</td><td>&hellip;</td><td class="even">no (none reach exactly 67 without a 67 in them)</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">Every subset that hits exactly 67 contains the literal number 67 &mdash; confirming Level 4's shortcut.</td></tr></tfoot>
+      </table>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">31</div><div class="lbl">subsets checked the brute-force way, for n=5</div></div>
+        <div class="stat fast"><div class="num">1</div><div class="lbl">membership check needed with the shortcut, for any n</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you drive: try your own bag of numbers</h2></div>
+      <p class="lead">Fill in up to 5 numbers (1 to 67 each) and watch every possible subset get checked, side by side with the instant shortcut.</p>
+
+      <div class="widget">
+        <h3>67-hunter</h3>
+        <div class="hint">Tip: try 1, 7, 6, 7, 67 or 1, 3, 5, 7, 8 to reproduce the judge's own examples. Leave a field blank (or set it to 0) to use fewer than 5 numbers.</div>
+        <div class="field-row">
+          <div class="field"><label for="inA0">a1</label><input type="number" id="inA0" value="1" min="0" max="67"></div>
+          <div class="field"><label for="inA1">a2</label><input type="number" id="inA1" value="7" min="0" max="67"></div>
+          <div class="field"><label for="inA2">a3</label><input type="number" id="inA2" value="6" min="0" max="67"></div>
+          <div class="field"><label for="inA3">a4</label><input type="number" id="inA3" value="7" min="0" max="67"></div>
+          <div class="field"><label for="inA4">a5</label><input type="number" id="inA4" value="67" min="0" max="67"></div>
+          <div class="field"><button class="btn" id="runBtn">Hunt for 67</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Practice: crack these before you check with the tool</h2></div>
+      <p class="lead">Work each one out on paper first &mdash; then verify with the widget above.</p>
+
+      <details>
+        <summary>Exercise 1: [2, 67, 5]. What's the answer, and which single number decides it?</summary>
+        <div class="reveal">
+          <p><b>YES</b> &mdash; the list contains 67 (the second entry), so picking just <code>{67}</code> alone gives a product of exactly 67. The 2 and the 5 are completely irrelevant.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 2: [1, 1, 1, 1]. Explain in one sentence why no selection can ever reach 67.</summary>
+        <div class="reveal">
+          <p><b>NO</b> &mdash; every number in the bag is 1, and multiplying any collection of 1's together (in any amount) can only ever produce 1, never 67.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 3: [2, 3, 5, 7, 11]. These are all prime numbers &mdash; does that help you build 67? Why or why not?</summary>
+        <div class="reveal">
+          <p><b>NO</b>. Even though every number here is prime, that doesn't help build a <em>different</em> prime. Multiplying any subset of <code>{2,3,5,7,11}</code> gives a number whose only prime factors come from that same set &mdash; and 67 is a completely different prime, so it can never appear as a product of these. (This is the flip side of Level 2: multiplying primes together builds new numbers with those primes as factors, and 67 just isn't reachable this way.)</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 4 (edge case): [67]. With only one number in the whole bag, is the answer YES or NO?</summary>
+        <div class="reveal">
+          <p><b>YES</b>. You're always allowed to select just one element (remember, you can't select <em>zero</em> elements, but selecting exactly one is completely fine) &mdash; and picking that single 67 gives a product of exactly 67.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 5 (challenge): Modify the code to also print <em>which</em> selected numbers achieve the product, instead of just YES/NO.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>erato67henes_verbose.py</div>
+            <pre><code>t = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(t):
+    n = <span class="kw">int</span>(<span class="kw">input</span>())
+    a = <span class="kw">list</span>(<span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split()))
+    <span class="kw">if</span> <span class="nu">67</span> <span class="kw">in</span> a:
+        idx = a.index(<span class="nu">67</span>)
+        <span class="kw">print</span>(<span class="st">"YES, pick just a</span><span class="st">"</span> + <span class="kw">str</span>(idx + <span class="nu">1</span>) + <span class="st">" (the value 67)"</span>)
+    <span class="kw">else</span>:
+        <span class="kw">print</span>(<span class="st">"NO"</span>)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 2195A &mdash; Sieve of Erato67henes. New to what makes a number prime? Start with the <a href="prime_detective_en.html">Prime Number Detective Agency</a> page first.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(nums){
+    var subsets = [];
+    var count = nums.length;
+    var found = false;
+    for (var mask = 1; mask < (1 << count); mask++){
+      var picked = [];
+      var product = 1;
+      for (var i = 0; i < count; i++){
+        if (mask & (1 << i)){
+          picked.push(nums[i]);
+          product *= nums[i];
+        }
+      }
+      var hit = product === 67;
+      if (hit) found = true;
+      subsets.push({ picked: picked, product: product, hit: hit });
+    }
+    return { subsets: subsets, found: found, shortcut: nums.indexOf(67) !== -1 };
+  }
+
+  function run(){
+    var ids = ['inA0','inA1','inA2','inA3','inA4'];
+    var nums = [];
+    for (var i = 0; i < ids.length; i++){
+      var raw = document.getElementById(ids[i]).value;
+      var v = parseInt(raw, 10);
+      if (!isNaN(v) && v >= 1 && v <= 67){
+        nums.push(v);
+      }
+    }
+    var out = document.getElementById('out');
+
+    if (nums.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Enter at least one number between 1 and 67.</p></div>';
+      return;
+    }
+    if (nums.length > 20){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Keep it to 20 numbers or fewer so the subset table stays readable.</p></div>';
+      return;
+    }
+
+    var r = solve(nums);
+    var html = '';
+
+    html += '<div class="scrollbox"><table class="trace"><thead><tr><th>subset</th><th>product</th><th>equals 67?</th></tr></thead><tbody>';
+    r.subsets.forEach(function(s){
+      var verdictCell = s.hit ? '<td class="odd">yes!</td>' : '<td class="even">no</td>';
+      html += '<tr><td>{' + s.picked.join(', ') + '}</td><td>' + s.product + '</td>' + verdictCell + '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    html += '<div class="answer-line">Brute-force check across all ' + r.subsets.length + ' subsets: ' + (r.found ? 'found a match' : 'no match found') + '</div>';
+    html += '<div class="answer-line">Shortcut check (does 67 appear in the bag?): ' + (r.shortcut ? 'yes' : 'no') + '</div>';
+    html += '<div class="answer-line ' + (r.shortcut ? 'yes' : 'no') + '">Final answer: <b>' + (r.shortcut ? 'YES' : 'NO') + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

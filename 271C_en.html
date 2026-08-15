@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magic Five: Only the Last Digit Matters (Codeforces 271C)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Digit strip (repurposed bit boxes) ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:52px;text-align:center;}
+  .bit .cell{width:52px;height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:19px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .bit .pw{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input#inA{width:200px;}
+  .field input#inK{width:130px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 271C &middot; Problem Walkthrough</div>
+      <h1>Magic Five: <em>Only the Last Digit Matters</em></h1>
+      <p class="sub">Iahub has a long strip of digits &mdash; a string a, copy-pasted k times back to back &mdash; and he wants to erase some digits (not all of them) so the leftover number is divisible by 5. Codeforces 271C asks: in how many different ways can he choose which digits to erase? The strip can hold up to 100,000,000,000,000 digits, so counting one erasure at a time is out of the question.</p>
+      <div class="stampbar">
+        <span class="stamp hot">For curious 13-year-olds</span>
+        <span class="stamp">One big fact: only the last digit counts</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission</h2></div>
+      <p class="lead">You're given a digit string <code>a</code>, and a number <code>k</code>. The full "plate" <code>s</code> is just <code>a</code> written out <code>k</code> times in a row (so if <code>a = "12"</code> and <code>k = 3</code>, the plate is <code>"121212"</code>). You get to erase any digits you like from the plate &mdash; but you can't erase <em>every</em> digit; at least one must survive. Whatever's left, read left to right, forms a number (leading zeros are okay &mdash; <code>007</code> just means <code>7</code>, and here it's fine if it looks like <code>007</code>).</p>
+      <p>Count how many different ways there are to erase digits so that the surviving number is divisible by 5. Two ways are "different" if the <em>set of positions you erased</em> is different &mdash; even if the leftover numbers happen to look identical. Print the count modulo <code>1,000,000,007</code>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>a="1256", k=1</code> &rarr; <b>4</b>. The plate is just <code>1256</code>. The four winning erasures leave behind <code>5</code>, <code>15</code>, <code>25</code>, and <code>125</code> &mdash; all divisible by 5.<br>
+        <code>a="555", k=2</code> &rarr; <b>63</b>. The plate is <code>555555</code> (six 5's). <em>Any</em> non-empty selection of those six 5's is divisible by 5, and there are <code>2&#8310; &minus; 1 = 63</code> non-empty subsets.<br>
+        <code>a="13990", k=2</code> &rarr; <b>528</b>. The plate is <code>1399013990</code> &mdash; remember, it's two copies of <code>a</code> glued together, not just <code>a</code> itself!</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why should you care?</div>
+        <p><code>a</code> can be up to 100,000 digits long, and <code>k</code> can be up to 1,000,000,000. That means the plate can have up to <strong>100,000,000,000,000</strong> digits &mdash; 100 trillion! You could never even print that string, let alone loop over every digit in it one at a time within a 1-second time limit.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>The one fact that cracks this whole problem open</h2></div>
+      <p class="lead">Here's something you probably already know, even if you never said it out loud: <strong>a number is divisible by 5 exactly when its last digit is 0 or 5.</strong> <code>2,847,530</code>? Divisible &mdash; ends in 0. <code>2,847,533</code>? Not divisible &mdash; ends in 3. It doesn't matter how long the number is, or what any of the earlier digits are. <em>Only the very last digit decides.</em></p>
+      <p>Why does this work? Every digit except the last one is sitting in the tens place, the hundreds place, the thousands place, and so on &mdash; and <code>10</code>, <code>100</code>, <code>1000</code>&hellip; are <em>all</em> multiples of 5 (since <code>10 = 2&times;5</code>). So every digit except the last one contributes a multiple of 5 to the total, which can never change whether the number is divisible by 5. The last digit is the only one that isn't automatically "safe" &mdash; it's the one and only tiebreaker.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>This "only the remainder matters" way of thinking is exactly the clock-face math from the <a href="prime_detective_en.html">Prime Number Detective Agency</a> page. Here, the "clock" has just 5 positions (0, 1, 2, 3, 4), and only digits ending in <code>0</code> or <code>5</code> land on position 0.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Why "try every erasure" is hopeless</h2></div>
+      <p class="lead">If the plate has <code>n</code> digits, there are <code>2<sup>n</sup></code> ways to choose which digits to keep (each digit is either kept or erased &mdash; two choices, multiplied together). With <code>n</code> up to 100 trillion, that number isn't just big, it's <em>unimaginably</em> big &mdash; far more than the number of atoms in the observable universe. No computer will ever list them all. We need a way to count the winning erasures using a formula, without generating a single one of them.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">2<sup>100,000,000,000,000</sup></div><div class="lbl">possible erasures, worst case &mdash; a number with over 30 trillion digits</div></div>
+        <div class="stat fast"><div class="num">O(|a| + log k)</div><div class="lbl">work needed with the trick from Level 4</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The key insight: fix the last surviving digit</h2></div>
+      <p class="lead">From Level 2, we know exactly what makes a surviving number divisible by 5: its <em>last surviving digit</em> must be a <code>0</code> or a <code>5</code>. So let's flip the question around: instead of asking "which erasure works?", let's ask, for each position in the plate that holds a <code>0</code> or a <code>5</code>: <em>"how many erasures make this the last digit left standing?"</em></p>
+      <p>Say that position has exactly <code>i</code> digits sitting before it (counting from the very start of the plate). To make it the <em>last</em> survivor:</p>
+      <ul>
+        <li>Every digit <strong>after</strong> it must be erased &mdash; no choice, exactly 1 way.</li>
+        <li>Every digit <strong>before</strong> it can be kept or erased, it doesn't matter which &mdash; that's <code>2</code> choices for each of the <code>i</code> digits, giving <code>2<sup>i</sup></code> combinations.</li>
+        <li>The digit itself is always kept (that's the whole point).</li>
+      </ul>
+      <p>So a single good position contributes exactly <code>2<sup>i</sup></code> winning erasures. Add up <code>2<sup>i</sup></code> over <em>every</em> position holding a <code>0</code> or <code>5</code>, and you've counted every winning erasure exactly once &mdash; because every winning erasure has exactly one "last surviving digit," so it gets counted at exactly one position.</p>
+
+      <p>Let's check this on the digit strip <code>1256</code> (positions numbered from 0):</p>
+      <div class="bits" aria-label="1256, with position 2 (the digit 5) highlighted">
+        <div class="bit"><div class="cell">1</div><div class="pw">i=0</div></div>
+        <div class="bit"><div class="cell">2</div><div class="pw">i=1</div></div>
+        <div class="bit on"><div class="cell">5</div><div class="pw">i=2</div></div>
+        <div class="bit"><div class="cell">6</div><div class="pw">i=3</div></div>
+      </div>
+      <p>Only position <code>i=2</code> (the digit 5) qualifies, contributing <code>2&sup2; = 4</code>. That matches the judge's answer for <code>a="1256", k=1</code> exactly!</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>Answer = the sum of <code>2<sup>i</sup></code> over every position <code>i</code> (0-indexed from the start of the plate) whose digit is <code>0</code> or <code>5</code>.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Using the k copies: a geometric series</h2></div>
+      <p class="lead">The formula from Level 4 is correct, but summing <code>2<sup>i</sup></code> one position at a time still means visiting up to 100 trillion positions. Here's the shortcut: the plate is just <code>k</code> back-to-back copies of the same short string <code>a</code> (length <code>L</code>). A position at "copy number <code>j</code> (starting from 0), offset <code>p</code> inside <code>a</code>" sits at global position <code>i = j&times;L + p</code>, so its contribution is <code>2<sup>jL+p</sup> = 2<sup>jL</sup> &times; 2<sup>p</sup></code>.</p>
+      <p>Group all the good positions by which copy of <code>a</code> they're in. Every copy has the <em>same</em> good offsets <code>p</code>, so every copy contributes the same inner sum &mdash; let's call it <code>S = sum of 2<sup>p</sup></code> over good offsets <code>p</code> in one copy of <code>a</code>. Copy <code>j</code>'s total contribution is then <code>S &times; 2<sup>jL</sup></code>, or <code>S &times; r<sup>j</sup></code> where <code>r = 2<sup>L</sup></code>. Adding up all <code>k</code> copies:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">answer = S &times; (r&#8304; + r&sup1; + r&sup2; + &hellip; + r<sup>k&minus;1</sup>)</p>
+      <p>That parenthesized sum is a classic <strong>geometric series</strong>. There's a closed-form shortcut for it: <code>(r<sup>k</sup> &minus; 1) / (r &minus; 1)</code> (when <code>r &ne; 1</code>; if <code>r = 1</code> the sum is just <code>k</code>, since every term equals 1). Computing <code>r<sup>k</sup></code> takes only <code>O(log k)</code> multiplications using fast exponentiation, and "dividing" modulo a prime means multiplying by a modular inverse.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>Computing <code>r<sup>k</sup> mod M</code> quickly is exactly the <a href="fast_exponentiation_en.html">Fast Exponentiation</a> trick. And the modular inverse <code>(r&minus;1)<sup>&minus;1</sup></code> is computed as <code>pow(r&minus;1, M&minus;2, M)</code> &mdash; which works because of <strong>Fermat's Little Theorem</strong>, the very same fact that powers the tests on the <a href="fermat_lie_en.html">Fermat Lie Detector</a> page.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Reading the code, line by line</h2></div>
+      <p class="lead">Here's the entire solution. Read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>magic_five.py</div>
+        <pre><code>MOD = <span class="nu">1000000007</span>
+
+a = <span class="kw">input</span>().strip()
+k = <span class="kw">int</span>(<span class="kw">input</span>())
+L = <span class="kw">len</span>(a)
+
+S = <span class="nu">0</span>
+power = <span class="nu">1</span>
+<span class="kw">for</span> ch <span class="kw">in</span> a:
+    <span class="kw">if</span> ch == <span class="st">'0'</span> <span class="kw">or</span> ch == <span class="st">'5'</span>:
+        S = (S + power) % MOD
+    power = power * <span class="nu">2</span> % MOD
+
+r = <span class="kw">pow</span>(<span class="nu">2</span>, L, MOD)              <span class="cm"># 2^L mod MOD, via fast exponentiation</span>
+<span class="kw">if</span> r == <span class="nu">1</span>:
+    geo = k % MOD
+<span class="kw">else</span>:
+    geo = (<span class="kw">pow</span>(r, k, MOD) - <span class="nu">1</span>) * <span class="kw">pow</span>(r - <span class="nu">1</span>, MOD - <span class="nu">2</span>, MOD) % MOD
+
+<span class="kw">print</span>(S * geo % MOD)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">S = 0
+power = 1
+for ch in a:
+    if ch == '0' or ch == '5':
+        S = (S + power) % MOD
+    power = power * 2 % MOD</div>
+          <div class="annot-note"><span>Walk through one copy of <code>a</code>, keeping <code>power = 2<sup>p</sup></code> up to date as we go. Whenever we hit a good digit, add its <code>2<sup>p</sup></code> into <code>S</code> (Level 4's per-copy sum).</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">r = pow(2, L, MOD)</div>
+          <div class="annot-note"><span>Python's 3-argument <code>pow</code> does fast modular exponentiation for you &mdash; <code>2<sup>L</sup> mod MOD</code> in <code>O(log L)</code> steps, no matter how large <code>L</code> is.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">geo = (pow(r, k, MOD) - 1) * pow(r - 1, MOD - 2, MOD) % MOD</div>
+          <div class="annot-note"><span>The geometric series formula from Level 5, computed mod a prime: <code>pow(r-1, MOD-2, MOD)</code> is the modular inverse of <code>(r&minus;1)</code>, standing in for "division."</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print(S * geo % MOD)</div>
+          <div class="annot-note"><span>Multiply the per-copy sum by the geometric series total, exactly as derived in Level 5's boxed formula.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Let's trace it together: a="13990", k=2</h2></div>
+      <p class="lead"><code>L=5</code>. Only position <code>p=4</code> (the final digit, <code>0</code>) is good, so <code>S = 2&#8308; mod MOD = 16</code>. Then <code>r = 2&#8309; mod MOD = 32</code>.</p>
+
+      <table class="trace">
+        <thead><tr><th>step</th><th>computation</th><th>value</th></tr></thead>
+        <tbody>
+          <tr><td>S (per-copy sum)</td><td>2&#8308; mod MOD</td><td>16</td></tr>
+          <tr><td>r</td><td>2&#8309; mod MOD</td><td>32</td></tr>
+          <tr><td>r<sup>k</sup></td><td>32&sup2;</td><td>1024</td></tr>
+          <tr><td>geometric sum</td><td>(1024 &minus; 1) / (32 &minus; 1) = 1023 / 31</td><td class="odd">33</td></tr>
+          <tr><td>answer</td><td>S &times; geometric sum = 16 &times; 33</td><td class="odd"><b>528</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">Matches the judge's expected output exactly.</td></tr></tfoot>
+      </table>
+
+      <p>Notice that <code>1023 / 31 = 33</code> comes out to a whole number here &mdash; that's just because this small example has small enough numbers to check by hand. In the real program, that division is done as a modular inverse instead, which always produces the mathematically correct answer modulo <code>1,000,000,007</code>, even when the "real" fraction wouldn't be a whole number at all.</p>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Now you drive: try your own a and k</h2></div>
+      <p class="lead">Type any digit string and a repeat count, and watch the formula build up the answer step by step.</p>
+
+      <div class="widget">
+        <h3>Magic Five calculator</h3>
+        <div class="hint">Tip: try a=1256, k=1 or a=13990, k=2 or a=555, k=2 to reproduce the judge's own examples. Then try a huge k, like 1000000000, and notice the answer still appears instantly.</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a (digits only)</label><input type="text" id="inA" value="1256" maxlength="30"></div>
+          <div class="field"><label for="inK">k</label><input type="number" id="inK" value="1" min="1" max="1000000000"></div>
+          <div class="field"><button class="btn" id="runBtn">Count the erasures</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Practice: crack these before you check with the tool</h2></div>
+      <p class="lead">Work each one out on paper first &mdash; then verify with the widget above.</p>
+
+      <details>
+        <summary>Exercise 1: a="5", k=1. Why must the answer be exactly 1?</summary>
+        <div class="reveal">
+          <p>The plate is just the single digit <code>5</code>. You're not allowed to erase every digit, and there's only one digit to begin with &mdash; so the only legal move is to keep it. <code>S = 2&#8304; = 1</code>, <code>r = 2&sup1; = 2</code>, and with <code>k=1</code> the geometric sum is just <code>r&#8304; = 1</code>. Answer: <code>1 &times; 1 = 1</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 2: a="05", k=1. There are 3 non-empty ways to erase digits from "05" &mdash; why are all 3 of them winners?</summary>
+        <div class="reveal">
+          <p>The three non-empty subsequences are <code>"0"</code>, <code>"5"</code>, and <code>"05"</code> (which is just the number 5 with a leading zero). Every single one ends in <code>0</code> or <code>5</code>, so by the Level 2 rule, all three are divisible by 5. Using the formula: position 0 (<code>'0'</code>) contributes <code>2&#8304;=1</code>, position 1 (<code>'5'</code>) contributes <code>2&sup1;=2</code>, total <code>S=3</code>. With <code>k=1</code>, the geometric sum is 1, so the answer is <code>3</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 3: a="20", k=3 (so the plate is "202020"). Work out the answer using the geometric series shortcut, not by listing all 63 subsequences.</summary>
+        <div class="reveal">
+          <p>Only offset <code>p=1</code> (the digit <code>0</code>) is good, so <code>S = 2&sup1; = 2</code>. <code>L=2</code>, so <code>r = 2&sup2; = 4</code>. The geometric sum for <code>k=3</code> is <code>4&#8304;+4&sup1;+4&sup2; = 1+4+16 = 21</code>. Answer: <code>S &times; 21 = 2 &times; 21 = 42</code>. (You can sanity-check this by noticing the zeros sit at positions 1, 3, and 5 in <code>"202020"</code>, contributing <code>2&sup1;+2&sup3;+2&#8309; = 2+8+32 = 42</code> &mdash; same answer, the slow way.)</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 4: Why doesn't it matter which digits appear <em>before</em> a good position &mdash; couldn't some earlier choices somehow break divisibility by 5?</summary>
+        <div class="reveal">
+          <p>No &mdash; and that's the whole magic of Level 2's fact. Divisibility by 5 depends <em>only</em> on the last surviving digit. Once that last digit is locked in as a 0 or 5, every digit before it just shifts the number by a multiple of 10 (adding more tens, hundreds, thousands&hellip;), and since 10 is itself a multiple of 5, none of that can ever change whether the whole number is divisible by 5. That's exactly why those earlier digits are "free" &mdash; keep them or erase them, it doesn't affect the answer at all.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 5 (challenge): Modify the code to instead count erasures that leave a number divisible by 2. What changes, and what stays exactly the same?</summary>
+        <div class="reveal">
+          <p>Divisibility by 2 also depends only on the last digit (10 is a multiple of 2 as well!) &mdash; so the whole strategy carries over unchanged. The only change is which digits count as "good": instead of <code>ch == '0' or ch == '5'</code>, you'd check <code>ch in '02468'</code>. Everything else &mdash; the per-copy sum <code>S</code>, the geometric series over <code>k</code> copies, the modular inverse &mdash; stays exactly the same.</p>
+          <div class="codebox" style="margin:10px 0 0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>magic_two.py</div>
+            <pre><code>MOD = <span class="nu">1000000007</span>
+
+a = <span class="kw">input</span>().strip()
+k = <span class="kw">int</span>(<span class="kw">input</span>())
+L = <span class="kw">len</span>(a)
+
+S = <span class="nu">0</span>
+power = <span class="nu">1</span>
+<span class="kw">for</span> ch <span class="kw">in</span> a:
+    <span class="kw">if</span> ch <span class="kw">in</span> <span class="st">'02468'</span>:
+        S = (S + power) % MOD
+    power = power * <span class="nu">2</span> % MOD
+
+r = <span class="kw">pow</span>(<span class="nu">2</span>, L, MOD)
+<span class="kw">if</span> r == <span class="nu">1</span>:
+    geo = k % MOD
+<span class="kw">else</span>:
+    geo = (<span class="kw">pow</span>(r, k, MOD) - <span class="nu">1</span>) * <span class="kw">pow</span>(r - <span class="nu">1</span>, MOD - <span class="nu">2</span>, MOD) % MOD
+
+<span class="kw">print</span>(S * geo % MOD)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 271C &mdash; Magic Five. New to modular "clock" thinking or fast exponentiation? Start with the <a href="prime_detective_en.html">Prime Number Detective Agency</a> or <a href="fast_exponentiation_en.html">Fast Exponentiation</a> pages first.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 1000000007n;
+
+  function modpow(base, exp, mod){
+    base = ((base % mod) + mod) % mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n){ result = (result * base) % mod; }
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  function modinv(x, mod){
+    return modpow(x, mod - 2n, mod);
+  }
+
+  function solve(a, k){
+    var L = BigInt(a.length);
+    var kk = BigInt(k);
+    var S = 0n;
+    var power = 1n;
+    var goodPositions = [];
+    for (var idx = 0; idx < a.length; idx++){
+      var ch = a[idx];
+      if (ch === '0' || ch === '5'){
+        S = (S + power) % MOD;
+        goodPositions.push(idx);
+      }
+      power = (power * 2n) % MOD;
+    }
+    var r = modpow(2n, L, MOD);
+    var geo;
+    if (r === 1n){
+      geo = kk % MOD;
+    } else {
+      geo = ((modpow(r, kk, MOD) - 1n + MOD) % MOD) * modinv((r - 1n + MOD) % MOD, MOD) % MOD;
+    }
+    var answer = (S * geo) % MOD;
+    return { L: L, S: S, r: r, geo: geo, answer: answer, goodPositions: goodPositions };
+  }
+
+  function run(){
+    var a = document.getElementById('inA').value.trim();
+    var kStr = document.getElementById('inK').value;
+    var out = document.getElementById('out');
+
+    if (!/^[0-9]{1,30}$/.test(a)){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Please enter a digits-only string for a, 1 to 30 characters long.</p></div>';
+      return;
+    }
+    var k = parseInt(kStr, 10);
+    if (isNaN(k) || k < 1 || k > 1000000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Need k between 1 and 1,000,000,000.</p></div>';
+      return;
+    }
+
+    var r = solve(a, k);
+
+    var html = '<div class="bits" aria-label="digits of a, good ones highlighted">';
+    for (var i = 0; i < a.length; i++){
+      var isGood = r.goodPositions.indexOf(i) !== -1;
+      html += '<div class="bit ' + (isGood ? 'on' : '') + '"><div class="cell">' + a[i] + '</div><div class="pw">i=' + i + '</div></div>';
+    }
+    html += '</div>';
+
+    html += '<div class="answer-line">Per-copy sum S = ' + r.S.toString() + ' &nbsp;|&nbsp; r = 2<sup>L</sup> mod M = ' + r.r.toString() + '</div>';
+    html += '<div class="answer-line">Geometric sum over k=' + k + ' copies = <b>' + r.geo.toString() + '</b></div>';
+    html += '<div class="answer-line">Final answer, modulo 1,000,000,007: <b>' + r.answer.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>神奇的 5：只有最后一位数字说了算（Codeforces 271C）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.8;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,6vw,42px);line-height:1.3;margin:0 0 12px;letter-spacing:0;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:16px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.04em;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.05em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:22px;margin:0;}
+  .lead{font-size:16px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Digit strip (repurposed bit boxes) ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:52px;text-align:center;}
+  .bit .cell{width:52px;height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:19px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .bit .pw{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;letter-spacing:.02em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input#inA{width:200px;}
+  .field input#inK{width:130px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.02em;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 271C &middot; 题目精讲</div>
+      <h1>神奇的 5：<em>只有最后一位数字说了算</em></h1>
+      <p class="sub">Iahub 手里有一条很长的数字纸条——把字符串 a 首尾相接复制 k 份拼成的——他想删掉一些数字（但不能删光），让剩下的数字能被 5 整除。Codeforces 271C 问的是：他一共有多少种不同的删法？这条纸条最长能有 100 万亿位数字，所以想一种一种去数删法是完全不可能的。</p>
+      <div class="stampbar">
+        <span class="stamp hot">写给爱思考的 13 岁少年</span>
+        <span class="stamp">一个大发现：只有最后一位说了算</span>
+        <span class="stamp">可互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>认识这个任务</h2></div>
+      <p class="lead">给你一个数字字符串 <code>a</code>，还有一个数字 <code>k</code>。整条"纸条" <code>s</code> 就是把 <code>a</code> 连续写 <code>k</code> 遍（比如 <code>a = "12"</code>，<code>k = 3</code>，纸条就是 <code>"121212"</code>）。你可以随意删掉纸条上的一些数字——但不能把它们全删光，至少要留一个。剩下的数字从左到右连起来，就组成一个数（可以有前导零，<code>007</code> 其实就是 <code>7</code>，这里出现 <code>007</code> 这样的形式也没关系）。</p>
+      <p>请数一数：有多少种不同的删法，能让剩下的数被 5 整除？如果两种删法删掉的<em>位置集合</em>不同，就算是"不同"的删法——哪怕剩下的数字看起来一模一样也一样算不同。答案要对 <code>1,000,000,007</code> 取模后输出。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原话</div>
+        <p><code>a="1256", k=1</code> &rarr; <b>4</b>。纸条就是 <code>1256</code>。四种成功的删法分别留下 <code>5</code>、<code>15</code>、<code>25</code>、<code>125</code>——全都能被 5 整除。<br>
+        <code>a="555", k=2</code> &rarr; <b>63</b>。纸条是 <code>555555</code>（六个 5）。这六个 5 里<em>任意</em>非空子集都能被 5 整除，非空子集一共有 <code>2&#8310; &minus; 1 = 63</code> 个。<br>
+        <code>a="13990", k=2</code> &rarr; <b>528</b>。纸条是 <code>1399013990</code>——别忘了，这是两份 <code>a</code> 拼在一起，不是 <code>a</code> 本身！</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么要在意速度？</div>
+        <p><code>a</code> 最长能有 100,000 位，<code>k</code> 最大能到 1,000,000,000。也就是说纸条最长能有 <strong>100,000,000,000,000</strong> 位——100 万亿位！这个字符串本身根本印不出来，更别说在 1 秒的时间限制内一位一位地去扫了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>破解整道题的关键一句话</h2></div>
+      <p class="lead">这里有个你可能早就知道、只是没说出口的事实：<strong>一个数能不能被 5 整除，只看它的最后一位是不是 0 或 5。</strong> <code>2,847,530</code>？能整除——末位是 0。<code>2,847,533</code>？不能——末位是 3。不管这个数有多长，前面的每一位是什么都不重要。<em>只有最后一位说了算。</em></p>
+      <p>为什么会这样？除了最后一位，其他每一位分别站在十位、百位、千位……上，而 <code>10</code>、<code>100</code>、<code>1000</code>……<em>全都</em>是 5 的倍数（因为 <code>10 = 2&times;5</code>）。所以除了最后一位以外，其他每一位对整个数的贡献都是 5 的倍数，永远不会影响这个数能不能被 5 整除。只有最后一位不是"天然安全"的，它才是唯一能左右结果的关键票。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>这种"只看余数"的思维方式，正是<a href="prime_detective_cn.html">质数侦探社</a>页面里的钟面数学。这里的"钟面"只有 5 个刻度（0、1、2、3、4），只有末位是 <code>0</code> 或 <code>5</code> 的数字才会正好落在刻度 0 上。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>为什么"每种删法都试一遍"没有希望</h2></div>
+      <p class="lead">如果纸条有 <code>n</code> 位数字，那么一共有 <code>2<sup>n</sup></code> 种"保留哪些数字"的方案（每一位要么留、要么删，两种选择，乘起来）。当 <code>n</code> 最大能到 100 万亿时，这个数字已经不只是"很大"了，而是<em>大得没法想象</em>——远远超过可观测宇宙中原子的数量。没有任何一台计算机能把它们一一列出来。我们需要用一个公式直接算出成功删法的数量，而不是真的去生成每一种删法。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">2<sup>100,000,000,000,000</sup></div><div class="lbl">最坏情况下的删法总数——一个超过 30 万亿位的数字</div></div>
+        <div class="stat fast"><div class="num">O(|a| + log k)</div><div class="lbl">用第四关的技巧，实际需要的计算量</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>关键发现：锁定"最后留下的那一位"</h2></div>
+      <p class="lead">根据第二关，我们已经知道剩下的数能被 5 整除的条件到底是什么：<em>最后留下的那一位数字</em>必须是 <code>0</code> 或 <code>5</code>。那我们不妨换个角度问问题：不问"哪种删法能成功？"，而是对纸条上每一个是 <code>0</code> 或 <code>5</code> 的位置分别问：<em>"有多少种删法，能让它恰好是最后留下的那一位？"</em></p>
+      <p>假设这个位置前面（从纸条最开头数起）一共有 <code>i</code> 个数字。要让它成为<em>最后</em>幸存的那一位：</p>
+      <ul>
+        <li>它<strong>后面</strong>的每一位都必须删掉——没有别的选择，只有 1 种方案。</li>
+        <li>它<strong>前面</strong>的每一位，留还是删都无所谓——每个位置都有 <code>2</code> 种选择，<code>i</code> 个位置合起来就是 <code>2<sup>i</sup></code> 种组合。</li>
+        <li>这一位本身当然要保留（这正是我们要的效果）。</li>
+      </ul>
+      <p>所以，单单这一个好位置，就贡献了恰好 <code>2<sup>i</sup></code> 种成功的删法。把纸条上<em>每一个</em>是 <code>0</code> 或 <code>5</code> 的位置的 <code>2<sup>i</sup></code> 加起来，就能不重不漏地数完所有成功的删法——因为每一种成功的删法都恰好有一个"最后幸存的数字"，所以它只会在那一个位置被数到一次。</p>
+
+      <p>拿数字条 <code>1256</code> 来验证一下（位置从 0 开始编号）：</p>
+      <div class="bits" aria-label="1256，其中位置2（数字5）被高亮">
+        <div class="bit"><div class="cell">1</div><div class="pw">i=0</div></div>
+        <div class="bit"><div class="cell">2</div><div class="pw">i=1</div></div>
+        <div class="bit on"><div class="cell">5</div><div class="pw">i=2</div></div>
+        <div class="bit"><div class="cell">6</div><div class="pw">i=3</div></div>
+      </div>
+      <p>只有位置 <code>i=2</code>（数字 5）符合条件，贡献 <code>2&sup2; = 4</code>。这正好和题目给出的 <code>a="1256", k=1</code> 的答案完全一致！</p>
+
+      <div class="callout tip">
+        <div class="ctitle">最重要的一句话</div>
+        <p>答案 = 纸条上每一个数字是 <code>0</code> 或 <code>5</code> 的位置 <code>i</code>（从纸条开头 0 起编号）对应的 <code>2<sup>i</sup></code> 之和。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>利用 k 份拷贝：等比数列</h2></div>
+      <p class="lead">第四关的公式是对的，但一位一位地加 <code>2<sup>i</sup></code>，还是得访问多达 100 万亿个位置。这里有个捷径：纸条其实就是同一段短字符串 <code>a</code>（长度为 <code>L</code>）首尾相接了 <code>k</code> 遍。"第 <code>j</code> 份拷贝（从 0 开始编号）里偏移量为 <code>p</code>"的位置，全局位置就是 <code>i = j&times;L + p</code>，所以它的贡献是 <code>2<sup>jL+p</sup> = 2<sup>jL</sup> &times; 2<sup>p</sup></code>。</p>
+      <p>按"属于哪一份拷贝"把所有好位置分组。每一份拷贝里"好偏移量" <code>p</code> 是<em>完全相同</em>的，所以每份拷贝内部的求和结果也相同——我们把它叫 <code>S = 一份 a 里所有好偏移量 p 对应的 2<sup>p</sup> 之和</code>。第 <code>j</code> 份拷贝的总贡献就是 <code>S &times; 2<sup>jL</sup></code>，也就是 <code>S &times; r<sup>j</sup></code>，其中 <code>r = 2<sup>L</sup></code>。把 <code>k</code> 份全部加起来：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">答案 = S &times; (r&#8304; + r&sup1; + r&sup2; + &hellip; + r<sup>k&minus;1</sup>)</p>
+      <p>括号里那部分是经典的<strong>等比数列</strong>求和。它有一个现成的公式：<code>(r<sup>k</sup> &minus; 1) / (r &minus; 1)</code>（当 <code>r &ne; 1</code> 时；如果 <code>r = 1</code>，每一项都等于 1，求和直接就是 <code>k</code>）。用快速幂计算 <code>r<sup>k</sup></code> 只需要 <code>O(log k)</code> 次乘法，而在取模意义下的"除法"，就是乘以一个模逆元。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>快速算出 <code>r<sup>k</sup> mod M</code>，正是<a href="fast_exponentiation_zh.html">快速幂</a>页面讲的那个技巧。而模逆元 <code>(r&minus;1)<sup>&minus;1</sup></code> 是用 <code>pow(r-1, M-2, M)</code> 算出来的——这之所以成立，正是因为<strong>费马小定理</strong>，也就是<a href="fermat_lie_zh.html">费马测谎仪</a>页面里那些检测背后依赖的同一个事实。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面是完整的解法。先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>magic_five.py</div>
+        <pre><code>MOD = <span class="nu">1000000007</span>
+
+a = <span class="kw">input</span>().strip()
+k = <span class="kw">int</span>(<span class="kw">input</span>())
+L = <span class="kw">len</span>(a)
+
+S = <span class="nu">0</span>
+power = <span class="nu">1</span>
+<span class="kw">for</span> ch <span class="kw">in</span> a:
+    <span class="kw">if</span> ch == <span class="st">'0'</span> <span class="kw">or</span> ch == <span class="st">'5'</span>:
+        S = (S + power) % MOD
+    power = power * <span class="nu">2</span> % MOD
+
+r = <span class="kw">pow</span>(<span class="nu">2</span>, L, MOD)              <span class="cm"># 用快速幂算 2^L mod MOD</span>
+<span class="kw">if</span> r == <span class="nu">1</span>:
+    geo = k % MOD
+<span class="kw">else</span>:
+    geo = (<span class="kw">pow</span>(r, k, MOD) - <span class="nu">1</span>) * <span class="kw">pow</span>(r - <span class="nu">1</span>, MOD - <span class="nu">2</span>, MOD) % MOD
+
+<span class="kw">print</span>(S * geo % MOD)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">S = 0
+power = 1
+for ch in a:
+    if ch == '0' or ch == '5':
+        S = (S + power) % MOD
+    power = power * 2 % MOD</div>
+          <div class="annot-note"><span>遍历一份 <code>a</code>，边走边维护 <code>power = 2<sup>p</sup></code>。每遇到一个好数字，就把它的 <code>2<sup>p</sup></code> 加进 <code>S</code>（也就是第四关说的"一份拷贝内的求和"）。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">r = pow(2, L, MOD)</div>
+          <div class="annot-note"><span>Python 的三参数 <code>pow</code> 会自动帮你做快速取模幂运算——不管 <code>L</code> 多大，<code>2<sup>L</sup> mod MOD</code> 都能在 <code>O(log L)</code> 步内算出来。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">geo = (pow(r, k, MOD) - 1) * pow(r - 1, MOD - 2, MOD) % MOD</div>
+          <div class="annot-note"><span>第五关推导出的等比数列公式，在取模意义下计算：<code>pow(r-1, MOD-2, MOD)</code> 就是 <code>(r&minus;1)</code> 的模逆元，充当"除法"的角色。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print(S * geo % MOD)</div>
+          <div class="annot-note"><span>把"一份拷贝的和"乘上"等比数列总和"，正是第五关方框里那条公式。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>一起手算一遍：a="13990", k=2</h2></div>
+      <p class="lead"><code>L=5</code>。只有位置 <code>p=4</code>（最后一位，数字 <code>0</code>）是好位置，所以 <code>S = 2&#8308; mod MOD = 16</code>。接着 <code>r = 2&#8309; mod MOD = 32</code>。</p>
+
+      <table class="trace">
+        <thead><tr><th>步骤</th><th>计算过程</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>S（单份拷贝之和）</td><td>2&#8308; mod MOD</td><td>16</td></tr>
+          <tr><td>r</td><td>2&#8309; mod MOD</td><td>32</td></tr>
+          <tr><td>r<sup>k</sup></td><td>32&sup2;</td><td>1024</td></tr>
+          <tr><td>等比数列之和</td><td>(1024 &minus; 1) / (32 &minus; 1) = 1023 / 31</td><td class="odd">33</td></tr>
+          <tr><td>最终答案</td><td>S &times; 等比数列之和 = 16 &times; 33</td><td class="odd"><b>528</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">和题目给出的期望输出完全一致。</td></tr></tfoot>
+      </table>
+
+      <p>注意这里 <code>1023 / 31 = 33</code> 恰好整除——那只是因为这个小例子里的数字凑巧小到能手算验证。在真正的程序里，这个除法是用模逆元来完成的，即便对应的"真实分数"根本不是整数，也永远能算出模 <code>1,000,000,007</code> 意义下数学正确的答案。</p>
+    </section>
+
+    <!-- ============ LEVEL 8：互动小工具 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>轮到你了：试试自己的 a 和 k</h2></div>
+      <p class="lead">输入任意数字字符串和重复次数，看看公式是怎么一步步搭出答案的。</p>
+
+      <div class="widget">
+        <h3>神奇的 5 计算器</h3>
+        <div class="hint">提示：先试试 a=1256, k=1 或 a=13990, k=2 或 a=555, k=2，重现一下题目自带的样例。然后再试一个巨大的 k，比如 1000000000，你会发现答案依然瞬间就出来了。</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a（仅限数字）</label><input type="text" id="inA" value="1256" maxlength="30"></div>
+          <div class="field"><label for="inK">k</label><input type="number" id="inK" value="1" min="1" max="1000000000"></div>
+          <div class="field"><button class="btn" id="runBtn">数一数删法</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>练习题：先自己算，再用工具核对</h2></div>
+      <p class="lead">每一题都先在纸上算一遍，再用上面的小工具验证答案。</p>
+
+      <details>
+        <summary>练习 1：a="5", k=1。为什么答案一定是 1？</summary>
+        <div class="reveal">
+          <p>纸条就是单独一个数字 <code>5</code>。你不能把所有数字都删光，而这里本来就只有一个数字——所以唯一合法的做法就是保留它。<code>S = 2&#8304; = 1</code>，<code>r = 2&sup1; = 2</code>，<code>k=1</code> 时等比数列之和就是 <code>r&#8304; = 1</code>。答案：<code>1 &times; 1 = 1</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：a="05", k=1。从 "05" 里删数字，共有 3 种非空删法——为什么这 3 种全都成功？</summary>
+        <div class="reveal">
+          <p>三种非空子序列分别是 <code>"0"</code>、<code>"5"</code>、<code>"05"</code>（其实就是带前导零的数字 5）。它们无一例外都以 <code>0</code> 或 <code>5</code> 结尾，根据第二关的规则，三个都能被 5 整除。用公式验证：位置 0（<code>'0'</code>）贡献 <code>2&#8304;=1</code>，位置 1（<code>'5'</code>）贡献 <code>2&sup1;=2</code>，合计 <code>S=3</code>。<code>k=1</code> 时等比数列之和是 1，所以答案是 <code>3</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：a="20", k=3（纸条是 "202020"）。用等比数列的捷径算出答案，而不是把全部 63 种删法都列出来。</summary>
+        <div class="reveal">
+          <p>只有偏移量 <code>p=1</code>（数字 <code>0</code>）是好位置，所以 <code>S = 2&sup1; = 2</code>。<code>L=2</code>，所以 <code>r = 2&sup2; = 4</code>。<code>k=3</code> 时等比数列之和是 <code>4&#8304;+4&sup1;+4&sup2; = 1+4+16 = 21</code>。答案：<code>S &times; 21 = 2 &times; 21 = 42</code>。（你也可以用笨办法核对：在 <code>"202020"</code> 里，0 分别出现在位置 1、3、5，贡献 <code>2&sup1;+2&sup3;+2&#8309; = 2+8+32 = 42</code>——答案一样，只是算得更慢。）</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4：为什么好位置<em>前面</em>的数字是什么完全不重要——难道前面的选择不会悄悄破坏被 5 整除这件事吗？</summary>
+        <div class="reveal">
+          <p>不会——这正是第二关那条规则的神奇之处。能不能被 5 整除，<em>只</em>取决于最后留下的那一位。一旦这最后一位被锁定为 0 或 5，它前面的每一位只是把整个数往前挪了一个 10 的倍数（多加一些十位、百位、千位……），而 10 本身就是 5 的倍数，这永远不会改变整个数能不能被 5 整除。这正是为什么前面这些数字是"自由"的——留着还是删掉，对答案完全没有影响。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5（挑战题）：修改代码，改成统计能让剩下的数被 2 整除的删法数量。哪里要变，哪里完全不用变？</summary>
+        <div class="reveal">
+          <p>能不能被 2 整除，同样只取决于最后一位（10 也是 2 的倍数！）——所以整套思路完全可以照搬。唯一要改的是"什么算好数字"：把 <code>ch == '0' or ch == '5'</code> 换成 <code>ch in '02468'</code> 就行了。其余的——单份拷贝之和 <code>S</code>、跨 <code>k</code> 份拷贝的等比数列、模逆元——统统原封不动。</p>
+          <div class="codebox" style="margin:10px 0 0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>magic_two.py</div>
+            <pre><code>MOD = <span class="nu">1000000007</span>
+
+a = <span class="kw">input</span>().strip()
+k = <span class="kw">int</span>(<span class="kw">input</span>())
+L = <span class="kw">len</span>(a)
+
+S = <span class="nu">0</span>
+power = <span class="nu">1</span>
+<span class="kw">for</span> ch <span class="kw">in</span> a:
+    <span class="kw">if</span> ch <span class="kw">in</span> <span class="st">'02468'</span>:
+        S = (S + power) % MOD
+    power = power * <span class="nu">2</span> % MOD
+
+r = <span class="kw">pow</span>(<span class="nu">2</span>, L, MOD)
+<span class="kw">if</span> r == <span class="nu">1</span>:
+    geo = k % MOD
+<span class="kw">else</span>:
+    geo = (<span class="kw">pow</span>(r, k, MOD) - <span class="nu">1</span>) * <span class="kw">pow</span>(r - <span class="nu">1</span>, MOD - <span class="nu">2</span>, MOD) % MOD
+
+<span class="kw">print</span>(S * geo % MOD)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 271C &mdash; Magic Five。还不熟悉取模的"钟面"思维或快速幂？可以先看看<a href="prime_detective_cn.html">质数侦探社</a>或<a href="fast_exponentiation_zh.html">快速幂</a>页面。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 1000000007n;
+
+  function modpow(base, exp, mod){
+    base = ((base % mod) + mod) % mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n){ result = (result * base) % mod; }
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  function modinv(x, mod){
+    return modpow(x, mod - 2n, mod);
+  }
+
+  function solve(a, k){
+    var L = BigInt(a.length);
+    var kk = BigInt(k);
+    var S = 0n;
+    var power = 1n;
+    var goodPositions = [];
+    for (var idx = 0; idx < a.length; idx++){
+      var ch = a[idx];
+      if (ch === '0' || ch === '5'){
+        S = (S + power) % MOD;
+        goodPositions.push(idx);
+      }
+      power = (power * 2n) % MOD;
+    }
+    var r = modpow(2n, L, MOD);
+    var geo;
+    if (r === 1n){
+      geo = kk % MOD;
+    } else {
+      geo = ((modpow(r, kk, MOD) - 1n + MOD) % MOD) * modinv((r - 1n + MOD) % MOD, MOD) % MOD;
+    }
+    var answer = (S * geo) % MOD;
+    return { L: L, S: S, r: r, geo: geo, answer: answer, goodPositions: goodPositions };
+  }
+
+  function run(){
+    var a = document.getElementById('inA').value.trim();
+    var kStr = document.getElementById('inK').value;
+    var out = document.getElementById('out');
+
+    if (!/^[0-9]{1,30}$/.test(a)){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>a 请输入 1 到 30 位的纯数字字符串。</p></div>';
+      return;
+    }
+    var k = parseInt(kStr, 10);
+    if (isNaN(k) || k < 1 || k > 1000000000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>k 需要在 1 到 1,000,000,000 之间。</p></div>';
+      return;
+    }
+
+    var r = solve(a, k);
+
+    var html = '<div class="bits" aria-label="a 的每一位数字，好位置已高亮">';
+    for (var i = 0; i < a.length; i++){
+      var isGood = r.goodPositions.indexOf(i) !== -1;
+      html += '<div class="bit ' + (isGood ? 'on' : '') + '"><div class="cell">' + a[i] + '</div><div class="pw">i=' + i + '</div></div>';
+    }
+    html += '</div>';
+
+    html += '<div class="answer-line">单份拷贝之和 S = ' + r.S.toString() + ' &nbsp;|&nbsp; r = 2<sup>L</sup> mod M = ' + r.r.toString() + '</div>';
+    html += '<div class="answer-line">跨 k=' + k + ' 份拷贝的等比数列之和 = <b>' + r.geo.toString() + '</b></div>';
+    html += '<div class="answer-line">对 1,000,000,007 取模后的最终答案：<b>' + r.answer.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

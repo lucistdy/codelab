@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>诺德巴赫问题：素数邻居联手创造新素数（Codeforces 17A）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.8;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,6vw,42px);line-height:1.3;margin:0 0 12px;letter-spacing:0;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:16px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.04em;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.05em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:22px;margin:0;}
+  .lead{font-size:16px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Neighbor chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 60px;min-width:52px;text-align:center;padding:10px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:16px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;letter-spacing:.02em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.02em;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-word;}
+  .answer-line b{color:var(--accent-strong);}
+  .answer-line.yes{background:var(--clue-soft);border-color:var(--clue);}
+  .answer-line.no{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Table wrap for scroll ---------- */
+  .scrollbox{max-height:220px;overflow-y:auto;margin:10px 0;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 17A &middot; 题目精讲</div>
+      <h1>诺德巴赫问题：<em>素数邻居联手创造新素数</em></h1>
+      <p class="sub">Nick 太喜欢素数了，以至于他仿照一个著名的数学问题，发明了自己的版本。Codeforces 17A 问的是：如果把每一对"相邻"素数加起来，再加 1，从 2 到 n 之间，一共能这样造出多少个素数？这个数够不够 k 个？这道题不是要你跟一个巨大的数字斗智斗勇——而是要你把规则读得*非常*仔细。</p>
+      <div class="stampbar">
+        <span class="stamp hot">写给爱思考的 13 岁少年</span>
+        <span class="stamp">复习埃拉托斯特尼筛法</span>
+        <span class="stamp">可互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>认识这个任务</h2></div>
+      <p class="lead">你可能听说过著名的、至今还没被证明的<strong>哥德巴赫猜想</strong>：任何大于 2 的偶数都能写成两个素数之和（比如 <code>10 = 3 + 7</code>）。Nick 太喜欢这个想法了，于是发明了属于自己的版本，取名叫<strong>诺德巴赫问题</strong>（懂了吧？<em>N</em>ick 的哥德巴赫）：</p>
+      <div class="callout fact">
+        <div class="ctitle">Nick 的主张</div>
+        <p>从 <code>2</code> 到 <code>n</code> 之间，至少有 <code>k</code> 个素数能写成<strong>两个相邻素数之和，再加 1</strong>。比如：<code>19 = 7 + 11 + 1</code>，或者 <code>13 = 5 + 7 + 1</code>。</p>
+      </div>
+      <p>给你两个整数 <code>n</code> 和 <code>k</code>。你的任务：判断 Nick 说得对不对——如果 2 到 n（含）之间至少有 <code>k</code> 个素数能这样造出来，就输出 <code>YES</code>，否则输出 <code>NO</code>。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原话</div>
+        <p><code>n=27, k=2</code> &rarr; <b>YES</b>。<code>13</code>（= 5+7+1）和 <code>19</code>（= 7+11+1）都符合条件，2 &ge; 2。<br>
+        <code>n=45, k=7</code> &rarr; <b>NO</b>。实际上，45 以内只有 5 个素数能这样造出来——不够 7 个。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>"相邻"到底是什么意思？</h2></div>
+      <p class="lead">这是整道题里最重要的一句话，所以我们放慢速度：<strong>"如果两个素数之间没有其他素数，就称它们是相邻素数。"</strong>意思是：把<em>所有</em>素数按顺序排成一排——<code>2, 3, 5, 7, 11, 13, 17, 19, 23, &hellip;</code>——"相邻"就是"在这个队列里挨在一起"。它<em>不是</em>说这两个素数必须恰好相差 2！</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">素数</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>相邻</div>
+        <div class="chain-box"><div class="p">素数</div><div class="v">3</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>相邻</div>
+        <div class="chain-box"><div class="p">素数</div><div class="v">5</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>相邻</div>
+        <div class="chain-box"><div class="p">素数</div><div class="v">7</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>相邻</div>
+        <div class="chain-box"><div class="p">素数</div><div class="v">11</div></div>
+        <div class="chain-arrow"><span class="sym">&harr;</span>相邻</div>
+        <div class="chain-box"><div class="p">素数</div><div class="v">13</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">一个值得避开的陷阱</div>
+        <p>你可能会以为"相邻素数"就是<em>孪生素数</em>（像 11 和 13 这样恰好相差 2 的一对）。这是个常见的误解，但在这里是错的！<code>23</code> 和 <code>29</code> 也是相邻素数（中间的 24、25、26、27、28 全都是合数，没有别的素数插进来），尽管它们相差 6。"相邻"只表示"在素数队列里挨在一起"，不管中间的间隔有多大。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>手动验证一下题目给的例子</h2></div>
+      <p class="lead">用第二关的定义，确认一下题目提示里给的两个例子确实成立。</p>
+      <ul>
+        <li><code>5</code> 和 <code>7</code> 是相邻素数（6 这个位置没有素数）。<code>5 + 7 + 1 = 13</code>，而 13 本身也是素数。所以 <strong>13</strong> 是"可以用诺德巴赫方式表示"的。</li>
+        <li><code>7</code> 和 <code>11</code> 是相邻素数（8、9、10 都没有素数）。<code>7 + 11 + 1 = 19</code>，而 19 本身也是素数。所以 <strong>19</strong> 同样可以用诺德巴赫方式表示。</li>
+      </ul>
+      <p>注意这里的模式：我们不是只把两个相邻素数加起来看看这个和有什么意思——而是在这个和上再加 1，然后检查<em>最终结果</em>是不是恰好也是落在 2 到 n 范围里的一个素数。这道题里其实悄悄藏着两次素数判断：两个"原料"必须是相邻素数，<em>而且</em>最终结果也必须是素数。</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>我们的老工具：埃拉托斯特尼筛法</h2></div>
+      <p class="lead">因为这里的 <code>n</code> 最大只有 <strong>1000</strong>，所以这道题不像你之前解决过的一些题目那样，要跟一个巨大的数字斗智斗勇——规模小得让人松一口气！但我们仍然需要一种又快又可靠的方法，一次性找出 2 到 n 之间<em>所有</em>的素数，还要能反复瞬间回答"这个数是不是素数？"。</p>
+      <p>这正是<strong>埃拉托斯特尼筛法</strong>要做的事：从 2 到 n 扫一遍，把每一个找到的素数的所有倍数都划掉，最后剩下的就是真正的素数。对于最大 1000 的 n，造这张筛子几乎不花什么时间。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>还没造过筛子，或者想复习一下具体怎么做？<a href="prime_detective_cn.html#case5">质数侦探社</a>页面一步步讲解了埃拉托斯特尼筛法，还配了一整张能亲眼看着被"清扫"的网格。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>解题配方</h2></div>
+      <p class="lead">既然手头已经有了 2 到 n 之间所有的素数，下面是一步步的计划：</p>
+      <ol>
+        <li>用筛法找出 2 到 n 之间所有的素数，并按顺序存成一个列表。</li>
+        <li>沿着列表往下走，逐一查看每一对相邻的素数（第1个和第2个，第2个和第3个，第3个和第4个，以此类推）。</li>
+        <li>对每一对相邻素数，算出它们的和再加 1。</li>
+        <li>检查：这个结果本身是不是素数？如果是，我们就又找到了一个"诺德巴赫可表示"的素数——把它记下来。</li>
+        <li>检查完所有相邻素数对之后，数一数这样找到了多少个<em>不同</em>的素数，再和 k 比较。</li>
+      </ol>
+
+      <div class="callout tip">
+        <div class="ctitle">最重要的一句话</div>
+        <p>把每一对相邻素数都走一遍，检查"和加1"是不是素数，数一数这个检查一共命中了多少个不同的素数。如果这个数量至少是 k，答案就是 YES。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面是完整的解法。先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>noldbach.py</div>
+        <pre><code>n, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+is_prime = [<span class="kw">True</span>] * (n + <span class="nu">1</span>)
+is_prime[<span class="nu">0</span>] = is_prime[<span class="nu">1</span>] = <span class="kw">False</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, <span class="kw">int</span>(n ** <span class="nu">0.5</span>) + <span class="nu">1</span>):
+    <span class="kw">if</span> is_prime[i]:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(i * i, n + <span class="nu">1</span>, i):
+            is_prime[j] = <span class="kw">False</span>
+
+primes = [i <span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, n + <span class="nu">1</span>) <span class="kw">if</span> is_prime[i]]
+
+found = <span class="kw">set</span>()
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="kw">len</span>(primes) - <span class="nu">1</span>):
+    total = primes[i] + primes[i + <span class="nu">1</span>] + <span class="nu">1</span>
+    <span class="kw">if</span> total &lt;= n <span class="kw">and</span> is_prime[total]:
+        found.add(total)
+
+<span class="kw">print</span>(<span class="st">"YES"</span> <span class="kw">if</span> <span class="kw">len</span>(found) &gt;= k <span class="kw">else</span> <span class="st">"NO"</span>)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">is_prime = [True] * (n + 1)
+is_prime[0] = is_prime[1] = False
+for i in range(2, int(n ** 0.5) + 1):
+    if is_prime[i]:
+        for j in range(i * i, n + 1, i):
+            is_prime[j] = False</div>
+          <div class="annot-note"><span>第四关的埃拉托斯特尼筛法：一次扫过 0 到 n 的每个数，造出一张"是不是素数"的查询表。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">primes = [i for i in range(2, n + 1) if is_prime[i]]</div>
+          <div class="annot-note"><span>把查询表变成一个真正按顺序排列的素数列表，方便随时取出"下一个"。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for i in range(len(primes) - 1):
+    total = primes[i] + primes[i + 1] + 1
+    if total <= n and is_prime[total]:
+        found.add(total)</div>
+          <div class="annot-note"><span>走一遍每一对相邻素数（第五关的第2~4步）。<code>total &lt;= n</code> 防止我们越界查看筛子表之外的地方；<code>is_prime[total]</code> 是一次瞬间查表，不需要重新判断。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print("YES" if len(found) >= k else "NO")</div>
+          <div class="annot-note"><span>用 <code>set</code> 存 <code>found</code>，重复的结果只会被算一次。把最终的数量和 k 比较，正是题目要求的。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>一起手算两个样例</h2></div>
+
+      <p class="lead"><strong>n=27, k=2：</strong>27 以内的素数是 <code>2,3,5,7,11,13,17,19,23</code>。</p>
+      <table class="trace">
+        <thead><tr><th>相邻素数对</th><th>和 + 1</th><th>是素数？</th></tr></thead>
+        <tbody>
+          <tr><td>2, 3</td><td>6</td><td class="even">否</td></tr>
+          <tr><td>3, 5</td><td>9</td><td class="even">否</td></tr>
+          <tr><td>5, 7</td><td>13</td><td class="odd">是！</td></tr>
+          <tr><td>7, 11</td><td>19</td><td class="odd">是！</td></tr>
+          <tr><td>11, 13</td><td>25</td><td class="even">否</td></tr>
+          <tr><td>13, 17</td><td>31（&gt; 27，跳过）</td><td class="even">&mdash;</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">找到 2 个素数（13、19）。2 &ge; k=2，所以答案是 <b>YES</b>。</td></tr></tfoot>
+      </table>
+
+      <p class="lead"><strong>n=45, k=7：</strong>按同样的方法继续算下去（13、19、31、37、43 都符合；25 和 53 不符合——53 也已经超过 45 了）。只有 <b>5</b> 个素数符合条件，不够 7 个，所以答案是 <b>NO</b>。</p>
+    </section>
+
+    <!-- ============ LEVEL 8：互动小工具 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>轮到你了：试试自己的 n 和 k</h2></div>
+      <p class="lead">自己挑几个数字，看看每一对相邻素数是怎么被检查的。</p>
+
+      <div class="widget">
+        <h3>诺德巴赫检验器</h3>
+        <div class="hint">提示：先试试 n=27, k=2 或 n=45, k=7，重现一下题目自带的样例。然后再试试 n=1000, k=44（理论最大值）和 n=1000, k=45（多了一个）。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="27" min="2" max="1000"></div>
+          <div class="field"><label for="inK">k</label><input type="number" id="inK" value="2" min="0" max="1000"></div>
+          <div class="field"><button class="btn" id="runBtn">检验 Nick 的说法</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>练习题：先自己算，再用工具核对</h2></div>
+      <p class="lead">每一题都先在纸上算一遍，再用上面的小工具验证答案。</p>
+
+      <details>
+        <summary>练习 1：n=13, k=1。是哪一对相邻素数让它成立的？为什么答案是 YES？</summary>
+        <div class="reveal">
+          <p>13 以内的素数：<code>2,3,5,7,11,13</code>。逐一检查相邻和：<code>2+3+1=6</code>（否），<code>3+5+1=9</code>（否），<code>5+7+1=13</code>（是！而且 13 &le; 13），<code>7+11+1=19</code>（太大了，19&gt;13，跳过），<code>11+13+1=25</code>（也太大）。只找到 1 个素数（13），刚好满足 <code>k=1</code>。答案：<b>YES</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：n=19, k=3。我们已经知道 13 和 19 都符合条件（第一关）。19 以内还藏着第三个吗？为什么答案是 NO？</summary>
+        <div class="reveal">
+          <p>用 19 以内的素数（<code>2,3,5,7,11,13,17,19</code>）检查每一对相邻素数：只有 <code>5+7+1=13</code> 和 <code>7+11+1=19</code> 这两个和落在了不超过19的素数上。下一对，<code>11+13+1=25</code>，不是素数，而 <code>13+17+1=31</code> 已经超过19了。所以只有 2 个素数符合条件，不是 3 个。答案：<b>NO</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：n=20, k=2。把 n 从 19 提高到 20，会不会改变练习 2 里的计数？</summary>
+        <div class="reveal">
+          <p>19 和 20 之间没有新的素数出现（20 不是素数），所以能达成的集合仍然只有 <code>{13, 19}</code>——还是 2 个。这次 <code>k=2</code>（不是 3），<code>2 &ge; 2</code> 成立。答案：<b>YES</b>。这说明"至少 k 个"这类题目对 k 的具体取值有多敏感！</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（挑战题）：n=1000, k=44。恰好有 44 个 1000 以内的素数能用诺德巴赫方式表示——一个都不多。那 n=1000, k=45 的答案会是什么？为什么？</summary>
+        <div class="reveal">
+          <p><code>k=44</code> 时，数量恰好够（<code>44 &ge; 44</code>），所以答案是 <b>YES</b>。但 <code>k=45</code> 时，1000 以内根本凑不出这么多符合条件的素数——这个 n 能达到的最大数量就是 44，所以再高的 k 值都不可能成功。答案：<b>NO</b>。这提醒我们，"至少 k 个"这类问题往往有一个硬性上限，再怎么找也没法突破。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5（挑战题）：修改代码，改成打印出所有诺德巴赫可表示素数的实际列表（按顺序排好），而不只是 YES/NO。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>noldbach_list.py</div>
+            <pre><code>n, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+is_prime = [<span class="kw">True</span>] * (n + <span class="nu">1</span>)
+is_prime[<span class="nu">0</span>] = is_prime[<span class="nu">1</span>] = <span class="kw">False</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, <span class="kw">int</span>(n ** <span class="nu">0.5</span>) + <span class="nu">1</span>):
+    <span class="kw">if</span> is_prime[i]:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(i * i, n + <span class="nu">1</span>, i):
+            is_prime[j] = <span class="kw">False</span>
+
+primes = [i <span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, n + <span class="nu">1</span>) <span class="kw">if</span> is_prime[i]]
+
+found = <span class="kw">set</span>()
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="kw">len</span>(primes) - <span class="nu">1</span>):
+    total = primes[i] + primes[i + <span class="nu">1</span>] + <span class="nu">1</span>
+    <span class="kw">if</span> total &lt;= n <span class="kw">and</span> is_prime[total]:
+        found.add(total)
+
+<span class="kw">print</span>(<span class="kw">sorted</span>(found))
+<span class="kw">print</span>(<span class="st">"YES"</span> <span class="kw">if</span> <span class="kw">len</span>(found) &gt;= k <span class="kw">else</span> <span class="st">"NO"</span>)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 17A &mdash; Noldbach problem。想复习一下怎么造筛子？可以先看看<a href="prime_detective_cn.html">质数侦探社</a>页面。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function sieve(n){
+    var isPrime = new Array(n + 1).fill(true);
+    isPrime[0] = false;
+    if (n >= 1) isPrime[1] = false;
+    for (var i = 2; i * i <= n; i++){
+      if (isPrime[i]){
+        for (var j = i * i; j <= n; j += i){
+          isPrime[j] = false;
+        }
+      }
+    }
+    return isPrime;
+  }
+
+  function solve(n, k){
+    var isPrime = sieve(n);
+    var primes = [];
+    for (var i = 2; i <= n; i++){
+      if (isPrime[i]) primes.push(i);
+    }
+    var rows = [];
+    var found = [];
+    var foundSet = {};
+    for (var idx = 0; idx < primes.length - 1; idx++){
+      var a = primes[idx], b = primes[idx + 1];
+      var total = a + b + 1;
+      var inRange = total <= n;
+      var prime = inRange && isPrime[total];
+      rows.push({ a: a, b: b, total: total, inRange: inRange, prime: prime });
+      if (prime && !foundSet[total]){
+        foundSet[total] = true;
+        found.push(total);
+      }
+    }
+    return { primes: primes, rows: rows, found: found.sort(function(x,y){return x-y;}) };
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var k = parseInt(document.getElementById('inK').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 2 || n > 1000 || isNaN(k) || k < 0 || k > 1000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>n 需要在 2 到 1000 之间，k 需要在 0 到 1000 之间。</p></div>';
+      return;
+    }
+
+    var r = solve(n, k);
+    var yes = r.found.length >= k;
+
+    var html = '';
+    html += '<div class="scrollbox"><table class="trace"><thead><tr><th>相邻素数对</th><th>和 + 1</th><th>是素数且 &le; n？</th></tr></thead><tbody>';
+    r.rows.forEach(function(row){
+      var verdict = !row.inRange ? '<td class="even">超出范围</td>' : (row.prime ? '<td class="odd">是！</td>' : '<td class="even">否</td>');
+      html += '<tr><td>' + row.a + ', ' + row.b + '</td><td>' + row.total + '</td>' + verdict + '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    html += '<div class="answer-line">找到的诺德巴赫可表示素数（共 ' + r.found.length + ' 个）：<b>' + (r.found.length ? r.found.join(', ') : '无') + '</b></div>';
+    html += '<div class="answer-line ' + (yes ? 'yes' : 'no') + '">' + r.found.length + ' ' + (yes ? '&ge;' : '&lt;') + ' k=' + k + ' &rarr; <b>' + (yes ? 'YES' : 'NO') + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

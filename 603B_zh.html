@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>模里的奶牛：有多少函数能在这条规则下幸存？（Codeforces 603B）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.8;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,6vw,42px);line-height:1.3;margin:0 0 12px;letter-spacing:0;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:16px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.04em;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.05em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:22px;margin:0;}
+  .lead{font-size:16px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Orbit chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 70px;min-width:64px;text-align:center;padding:12px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:19px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;letter-spacing:.02em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:140px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.02em;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-word;}
+  .answer-line b{color:var(--accent-strong);}
+  .orbit-list{font-family:var(--font-mono);font-size:13.5px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;max-height:180px;overflow-y:auto;}
+  .orbit-list div{padding:2px 0;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 603B &middot; 题目精讲</div>
+      <h1>模里的奶牛：<em>有多少函数能在这条规则下幸存？</em></h1>
+      <p class="sub">Farmer Ivan 的得意门生 Kevin Sun 被一条奇怪的规则难住了：定义在 0 到 p&minus;1 之间的函数 f，必须对<em>每一个</em> x 都满足 f(kx mod p) &equiv; k&middot;f(x) (mod p)。有些 f 能满足，大多数不能。Codeforces 603B 问的是：在所有可能的填表方式里，到底有多少个 f 能在这条规则下幸存？</p>
+      <div class="stampbar">
+        <span class="stamp hot">写给爱思考的 13 岁少年</span>
+        <span class="stamp">承接前几页的"回声"思想</span>
+        <span class="stamp">可互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>认识这个任务</h2></div>
+      <p class="lead">给你一个奇素数 <code>p</code> 和一个数 <code>k</code>（满足 <code>0 &le; k &le; p&minus;1</code>）。想象你在造一张对照表——一个函数 <code>f</code>——把 <code>{0, 1, &hellip;, p&minus;1}</code> 里的每一个数 <code>x</code>，都对应到 <code>{0, 1, &hellip;, p&minus;1}</code> 里的某个输出 <code>f(x)</code>。只有当这张表对<em>每一个</em>范围内的 x 都满足下面这条规则时，它才算"合法"：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:17px;">f(kx mod p) &equiv; k &middot; f(x) &nbsp;(mod p)</p>
+      <p>说人话：任取一个输入 <code>x</code>，把它乘以 <code>k</code> 再对 <code>p</code> 取模，得到一个新的输入 <code>kx mod p</code>，那么表在这个新输入处的输出，必须等于原始输出乘以 <code>k</code> 之后再取模的结果。你的任务：数一数一共有多少张不同的合法表 <code>f</code>，答案对 <code>1,000,000,007</code> 取模。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原话</div>
+        <p><code>p=3, k=2</code> &rarr; <b>3</b> 张合法的表。题目提示列出了全部三种：<code>f = [0,1,2]</code>、<code>f = [0,2,1]</code>、<code>f = [0,0,0]</code>（依次表示 <code>f(0), f(1), f(2)</code>）。<br>
+        <code>p=5, k=4</code> &rarr; <b>25</b> 张合法的表。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么要在意速度？</div>
+        <p><code>p</code> 最大可以到 <strong>1,000,000</strong>。光是填一张这么大的表，就有 <code>p<sup>p</sup></code> 种可能的填法——一个天文数字，多到不可能一个一个去试。我们得想办法<em>不用逐一检查</em>，就能算出有多少张是合法的。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>研究这三个幸存者</h2></div>
+      <p class="lead">先来搞清楚，对于 <code>p=3, k=2</code> 而言，为什么这三张表都行得通——逐一检查每个 x。记住，我们需要 <code>f(2x mod 3) &equiv; 2f(x) (mod 3)</code> 对 x = 0、1、2 都成立。</p>
+
+      <table class="trace">
+        <thead><tr><th>表 f</th><th>x=0 检查</th><th>x=1 检查</th><th>x=2 检查</th></tr></thead>
+        <tbody>
+          <tr><td>[0, 1, 2]</td><td>f(0)=0 =2&times;0 &check;</td><td>f(2)=2 =2&times;1 mod3=2 &check;</td><td>f(1)=1 =2&times;2 mod3=1 &check;</td></tr>
+          <tr><td>[0, 2, 1]</td><td>f(0)=0 =2&times;0 &check;</td><td>f(2)=1 =2&times;2 mod3=1 &check;</td><td>f(1)=2 =2&times;1 mod3=2 &check;</td></tr>
+          <tr><td>[0, 0, 0]</td><td>f(0)=0 =2&times;0 &check;</td><td>f(2)=0 =2&times;0 mod3=0 &check;</td><td>f(1)=0 =2&times;0 mod3=0 &check;</td></tr>
+        </tbody>
+      </table>
+
+      <p>注意到每一张表都有一个共同点：<strong>f(0) 永远是 0。</strong>再看另外两项——不管你给 <code>f(1)</code> 选了什么值，<code>f(2)</code> 的值就<em>完全被决定了</em>（要么和 f(1) 相等，要么翻倍，要么被规律强行锁定）。就好像 1 和 2 被链条拴在一起，而 0 是独自一人。这正是我们接下来要挖掘出来的结构。</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>先解决两个简单的特殊情况</h2></div>
+      <p class="lead">在攻克一般情况之前，先把 <code>k</code> 的两个边界值解决掉。</p>
+      <p><strong>如果 k = 1：</strong>规则变成 <code>f(x) &equiv; f(x) (mod p)</code>——不管怎样都恒成立！没有任何限制，所以 <code>f</code> 可以是<em>任意</em>函数：每一个输入都可以对应到 <code>p</code> 个输出中的任意一个，一共 <code>p<sup>p</sup></code> 张合法的表。</p>
+      <p><strong>如果 k = 0：</strong>那么对每一个 x，<code>kx mod p = 0</code> 都成立，规则变成对每个 x 都有 <code>f(0) &equiv; 0 &times; f(x) = 0 (mod p)</code>。这其实只是<em>同一条</em>限制重复了 p 次：<code>f(0) = 0</code>。其余的输出，<code>f(1)</code> 到 <code>f(p&minus;1)</code>，完全自由——一共 <code>p<sup>p&minus;1</sup></code> 张合法的表。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">最重要的一句话</div>
+        <p><code>k=1</code>：零限制，<code>p<sup>p</sup></code> 张表。<code>k=0</code>：一条限制（f(0)=0），<code>p<sup>p&minus;1</sup></code> 张表。那介于两者之间的每一个 k 呢？</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>一般情况：乘以 k 是一台回声机器</h2></div>
+      <p class="lead">现在假设 <code>2 &le; k &le; p&minus;1</code>。因为 <code>p</code> 是素数，<code>k</code> 又不是它的倍数，所以"乘以 <code>k</code>（再对 p 取模）"这个操作其实是一次<em>洗牌</em>：它把非零数字 <code>1, 2, &hellip;, p&minus;1</code> 重新排列了一遍，绝不会有两个数落在同一个位置上。而且，就像<a href="2043B_zh.html">数字谜题</a>页面里 10 的幂的规律、以及<a href="450B_zh.html">Jzzhu 的回声机器</a>里的数列一样，反复乘以 <code>k</code> 最终总会回声回到出发点——每一个非零数字都属于某个不断重复的循环。</p>
+
+      <p>让我们对 <code>p=5, k=4</code> 亲眼见证这一幕。从 1 出发，不断乘以 4 并对 5 取模：</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">出发</div><div class="v">1</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>&times;4</div>
+        <div class="chain-box"><div class="p">1&times;4 mod5</div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&#8635;</span>回声！</div>
+        <div class="chain-box picked"><div class="p">4&times;4 mod5</div><div class="v">1</div></div>
+      </div>
+      <p>这是一个长度为 2 的循环：<code>{1, 4}</code>。那从 2 出发呢？</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">出发</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>&times;4</div>
+        <div class="chain-box"><div class="p">2&times;4 mod5</div><div class="v">3</div></div>
+        <div class="chain-arrow"><span class="sym">&#8635;</span>回声！</div>
+        <div class="chain-box picked"><div class="p">3&times;4 mod5</div><div class="v">2</div></div>
+      </div>
+      <p>又是一个长度为 2 的循环：<code>{2, 3}</code>。于是全部四个非零数字，<code>1</code> 到 <code>4</code>，恰好整整齐齐分成了两个长度为 2 的循环。那 <code>0</code> 呢？<code>0 &times; 4 = 0</code>，所以不管 <code>k</code> 是多少，<code>0</code> 永远独自待在自己的、长度为 1 的循环里。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>这个循环长度有个正式的名字：<code>k</code> 模 <code>p</code> 的<strong>乘法阶</strong>——满足 <code>k<sup>L</sup> &equiv; 1 (mod p)</code> 的最小正整数 <code>L</code>。这和<a href="2043B_zh.html">数字谜题</a>页面里"要走多少步才能回声回到起点"的周期为 6 那个问题，本质上是同一个问题，只不过每次的 <code>k</code> 和 <code>p</code> 不一样罢了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>为什么每个循环恰好值 p 种选择</h2></div>
+      <p class="lead">这里是关键的一步。任选一个非零数字组成的循环，比如我们例子里的 <code>{1, 4}</code>。规则告诉我们 <code>f(4) = f(1&times;4 mod5) &equiv; 4&times;f(1) (mod 5)</code>——所以一旦你选定了 <code>f(1)</code>，<code>f(4)</code> 的值就<em>完全被强制决定了</em>。你没法单独再去选它。</p>
+      <p>那这个循环到底给了我们多少自由选择呢？恰好<strong>一个</strong>——不管我们给 <code>f(1)</code> 选什么，一共有 <code>p</code> 种可能的取值（<code>0</code> 到 <code>p&minus;1</code>）。一旦 <code>f(1)</code> 定下来，规则就会沿着整个循环一路走下去，自动帮你算出其余每一个值。而且，因为这个循环恰好在 <code>L</code> 步之后完美地回声回到 <code>1</code>（这正是阶 <code>L</code> 的定义！），走到终点时永远不会出现矛盾——被强制推出来的这一串值，最终一定会绕回来，和你最初的选择完全吻合。</p>
+
+      <p>那孤零零的循环 <code>{0}</code> 呢？规则在那里说的是 <code>f(0) &equiv; k&times;f(0) (mod p)</code>，整理一下就是 <code>(k&minus;1)&times;f(0) &equiv; 0 (mod p)</code>。因为 <code>p</code> 是素数，而这里 <code>k &ne; 1</code>（k=1 的情况我们已经单独处理过了），所以 <code>k&minus;1</code> <em>不是</em> <code>p</code> 的倍数，这就强行把 <code>f(0) = 0</code> 定为<em>唯一</em>合法的选择。零自由度——正好和我们在第二关手算出来的结果一致！</p>
+
+      <div class="callout tip">
+        <div class="ctitle">最重要的一句话</div>
+        <p>每个非零循环都贡献一个因子 <code>p</code>（自由选一个值，其余全被强制决定）。<code>{0}</code> 这个循环贡献一个因子 <code>1</code>（毫无自由度）。把所有循环的因子乘在一起，就恰好不重不漏地数完了每一张合法的表。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>数一数循环的个数</h2></div>
+      <p class="lead"><code>p&minus;1</code> 个非零数字会分成长度<em>全都相同</em>的循环，长度就是 <code>L</code>（也就是 <code>k</code> 的乘法阶）。所以非零循环的个数，就是 <code>(p&minus;1) / L</code>。结合第五关"每个非零循环贡献一个因子 p"：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">答案 = p<sup>(p&minus;1)/L</sup> &nbsp;（对 1,000,000,007 取模）</p>
+      <p>用 <code>p=5, k=4</code> 来验证一下：我们发现 <code>L=2</code>（两个长度为 2 的循环），所以 <code>(p&minus;1)/L = 4/2 = 2</code>，得到 <code>5&sup2; = 25</code>。和题目给出的答案完全一致！</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面是完整的解法。先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>moodular.py</div>
+        <pre><code>MOD = <span class="nu">1000000007</span>
+
+p, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+<span class="kw">if</span> k == <span class="nu">0</span>:
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, p - <span class="nu">1</span>, MOD))
+<span class="kw">elif</span> k == <span class="nu">1</span>:
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, p, MOD))
+<span class="kw">else</span>:
+    L = <span class="nu">1</span>
+    cur = k % p
+    <span class="kw">while</span> cur != <span class="nu">1</span>:      <span class="cm"># 沿着回声一路走，直到落回 1</span>
+        cur = (cur * k) % p
+        L += <span class="nu">1</span>
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, (p - <span class="nu">1</span>) // L, MOD))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">if k == 0:
+    print(pow(p, p - 1, MOD))
+elif k == 1:
+    print(pow(p, p, MOD))</div>
+          <div class="annot-note"><span>第三关的两个特殊情况，直接用 Python 的快速取模幂 <code>pow</code> 处理。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">L = 1
+cur = k % p
+while cur != 1:
+    cur = (cur * k) % p
+    L += 1</div>
+          <div class="annot-note"><span>用最直接的方式找出循环长度（乘法阶）：不断乘以 <code>k</code> 再对 <code>p</code> 取模，一直走到落回 <code>1</code> 为止。因为 <code>p &le; 1,000,000</code>，这个循环最多跑一百万次——瞬间搞定。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print(pow(p, (p - 1) // L, MOD))</div>
+          <div class="annot-note"><span>第六关方框里的公式：把 <code>p</code> 提升到"非零循环个数"这个次方，用快速取模幂运算算出来。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>一起手算两个样例</h2></div>
+
+      <table class="trace">
+        <thead><tr><th>p</th><th>k</th><th>找到的循环</th><th>L</th><th>答案</th></tr></thead>
+        <tbody>
+          <tr><td>3</td><td>2</td><td>{0}, {1,2}</td><td>2</td><td class="odd">3&sup1; = 3</td></tr>
+          <tr><td>5</td><td>4</td><td>{0}, {1,4}, {2,3}</td><td>2</td><td class="odd">5&sup2; = 25</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">两个都和题目给出的期望输出完全一致。</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 9：互动小工具 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>轮到你了：试试自己的 p 和 k</h2></div>
+      <p class="lead">挑一个素数 <code>p</code> 和一个 <code>k</code> 值，看看循环是怎么一个个被发现的。</p>
+
+      <div class="widget">
+        <h3>模里奶牛计算器</h3>
+        <div class="hint">提示：先试试 p=3, k=2 或 p=5, k=4，重现一下题目自带的样例。然后再试试 p=13, k=1 或 p=13, k=0，看看两个特殊情况是怎么起作用的。</div>
+        <div class="field-row">
+          <div class="field"><label for="inP">p（奇素数）</label><input type="number" id="inP" value="5" min="3" max="1000000"></div>
+          <div class="field"><label for="inK">k</label><input type="number" id="inK" value="4" min="0" max="999999"></div>
+          <div class="field"><button class="btn" id="runBtn">数一数合法表</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">第十关</span><h2>练习题：先自己算，再用工具核对</h2></div>
+      <p class="lead">每一题都先在纸上算一遍，再用上面的小工具验证答案。</p>
+
+      <details>
+        <summary>练习 1：p=7, k=6。注意到 6 &equiv; &minus;1 (mod 7)。&minus;1 的阶是多少？答案又是多少？</summary>
+        <div class="reveal">
+          <p><code>(&minus;1)&sup1; = &minus;1 &ne; 1</code>，但 <code>(&minus;1)&sup2; = 1</code>。所以阶是 <code>L=2</code>。非零循环个数：<code>(7&minus;1)/2 = 3</code>。答案：<code>7&sup3; = 343</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：p=7, k=2。手动追踪一下从 1 出发的循环（不断乘以 2 并对 7 取模，直到回声回到 1）。</summary>
+        <div class="reveal">
+          <p><code>1 &rarr; 2 &rarr; 4 &rarr; 8 mod7=1</code>。一共走了 3 步，所以 <code>L=3</code>。非零循环个数：<code>(7&minus;1)/3=2</code>。答案：<code>7&sup2; = 49</code>。（这两个循环分别是 <code>{1,2,4}</code> 和 <code>{3,6,5}</code>——验证一下：<code>3&times;2=6</code>，<code>6&times;2=12mod7=5</code>，<code>5&times;2=10mod7=3</code>，正好回声！）</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：p=11, k=10。用练习 1 的同一个技巧——10 &equiv; &minus;1 (mod 11)。不借助计算机求出答案。</summary>
+        <div class="reveal">
+          <p><code>(&minus;1)&sup2;=1</code>，所以又是 <code>L=2</code>。非零循环：<code>(11&minus;1)/2=5</code>。答案：<code>11&#8309; = 161051</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（挑战题）：p=1,000,003（一个较大的素数），k=1。答案是多少？为什么完全不用做任何找循环的操作就能瞬间给出答案？</summary>
+        <div class="reveal">
+          <p><code>k=1</code> 正是第三关的特殊情况——规则不施加任何限制，所以<em>任意</em>函数都合法。答案直接就是 <code>p<sup>p</sup> mod 1{,}000{,}000{,}007</code>，只需要调用一次快速取模幂运算。完全不需要走什么循环，因为压根没什么可追踪的——一旦 k=1，每个输入都是它自己那个长度为 1 的、平凡的"循环"。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5（挑战题）：修改代码，让它在 2 &le; k &le; p&minus;1 时，除了答案之外，还打印出 L（也就是 k 的阶）。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>moodular_with_order.py</div>
+            <pre><code>MOD = <span class="nu">1000000007</span>
+
+p, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+<span class="kw">if</span> k == <span class="nu">0</span>:
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, p - <span class="nu">1</span>, MOD))
+<span class="kw">elif</span> k == <span class="nu">1</span>:
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, p, MOD))
+<span class="kw">else</span>:
+    L = <span class="nu">1</span>
+    cur = k % p
+    <span class="kw">while</span> cur != <span class="nu">1</span>:
+        cur = (cur * k) % p
+        L += <span class="nu">1</span>
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, (p - <span class="nu">1</span>) // L, MOD), <span class="st">"(order L =</span><span class="st">"</span>, L, <span class="st">")"</span>)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 603B &mdash; Moodular Arithmetic。还不熟悉"最终回声回到起点"的思维方式？可以先看看<a href="450B_zh.html">Jzzhu 的回声机器</a>或<a href="2043B_zh.html">数字谜题</a>。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 1000000007n;
+
+  function modpow(base, exp, mod){
+    base = ((base % mod) + mod) % mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n){ result = (result * base) % mod; }
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  function isPrime(p){
+    if (p < 2) return false;
+    if (p % 2 === 0) return p === 2;
+    for (var i = 3; i * i <= p; i += 2){
+      if (p % i === 0) return false;
+    }
+    return true;
+  }
+
+  function findLoops(p, k){
+    var seen = new Array(p).fill(false);
+    var loops = [];
+    for (var start = 0; start < p; start++){
+      if (seen[start]) continue;
+      var loop = [];
+      var cur = start;
+      while (!seen[cur]){
+        seen[cur] = true;
+        loop.push(cur);
+        cur = (cur * k) % p;
+      }
+      loops.push(loop);
+    }
+    return loops;
+  }
+
+  function solve(p, k){
+    if (k === 0){
+      return { special: 'k=0', answer: modpow(BigInt(p), BigInt(p - 1), MOD) };
+    }
+    if (k === 1){
+      return { special: 'k=1', answer: modpow(BigInt(p), BigInt(p), MOD) };
+    }
+    var L = 1;
+    var cur = k % p;
+    while (cur !== 1){
+      cur = (cur * k) % p;
+      L += 1;
+    }
+    var numLoops = (p - 1) / L;
+    var answer = modpow(BigInt(p), BigInt(numLoops), MOD);
+    return { special: null, L: L, numLoops: numLoops, answer: answer };
+  }
+
+  function run(){
+    var p = parseInt(document.getElementById('inP').value, 10);
+    var k = parseInt(document.getElementById('inK').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(p) || p < 3 || p > 1000000 || isNaN(k) || k < 0 || k > p - 1){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>p 需要在 3 到 1,000,000 之间，k 需要在 0 到 p&minus;1 之间。</p></div>';
+      return;
+    }
+    if (!isPrime(p)){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>p 必须是素数（题目保证了这一点）。' + p + ' 不是素数。</p></div>';
+      return;
+    }
+
+    var r = solve(p, k);
+    var html = '';
+
+    if (r.special === 'k=0'){
+      html += '<div class="answer-line">k = 0：唯一的限制是 f(0) = 0，其余全自由 &rarr; p<sup>p&minus;1</sup></div>';
+    } else if (r.special === 'k=1'){
+      html += '<div class="answer-line">k = 1：完全没有限制，f 可以是任意函数 &rarr; p<sup>p</sup></div>';
+    } else {
+      html += '<div class="answer-line">k 模 p 的阶：L = <b>' + r.L + '</b> &nbsp;|&nbsp; 非零循环个数：(p&minus;1)/L = <b>' + r.numLoops + '</b></div>';
+      if (p <= 60){
+        var loops = findLoops(p, k);
+        var listHtml = '<div class="orbit-list">';
+        loops.forEach(function(loop){
+          listHtml += '<div>{ ' + loop.join(', ') + ' }' + (loop.length === 1 ? '（被强制）' : '（' + loop.length + ' 个数字，p 种自由选择）') + '</div>';
+        });
+        listHtml += '</div>';
+        html += listHtml;
+      }
+    }
+
+    html += '<div class="answer-line">对 1,000,000,007 取模后的最终答案：<b>' + r.answer.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moodular Arithmetic: How Many Functions Survive the Herd? (Codeforces 603B)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Orbit chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 70px;min-width:64px;text-align:center;padding:12px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:19px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:140px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-word;}
+  .answer-line b{color:var(--accent-strong);}
+  .orbit-list{font-family:var(--font-mono);font-size:13.5px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;max-height:180px;overflow-y:auto;}
+  .orbit-list div{padding:2px 0;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 603B &middot; Problem Walkthrough</div>
+      <h1>Moodular Arithmetic: <em>How Many Functions Survive the Herd?</em></h1>
+      <p class="sub">Farmer Ivan's star pupil Kevin Sun is stuck on a strange rule: a function f, defined on the numbers 0 through p&minus;1, must obey f(kx mod p) &equiv; k&middot;f(x) (mod p) for every single x. Some choices of f work. Most don't. Codeforces 603B asks: exactly how many different f's survive this rule, out of every possible way to fill in the table?</p>
+      <div class="stampbar">
+        <span class="stamp hot">For curious 13-year-olds</span>
+        <span class="stamp">Builds on the "echo" idea from earlier pages</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission</h2></div>
+      <p class="lead">You're given an odd prime <code>p</code> and a number <code>k</code> (with <code>0 &le; k &le; p&minus;1</code>). Imagine building a lookup table &mdash; a function <code>f</code> &mdash; that assigns to each number <code>x</code> in <code>{0, 1, &hellip;, p&minus;1}</code> some output <code>f(x)</code>, also in <code>{0, 1, &hellip;, p&minus;1}</code>. That table is only "allowed" if it satisfies this rule for <em>every single x</em> in that range:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:17px;">f(kx mod p) &equiv; k &middot; f(x) &nbsp;(mod p)</p>
+      <p>In plain words: if you take any input <code>x</code>, multiply it by <code>k</code> and wrap around mod <code>p</code> to get a new input <code>kx mod p</code>, then the table's output there must equal <code>k</code> times the original output, also wrapped mod <code>p</code>. Your job: count how many different valid tables <code>f</code> exist, modulo <code>1,000,000,007</code>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>p=3, k=2</code> &rarr; <b>3</b> valid tables. The judge's note lists all three: <code>f = [0,1,2]</code>, <code>f = [0,2,1]</code>, and <code>f = [0,0,0]</code> (reading <code>f(0), f(1), f(2)</code> in order).<br>
+        <code>p=5, k=4</code> &rarr; <b>25</b> valid tables.</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why should you care?</div>
+        <p><code>p</code> can be as large as <strong>1,000,000</strong>. There are <code>p<sup>p</sup></code> possible ways to fill in a lookup table of that size in the first place &mdash; an astronomically large number, far too many to try one at a time. We need to figure out how many of them are valid <em>without checking each one</em>.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Studying the three survivors</h2></div>
+      <p class="lead">Let's understand <em>why</em> those three tables work for <code>p=3, k=2</code>, by checking the rule at every x. Remember, we need <code>f(2x mod 3) &equiv; 2f(x) (mod 3)</code> to hold for x = 0, 1, and 2.</p>
+
+      <table class="trace">
+        <thead><tr><th>table f</th><th>x=0 check</th><th>x=1 check</th><th>x=2 check</th></tr></thead>
+        <tbody>
+          <tr><td>[0, 1, 2]</td><td>f(0)=0 =2&times;0 &check;</td><td>f(2)=2 =2&times;1 mod3=2 &check;</td><td>f(1)=1 =2&times;2 mod3=1 &check;</td></tr>
+          <tr><td>[0, 2, 1]</td><td>f(0)=0 =2&times;0 &check;</td><td>f(2)=1 =2&times;2 mod3=1 &check;</td><td>f(1)=2 =2&times;1 mod3=2 &check;</td></tr>
+          <tr><td>[0, 0, 0]</td><td>f(0)=0 =2&times;0 &check;</td><td>f(2)=0 =2&times;0 mod3=0 &check;</td><td>f(1)=0 =2&times;0 mod3=0 &check;</td></tr>
+        </tbody>
+      </table>
+
+      <p>Notice something every single one of them shares: <strong>f(0) is always 0.</strong> And look at the other two entries &mdash; in every valid table, whatever you pick for <code>f(1)</code>, the value of <code>f(2)</code> gets <em>completely determined</em> for you (either equal to <code>f(1)</code>, doubled, or forced by the pattern). It's as if the values 1 and 2 are chained together, and 0 stands alone. That's exactly the structure we're about to uncover.</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Two easy special cases first</h2></div>
+      <p class="lead">Before tackling the general case, let's knock out the two edge values of <code>k</code>.</p>
+      <p><strong>If k = 1:</strong> the rule becomes <code>f(x) &equiv; f(x) (mod p)</code> &mdash; always true, no matter what! There's no constraint at all, so <code>f</code> can be <em>any</em> function whatsoever: each of the <code>p</code> inputs can map to any of the <code>p</code> outputs, giving <code>p<sup>p</sup></code> valid tables.</p>
+      <p><strong>If k = 0:</strong> then <code>kx mod p = 0</code> for every single x, and the rule becomes <code>f(0) &equiv; 0 &times; f(x) = 0 (mod p)</code> for every x. That's really just <em>one</em> constraint, repeated p times: <code>f(0) = 0</code>. Every other output, <code>f(1)</code> through <code>f(p&minus;1)</code>, is completely free &mdash; giving <code>p<sup>p&minus;1</sup></code> valid tables.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p><code>k=1</code>: zero constraints, so <code>p<sup>p</sup></code> tables. <code>k=0</code>: one constraint (f(0)=0), so <code>p<sup>p&minus;1</sup></code> tables. Now, what about every value of k in between?</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The general case: multiplying by k is an echo machine</h2></div>
+      <p class="lead">Now suppose <code>2 &le; k &le; p&minus;1</code>. Since <code>p</code> is prime and <code>k</code> isn't a multiple of it, multiplying by <code>k</code> (mod p) turns out to be a <em>shuffle</em>: it rearranges the nonzero numbers <code>1, 2, &hellip;, p&minus;1</code> among themselves, with no two numbers ever landing on the same spot. And just like the powers-of-10 pattern from the <a href="2043B_en.html">Digits</a> page and the sequence from <a href="450B_en.html">Jzzhu's Echo Machine</a>, repeatedly multiplying by <code>k</code> eventually echoes back to where you started &mdash; every nonzero number belongs to a repeating loop.</p>
+
+      <p>Let's watch it happen for <code>p=5, k=4</code>. Start at 1 and keep multiplying by 4, wrapping mod 5:</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">start</div><div class="v">1</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>&times;4</div>
+        <div class="chain-box"><div class="p">1&times;4 mod5</div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&#8635;</span>echo!</div>
+        <div class="chain-box picked"><div class="p">4&times;4 mod5</div><div class="v">1</div></div>
+      </div>
+      <p>That's a loop of length 2: <code>{1, 4}</code>. What about starting at 2?</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">start</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>&times;4</div>
+        <div class="chain-box"><div class="p">2&times;4 mod5</div><div class="v">3</div></div>
+        <div class="chain-arrow"><span class="sym">&#8635;</span>echo!</div>
+        <div class="chain-box picked"><div class="p">3&times;4 mod5</div><div class="v">2</div></div>
+      </div>
+      <p>Another loop of length 2: <code>{2, 3}</code>. So all four nonzero numbers, <code>1</code> through <code>4</code>, split perfectly into two loops of length 2 each. And <code>0</code>? Multiplying <code>0 &times; 4 = 0</code>, so <code>0</code> always sits by itself in its own private loop of length 1, no matter what <code>k</code> is.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Cold Case File</div>
+        <p>This loop length has an official name: the <strong>multiplicative order</strong> of <code>k</code> modulo <code>p</code> &mdash; the smallest positive <code>L</code> with <code>k<sup>L</sup> &equiv; 1 (mod p)</code>. It's the exact same "how many steps until it echoes back to the start" question that powered the period-6 pattern on the <a href="2043B_en.html">Digits</a> page, just with a different <code>k</code> and <code>p</code> each time.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Why each loop is worth exactly p choices</h2></div>
+      <p class="lead">Here's the key move. Pick any loop of nonzero numbers, say <code>{1, 4}</code> from our example. The rule says <code>f(4) = f(1&times;4 mod5) &equiv; 4&times;f(1) (mod 5)</code> &mdash; so the moment you choose <code>f(1)</code>, the value of <code>f(4)</code> is <em>completely forced</em>. You don't get to choose it separately.</p>
+      <p>So how many free choices does this loop actually give us? Exactly <strong>one</strong> &mdash; whatever we pick for <code>f(1)</code>, out of <code>p</code> possible values (<code>0</code> through <code>p&minus;1</code>). Once <code>f(1)</code> is chosen, the rule marches around the entire loop and hands you every other value automatically. And because the loop echoes perfectly back to <code>1</code> after <code>L</code> steps (that's the definition of the order <code>L</code>!), there's never a contradiction waiting at the end &mdash; the chain of forced values always comes back around and agrees with your original choice.</p>
+
+      <p>What about the lonely loop <code>{0}</code>? The rule there says <code>f(0) &equiv; k&times;f(0) (mod p)</code>, which rearranges to <code>(k&minus;1)&times;f(0) &equiv; 0 (mod p)</code>. Since <code>p</code> is prime and <code>k &ne; 1</code> here (we already handled k=1 separately), <code>k&minus;1</code> is <em>not</em> a multiple of <code>p</code>, which forces <code>f(0) = 0</code> as the <em>only</em> valid choice. Zero freedom &mdash; just like we found by hand back in Level 2!</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>Every nonzero loop contributes a factor of <code>p</code> (one free choice, then everything else is forced). The <code>{0}</code> loop contributes a factor of <code>1</code> (no freedom at all). Multiply those factors together across all the loops, and you've counted every valid table exactly once.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Counting the loops</h2></div>
+      <p class="lead">The <code>p&minus;1</code> nonzero numbers split into loops that are <em>all the same length</em>, <code>L</code> (the multiplicative order of <code>k</code>). So the number of nonzero loops is simply <code>(p&minus;1) / L</code>. Combining with Level 5's "each nonzero loop contributes a factor of p":</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">answer = p<sup>(p&minus;1)/L</sup> &nbsp;(mod 1,000,000,007)</p>
+      <p>Let's double-check against <code>p=5, k=4</code>: we found <code>L=2</code> (two loops of length 2), so <code>(p&minus;1)/L = 4/2 = 2</code>, giving <code>5&sup2; = 25</code>. That matches the judge's answer exactly!</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Reading the code, line by line</h2></div>
+      <p class="lead">Here's the entire solution. Read the code on the left, then the plain-English translation on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>moodular.py</div>
+        <pre><code>MOD = <span class="nu">1000000007</span>
+
+p, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+<span class="kw">if</span> k == <span class="nu">0</span>:
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, p - <span class="nu">1</span>, MOD))
+<span class="kw">elif</span> k == <span class="nu">1</span>:
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, p, MOD))
+<span class="kw">else</span>:
+    L = <span class="nu">1</span>
+    cur = k % p
+    <span class="kw">while</span> cur != <span class="nu">1</span>:      <span class="cm"># walk the echo until it lands back on 1</span>
+        cur = (cur * k) % p
+        L += <span class="nu">1</span>
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, (p - <span class="nu">1</span>) // L, MOD))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">if k == 0:
+    print(pow(p, p - 1, MOD))
+elif k == 1:
+    print(pow(p, p, MOD))</div>
+          <div class="annot-note"><span>Level 3's two special cases, handled directly with Python's fast modular <code>pow</code>.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">L = 1
+cur = k % p
+while cur != 1:
+    cur = (cur * k) % p
+    L += 1</div>
+          <div class="annot-note"><span>Finds the loop length (multiplicative order) by literally walking the echo: keep multiplying by <code>k</code> mod <code>p</code> until you land back on <code>1</code>. Since <code>p &le; 1,000,000</code>, this loop runs at most a million times &mdash; instant.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print(pow(p, (p - 1) // L, MOD))</div>
+          <div class="annot-note"><span>Level 6's boxed formula: raise <code>p</code> to the power "number of nonzero loops," computed with fast modular exponentiation.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Let's trace both judge examples</h2></div>
+
+      <table class="trace">
+        <thead><tr><th>p</th><th>k</th><th>loops found</th><th>L</th><th>answer</th></tr></thead>
+        <tbody>
+          <tr><td>3</td><td>2</td><td>{0}, {1,2}</td><td>2</td><td class="odd">3&sup1; = 3</td></tr>
+          <tr><td>5</td><td>4</td><td>{0}, {1,4}, {2,3}</td><td>2</td><td class="odd">5&sup2; = 25</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">Both match the judge's expected output exactly.</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 9 : INTERACTIVE ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Now you drive: try your own p and k</h2></div>
+      <p class="lead">Pick a prime <code>p</code> and a value of <code>k</code>, and watch the loops get discovered one by one.</p>
+
+      <div class="widget">
+        <h3>Moodular arithmetic counter</h3>
+        <div class="hint">Tip: try p=3, k=2 or p=5, k=4 to reproduce the judge's own examples. Then try p=13, k=1 or p=13, k=0 to see the two special cases in action.</div>
+        <div class="field-row">
+          <div class="field"><label for="inP">p (odd prime)</label><input type="number" id="inP" value="5" min="3" max="1000000"></div>
+          <div class="field"><label for="inK">k</label><input type="number" id="inK" value="4" min="0" max="999999"></div>
+          <div class="field"><button class="btn" id="runBtn">Count the tables</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">LEVEL 10</span><h2>Practice: crack these before you check with the tool</h2></div>
+      <p class="lead">Work each one out on paper first &mdash; then verify with the widget above.</p>
+
+      <details>
+        <summary>Exercise 1: p=7, k=6. Note that 6 &equiv; &minus;1 (mod 7). What's the order of &minus;1, and what's the answer?</summary>
+        <div class="reveal">
+          <p><code>(&minus;1)&sup1; = &minus;1 &ne; 1</code>, but <code>(&minus;1)&sup2; = 1</code>. So the order is <code>L=2</code>. Number of nonzero loops: <code>(7&minus;1)/2 = 3</code>. Answer: <code>7&sup3; = 343</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 2: p=7, k=2. Trace the loop starting at 1 by hand (multiply by 2, mod 7, until you echo back to 1).</summary>
+        <div class="reveal">
+          <p><code>1 &rarr; 2 &rarr; 4 &rarr; 8 mod7=1</code>. That's 3 steps, so <code>L=3</code>. Number of nonzero loops: <code>(7&minus;1)/3=2</code>. Answer: <code>7&sup2; = 49</code>. (The two loops are <code>{1,2,4}</code> and <code>{3,6,5}</code> &mdash; check that <code>3&times;2=6</code>, <code>6&times;2=12mod7=5</code>, <code>5&times;2=10mod7=3</code>, echoing back!)</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 3: p=11, k=10. Same trick as Exercise 1 &mdash; 10 &equiv; &minus;1 (mod 11). Find the answer without a computer.</summary>
+        <div class="reveal">
+          <p><code>(&minus;1)&sup2;=1</code>, so <code>L=2</code> again. Nonzero loops: <code>(11&minus;1)/2=5</code>. Answer: <code>11&#8309; = 161051</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 4 (challenge): p=1,000,003 (a large prime) and k=1. What's the answer, and why can you give it instantly without any loop-finding at all?</summary>
+        <div class="reveal">
+          <p><code>k=1</code> is the special case from Level 3 &mdash; the rule imposes zero constraints, so <em>every</em> function works. The answer is simply <code>p<sup>p</sup> mod 1{,}000{,}000{,}007</code>, computed with one call to fast modular exponentiation. No loop-walking needed, because there's nothing to trace &mdash; every input is its own trivial "loop" of length 1 once k=1.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Exercise 5 (challenge): Modify the code so it also prints L (the order of k), in addition to the answer, whenever 2 &le; k &le; p&minus;1.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>moodular_with_order.py</div>
+            <pre><code>MOD = <span class="nu">1000000007</span>
+
+p, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+<span class="kw">if</span> k == <span class="nu">0</span>:
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, p - <span class="nu">1</span>, MOD))
+<span class="kw">elif</span> k == <span class="nu">1</span>:
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, p, MOD))
+<span class="kw">else</span>:
+    L = <span class="nu">1</span>
+    cur = k % p
+    <span class="kw">while</span> cur != <span class="nu">1</span>:
+        cur = (cur * k) % p
+        L += <span class="nu">1</span>
+    <span class="kw">print</span>(<span class="kw">pow</span>(p, (p - <span class="nu">1</span>) // L, MOD), <span class="st">"(order L =</span><span class="st">"</span>, L, <span class="st">")"</span>)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 603B &mdash; Moodular Arithmetic. New to the "echoes back to the start" way of thinking? Start with <a href="450B_en.html">Jzzhu's Echo Machine</a> or <a href="2043B_en.html">Digits</a> first.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 1000000007n;
+
+  function modpow(base, exp, mod){
+    base = ((base % mod) + mod) % mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n){ result = (result * base) % mod; }
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  function isPrime(p){
+    if (p < 2) return false;
+    if (p % 2 === 0) return p === 2;
+    for (var i = 3; i * i <= p; i += 2){
+      if (p % i === 0) return false;
+    }
+    return true;
+  }
+
+  function findLoops(p, k){
+    var seen = new Array(p).fill(false);
+    var loops = [];
+    for (var start = 0; start < p; start++){
+      if (seen[start]) continue;
+      var loop = [];
+      var cur = start;
+      while (!seen[cur]){
+        seen[cur] = true;
+        loop.push(cur);
+        cur = (cur * k) % p;
+      }
+      loops.push(loop);
+    }
+    return loops;
+  }
+
+  function solve(p, k){
+    if (k === 0){
+      return { special: 'k=0', answer: modpow(BigInt(p), BigInt(p - 1), MOD) };
+    }
+    if (k === 1){
+      return { special: 'k=1', answer: modpow(BigInt(p), BigInt(p), MOD) };
+    }
+    var L = 1;
+    var cur = k % p;
+    while (cur !== 1){
+      cur = (cur * k) % p;
+      L += 1;
+    }
+    var numLoops = (p - 1) / L;
+    var answer = modpow(BigInt(p), BigInt(numLoops), MOD);
+    return { special: null, L: L, numLoops: numLoops, answer: answer };
+  }
+
+  function run(){
+    var p = parseInt(document.getElementById('inP').value, 10);
+    var k = parseInt(document.getElementById('inK').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(p) || p < 3 || p > 1000000 || isNaN(k) || k < 0 || k > p - 1){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Need p between 3 and 1,000,000, and k between 0 and p&minus;1.</p></div>';
+      return;
+    }
+    if (!isPrime(p)){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>p needs to be a prime number (the problem guarantees this). ' + p + ' is not prime.</p></div>';
+      return;
+    }
+
+    var r = solve(p, k);
+    var html = '';
+
+    if (r.special === 'k=0'){
+      html += '<div class="answer-line">k = 0: only constraint is f(0) = 0, everything else is free &rarr; p<sup>p&minus;1</sup></div>';
+    } else if (r.special === 'k=1'){
+      html += '<div class="answer-line">k = 1: no constraints at all, f can be anything &rarr; p<sup>p</sup></div>';
+    } else {
+      html += '<div class="answer-line">Order of k modulo p: L = <b>' + r.L + '</b> &nbsp;|&nbsp; nonzero loops: (p&minus;1)/L = <b>' + r.numLoops + '</b></div>';
+      if (p <= 60){
+        var loops = findLoops(p, k);
+        var listHtml = '<div class="orbit-list">';
+        loops.forEach(function(loop){
+          listHtml += '<div>{ ' + loop.join(', ') + ' }' + (loop.length === 1 ? ' (forced)' : ' (' + loop.length + ' free choices: p)') + '</div>';
+        });
+        listHtml += '</div>';
+        html += listHtml;
+      }
+    }
+
+    html += '<div class="answer-line">Final answer, modulo 1,000,000,007: <b>' + r.answer.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

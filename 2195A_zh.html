@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>伪装成合数的素数：寻找隐藏的 67（Codeforces 2195A）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.8;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,6vw,42px);line-height:1.3;margin:0 0 12px;letter-spacing:0;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:16px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.04em;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.05em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:22px;margin:0;}
+  .lead{font-size:16px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building-blocks chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 60px;min-width:52px;text-align:center;padding:10px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:16px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;letter-spacing:.02em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:80px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.02em;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-word;}
+  .answer-line b{color:var(--accent-strong);}
+  .answer-line.yes{background:var(--clue-soft);border-color:var(--clue);}
+  .answer-line.no{background:var(--alert-soft);border-color:var(--alert);}
+  .scrollbox{max-height:260px;overflow-y:auto;margin:10px 0;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 2195A &middot; 题目精讲</div>
+      <h1>伪装成合数的素数：<em>寻找隐藏的 67</em></h1>
+      <p class="sub">给你一小袋数字，最多 5 个，每个都在 1 到 67 之间。能不能从里面挑出一些数字——也许只挑一个，也许挑好几个——让挑出来的数字相乘刚好等于 67？听起来好像需要各种巧妙的组合……直到你注意到数字 67 本身有一个特点，让整道题瞬间变得几乎"简单得不好意思"。</p>
+      <div class="stampbar">
+        <span class="stamp hot">写给爱思考的 13 岁少年</span>
+        <span class="stamp">承接"素数为什么特别"这个话题</span>
+        <span class="stamp">可互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>认识这个任务</h2></div>
+      <p class="lead">给你 <code>n</code> 个正整数（<code>1 &le; n &le; 5</code>），每一个都在 <code>1</code> 到 <code>67</code> 之间。你可以挑出<em>任意一个子集</em>——至少挑一个，但不必全部用上——把挑出来的数字乘在一起。你的任务：判断<em>是否存在</em>某种挑法，能让乘积恰好等于 <code>67</code>。</p>
+      <p>一次运行里最多会问你 <code>10,000</code> 组独立的测试用例，但每组最多只有 5 个数字要处理——规模非常小！</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原话</div>
+        <p><code>[1, 7, 6, 7, 67]</code> &rarr; <b>YES</b>。挑第 1 个和第 5 个数字：<code>1 &times; 67 = 67</code>。<br>
+        <code>[1, 3, 5, 7, 8]</code> &rarr; <b>NO</b>。不管从这袋数字里怎么挑，乘积都没法恰好落在 67 上。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">一个诱人但走弯路的第一反应</div>
+        <p>只有 5 个数字，你可能会想："简单，我把每一种可能的挑法都试一遍，逐一检查就行。"这个办法在这里确实行得通——但在动手暴力枚举之前，我们先仔细看看目标数字本身。有时候，一个数字自带的特殊性格，一旦被发现，就能让整道题变得不值一提。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>67 有一个秘密身份：它是素数</h2></div>
+      <p class="lead">自己验证一下：2 到 66 之间有没有哪个数能整除 67？试几个——<code>67 &divide; 2</code>、<code>67 &divide; 3</code>、<code>67 &divide; 7</code>……没有一个能整除。<strong>67 是一个素数。</strong>这意味着它<em>唯一</em>的两个正整数因子就是 1 和它自己。</p>
+      <p>这为什么重要？因为我们整道题其实是在问一个关于<em>分解因数</em>的问题："能不能靠几个数字相乘造出 67？"和"67 能写成哪些正整数的乘积？"其实是完全同一个问题。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>需要复习一下什么是素数，或者怎么判断一个数是不是素数？<a href="prime_detective_cn.html">质数侦探社</a>页面从零开始搭建了素数判定的思路。这道题用到的是这个想法的另一面：素数是那些<em>拒绝</em>被更小的数（1 除外）拼出来的数。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>用整数拼出 67 的所有方式</h2></div>
+      <p class="lead">来列一列，把 67 写成两个或更多正整数（每个至少是 1）的乘积，一共有哪些方式。因为 67 唯一的因子就是 1 和 67，试一试就会发现：</p>
+      <ul>
+        <li><code>67 = 67</code>——就是它本身，不需要乘任何东西。</li>
+        <li><code>67 = 1 &times; 67</code>——成立，因为乘以 1 什么都不会改变。</li>
+        <li><code>67 = 1 &times; 1 &times; 67</code>，<code>67 = 1 &times; 1 &times; 1 &times; 67</code>，……——照样成立，你想塞进多少个额外的 1 都可以。</li>
+        <li><code>67 = a &times; b</code>，其中 <code>a</code> 和 <code>b</code> 都大于 1？<strong>不可能</strong>——那就意味着 67 除了 1 和它自己之外还有别的因子，这和它是素数相矛盾！</li>
+      </ul>
+      <p>所以，<em>任何一种</em>能把正整数乘起来正好凑成 67 的方式，都必须<strong>恰好有一个因子等于 67</strong>，其余每一个参与的因子都必须恰好是 <strong>1</strong>（不管有多少个，包括一个额外的 1 都不加）。</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">因子</div><div class="v">1</div></div>
+        <div class="chain-arrow"><span class="sym">&times;</span></div>
+        <div class="chain-box"><div class="p">因子</div><div class="v">1</div></div>
+        <div class="chain-arrow"><span class="sym">&times;</span></div>
+        <div class="chain-box picked"><div class="p">因子</div><div class="v">67</div></div>
+        <div class="chain-arrow"><span class="sym">=</span></div>
+        <div class="chain-box picked"><div class="p">乘积</div><div class="v">67</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>整道题浓缩成一句话</h2></div>
+      <p class="lead">把第三关的结论翻译回"从袋子里挑数字"的说法：因为每一种成功的挑法都需要恰好一个 <code>67</code>，再加上任意数量的 <code>1</code>（这些 1 甚至完全可以不挑——单独挑 <code>{67}</code> 本身就总是成立），整道题就浓缩成了一个关于你手上这袋数字的、单一的是非问题。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">最重要的一句话</div>
+        <p>答案是 <b>YES</b>，当且仅当数字 <code>67</code> 出现在列表里的<em>任何位置</em>——袋子里其余的数字，对答案完全没有影响！</p>
+      </div>
+
+      <p>这正是这道题的"顿悟时刻"。它看起来可能需要巧妙地组合好几个数字相乘——但因为目标数字是素数，整个问题就坍缩成了一次简单的成员检查。求解的那一刻，根本不需要做任何乘法。</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面是完整的解法。先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>erato67henes.py</div>
+        <pre><code>t = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(t):
+    n = <span class="kw">int</span>(<span class="kw">input</span>())
+    a = <span class="kw">list</span>(<span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split()))
+    <span class="kw">print</span>(<span class="st">"YES"</span> <span class="kw">if</span> <span class="nu">67</span> <span class="kw">in</span> a <span class="kw">else</span> <span class="st">"NO"</span>)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">t = int(input())
+for _ in range(t):</div>
+          <div class="annot-note"><span>题目一次性打包了最多 <code>10,000</code> 组独立的测试用例——每组循环处理一次。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">n = int(input())
+a = list(map(int, input().split()))</div>
+          <div class="annot-note"><span>读入数字个数（其实我们最后根本用不上！），再读入最多 5 个数字组成的真正列表。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">print("YES" if 67 in a else "NO")</div>
+          <div class="annot-note"><span>第四关的全部结论，浓缩成这一行。Python 的 <code>in</code> 直接检查成员关系——不需要循环，不需要乘法，也不需要枚举子集。</span></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么 n 从没被真正用上</div>
+        <p>注意代码从来没有拿 <code>n</code> 来做任何判断——只是读进来，好知道输入的下一行有几个数字。袋子的大小其实根本不影响答案，唯一有关系的是 67 在不在里面。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>用暴力枚举再核对一遍</h2></div>
+      <p class="lead">因为 <code>n</code> 最多是 5，我们完全负担得起直接检查<em>每一种</em>非空子集——最多也只有 <code>2<sup>5</sup> &minus; 1 = 31</code> 种。让我们对题目的第一个样例 <code>[1, 7, 6, 7, 67]</code> 做一遍，确认它和我们的一行捷径结论一致。</p>
+
+      <table class="trace">
+        <thead><tr><th>子集（按取值）</th><th>乘积</th><th>等于 67？</th></tr></thead>
+        <tbody>
+          <tr><td>{1}</td><td>1</td><td class="even">否</td></tr>
+          <tr><td>{7}</td><td>7</td><td class="even">否</td></tr>
+          <tr><td>{6}</td><td>6</td><td class="even">否</td></tr>
+          <tr><td>{67}</td><td>67</td><td class="odd">是！</td></tr>
+          <tr><td>{1, 67}</td><td>67</td><td class="odd">是！</td></tr>
+          <tr><td>{7, 6}</td><td>42</td><td class="even">否</td></tr>
+          <tr><td>{1, 7, 6}</td><td>42</td><td class="even">否</td></tr>
+          <tr><td>……（还有 25 种子集）</td><td>……</td><td class="even">否（没有一个不含67的子集能凑出67）</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">每一个乘积恰好等于 67 的子集，都包含了数字 67 本身——正好印证了第四关的捷径结论。</td></tr></tfoot>
+      </table>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">31</div><div class="lbl">n=5 时，暴力方式需要检查的子集数量</div></div>
+        <div class="stat fast"><div class="num">1</div><div class="lbl">用捷径的话，任意 n 只需要 1 次成员检查</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7：互动小工具 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>轮到你了：试试自己的数字袋子</h2></div>
+      <p class="lead">填入最多 5 个数字（每个 1 到 67），看看每一种可能的子集是怎么被检查的，同时对照瞬间给出结果的捷径。</p>
+
+      <div class="widget">
+        <h3>67 猎手</h3>
+        <div class="hint">提示：先试试 1, 7, 6, 7, 67 或 1, 3, 5, 7, 8，重现一下题目自带的样例。想用少于 5 个数字，把某个输入框留空（或设为 0）即可。</div>
+        <div class="field-row">
+          <div class="field"><label for="inA0">a1</label><input type="number" id="inA0" value="1" min="0" max="67"></div>
+          <div class="field"><label for="inA1">a2</label><input type="number" id="inA1" value="7" min="0" max="67"></div>
+          <div class="field"><label for="inA2">a3</label><input type="number" id="inA2" value="6" min="0" max="67"></div>
+          <div class="field"><label for="inA3">a4</label><input type="number" id="inA3" value="7" min="0" max="67"></div>
+          <div class="field"><label for="inA4">a5</label><input type="number" id="inA4" value="67" min="0" max="67"></div>
+          <div class="field"><button class="btn" id="runBtn">开始猎捕 67</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>练习题：先自己算，再用工具核对</h2></div>
+      <p class="lead">每一题都先在纸上算一遍，再用上面的小工具验证答案。</p>
+
+      <details>
+        <summary>练习 1：[2, 67, 5]。答案是什么？是哪一个数字决定了结果？</summary>
+        <div class="reveal">
+          <p><b>YES</b>——列表里包含 67（第二个数字），所以单独挑 <code>{67}</code> 就能得到恰好等于 67 的乘积。2 和 5 完全无关紧要。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：[1, 1, 1, 1]。用一句话说明为什么任何挑法都永远凑不出 67。</summary>
+        <div class="reveal">
+          <p><b>NO</b>——袋子里每一个数字都是 1，而任意数量的 1 相乘（不管挑多少个）永远只能得到 1，永远不可能是 67。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：[2, 3, 5, 7, 11]。这些全都是素数——这能帮你凑出 67 吗？为什么？</summary>
+        <div class="reveal">
+          <p><b>NO</b>。虽然这里每个数字都是素数，但这并不能帮你凑出<em>另一个</em>素数。<code>{2,3,5,7,11}</code> 任意子集相乘得到的数，其素因子只能来自这同一个集合——而 67 是一个完全不同的素数，永远不可能是这些数字的乘积。（这正是第二关那个想法的另一面：把素数乘起来，只会造出以这些素数为因子的新数，67 这条路走不通。）</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（边界情况）：[67]。整个袋子只有一个数字，答案是 YES 还是 NO？</summary>
+        <div class="reveal">
+          <p><b>YES</b>。你永远可以只挑一个元素（记住，不能<em>一个都不挑</em>，但恰好挑一个完全没问题）——挑出这唯一的 67，乘积就恰好是 67。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5（挑战题）：修改代码，让它除了 YES/NO 之外，还打印出<em>哪些</em>被挑中的数字凑出了这个乘积。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>erato67henes_verbose.py</div>
+            <pre><code>t = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(t):
+    n = <span class="kw">int</span>(<span class="kw">input</span>())
+    a = <span class="kw">list</span>(<span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split()))
+    <span class="kw">if</span> <span class="nu">67</span> <span class="kw">in</span> a:
+        idx = a.index(<span class="nu">67</span>)
+        <span class="kw">print</span>(<span class="st">"YES，只需挑 a</span><span class="st">"</span> + <span class="kw">str</span>(idx + <span class="nu">1</span>) + <span class="st">"（也就是 67）"</span>)
+    <span class="kw">else</span>:
+        <span class="kw">print</span>(<span class="st">"NO"</span>)</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 2195A &mdash; Sieve of Erato67henes。还不清楚什么样的数是素数？可以先看看<a href="prime_detective_cn.html">质数侦探社</a>页面。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(nums){
+    var subsets = [];
+    var count = nums.length;
+    var found = false;
+    for (var mask = 1; mask < (1 << count); mask++){
+      var picked = [];
+      var product = 1;
+      for (var i = 0; i < count; i++){
+        if (mask & (1 << i)){
+          picked.push(nums[i]);
+          product *= nums[i];
+        }
+      }
+      var hit = product === 67;
+      if (hit) found = true;
+      subsets.push({ picked: picked, product: product, hit: hit });
+    }
+    return { subsets: subsets, found: found, shortcut: nums.indexOf(67) !== -1 };
+  }
+
+  function run(){
+    var ids = ['inA0','inA1','inA2','inA3','inA4'];
+    var nums = [];
+    for (var i = 0; i < ids.length; i++){
+      var raw = document.getElementById(ids[i]).value;
+      var v = parseInt(raw, 10);
+      if (!isNaN(v) && v >= 1 && v <= 67){
+        nums.push(v);
+      }
+    }
+    var out = document.getElementById('out');
+
+    if (nums.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请至少输入一个 1 到 67 之间的数字。</p></div>';
+      return;
+    }
+    if (nums.length > 20){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>数字个数请控制在 20 个以内，子集表才能保持可读。</p></div>';
+      return;
+    }
+
+    var r = solve(nums);
+    var html = '';
+
+    html += '<div class="scrollbox"><table class="trace"><thead><tr><th>子集</th><th>乘积</th><th>等于 67？</th></tr></thead><tbody>';
+    r.subsets.forEach(function(s){
+      var verdictCell = s.hit ? '<td class="odd">是！</td>' : '<td class="even">否</td>';
+      html += '<tr><td>{' + s.picked.join(', ') + '}</td><td>' + s.product + '</td>' + verdictCell + '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    html += '<div class="answer-line">暴力枚举全部 ' + r.subsets.length + ' 个子集：' + (r.found ? '找到了匹配' : '没有找到匹配') + '</div>';
+    html += '<div class="answer-line">捷径检查（袋子里有没有 67？）：' + (r.shortcut ? '有' : '没有') + '</div>';
+    html += '<div class="answer-line ' + (r.shortcut ? 'yes' : 'no') + '">最终答案：<b>' + (r.shortcut ? 'YES' : 'NO') + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字谜题：破解重复阶乘次的超长数字（Codeforces 2043B）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.8;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,6vw,42px);line-height:1.3;margin:0 0 12px;letter-spacing:0;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:16px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.04em;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.05em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:22px;margin:0;}
+  .lead{font-size:16px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Digit strip (repurposed bit boxes) ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:52px;text-align:center;}
+  .bit .cell{width:52px;height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:19px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .bit .pw{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Echo chain (period-6 visual) ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 70px;min-width:64px;text-align:center;padding:12px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:22px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;letter-spacing:.02em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input,.field select{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input#inN{width:170px;}
+  .field select#inD{width:90px;}
+  .field input:focus,.field select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.02em;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 2043B &middot; 题目精讲</div>
+      <h1>数字谜题：<em>破解重复阶乘次的超长数字</em></h1>
+      <p class="sub">Artem 在黑板上写下同一个数字 d，一连写了整整 n! （n 的阶乘）次。哪怕 n 只有 8，那也已经是 40,320 个数字了——而 n 最大能到 10 亿。Codeforces 2043B 问的是：奇数数字 1、3、5、7、9 里，哪些能整除这个庞然大物？你永远不可能真的把这个数造出来——但你可以靠动脑子取胜。</p>
+      <div class="stampbar">
+        <span class="stamp hot">写给爱思考的 13 岁少年</span>
+        <span class="stamp">结合"神奇的5"与"回声机器"</span>
+        <span class="stamp">可互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>认识这个任务</h2></div>
+      <p class="lead">给你一个数字 <code>d</code>（1 到 9 之间）和一个数字 <code>n</code>。Artem 把 <code>d</code> 连续写了 <code>n!</code>（"n 的阶乘"）次，组成一个超级长、从头到尾全是数字 <code>d</code> 的巨大数字。回忆一下，<code>n! = 1 &times; 2 &times; 3 &times; &hellip; &times; n</code>——它增长得快到令人难以置信。</p>
+      <p>你的任务：找出<em>奇数</em>数字——<code>1, 3, 5, 7, 9</code>——里哪些能整除这个庞大的数字，并按从小到大输出。一次运行里可能会问你多达 100 组不同的 <code>(n, d)</code>。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原话</div>
+        <p><code>n=2, d=6</code> &rarr; 黑板上是 <code>66</code>（因为 2! = 2）。<b>1 3</b> 能整除它（66 = 2&times;3&times;11）。<br>
+        <code>n=7, d=1</code> &rarr; 黑板上是 <code>111&hellip;1</code>，一共 <code>7! = 5040</code> 个 1。<b>1 3 7 9</b> 能整除它。<br>
+        <code>n=8, d=5</code> &rarr; 黑板上是 <code>555&hellip;5</code>，一共 <code>8! = 40320</code> 个 5。<b>1 3 5 7 9</b>——每一个奇数数字都能整除它！</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么要在意速度？</div>
+        <p><code>n</code> 最大可以到 <strong>1,000,000,000</strong>（10 亿）。哪怕 <code>n</code> 只是一个不算大的数，<code>n!</code> 就已经是个怪物了：<code>20!</code> 就有 19 位数字，而 <code>n</code> 达到十亿量级时，<code>n!</code> 会有<em>几十亿甚至更多</em>位数字。你根本没法把这个数存下来，更别说在 1 秒内一位一位去检查了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>先把整除判断的工具箱翻出来</h2></div>
+      <p class="lead">在动手对付这个巨大数字之前，先回忆一下我们已经会的、不用做除法就能判断整除的小技巧：</p>
+      <ul>
+        <li><strong>能被 1 整除：</strong>永远成立。任何数都能被 1 整除——白送一分！</li>
+        <li><strong>能被 5 整除：</strong>当且仅当<em>最后一位</em>是 0 或 5。这正是我们在<a href="271C_zh.html">神奇的 5</a>那一页用过的思路。</li>
+        <li><strong>能被 3 或 9 整除：</strong>把所有数字加起来。如果这个和能被 3（或 9）整除，那原来的数也能。</li>
+        <li><strong>能被 7 整除：</strong>……7 没有那种巧妙的"数字和"捷径。我们得用另一种技巧，而这正是这道题最有意思的部分。</li>
+      </ul>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>还不清楚这些技巧为什么成立？<a href="prime_detective_cn.html">质数侦探社</a>那一页从零开始搭建了余数（"钟面数学"）的思维方式——正是这一页接下来要依赖的工具箱。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>为什么"真的把数造出来"行不通</h2></div>
+      <p class="lead">最直接的想法是：算出 <code>n!</code>，把 <code>d</code> 写那么多次，然后直接检查能不能整除。对于很小的 <code>n</code>，这完全没问题——但 <code>n</code> 最大能到十亿，而 <code>n!</code> 增长的速度比 <code>n</code> 本身快得多得多。地球上所有计算机的存储空间加在一起，都装不下这么多位数字的数，更别提在 1 秒内一位一位扫一遍了。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">n=10&#8313; 时的 n!</div><div class="lbl">长到就算宇宙里每个原子写一位数字，空间也不够用</div></div>
+        <div class="stat fast"><div class="num">O(1)</div><div class="lbl">找到规律之后，每个询问需要的计算量</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>数字 5：我们早就顺手解决的免费题</h2></div>
+      <p class="lead">这个巨大数字的每一位都是 <code>d</code>——包括最后一位。所以整个数的最后一位，就是 <code>d</code> 本身。用第二关的规则：<strong>能被 5 整除，当且仅当 d = 5。</strong>就这么简单——这一项完全不需要涉及任何阶乘计算！</p>
+      <div class="callout tip">
+        <div class="ctitle">最重要的一句话</div>
+        <p>答案里有没有 <code>5</code>，只取决于 <code>d == 5</code> 是否成立。不管 n 是多少，永远如此。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>数字 3 和 9：被 n! 加成的数字和技巧</h2></div>
+      <p class="lead">这个巨大数字的数字和很好算：它是 <code>d</code> 重复了 <code>n!</code> 次，所以数字和就是 <code>d &times; n!</code>。根据第二关：能被 3 整除当且仅当 <code>3 | (d &times; n!)</code>，能被 9 整除当且仅当 <code>9 | (d &times; n!)</code>。</p>
+      <p>精彩的地方在这里：<strong>阶乘会自动"攒"出 3 的因子。</strong>一旦 <code>n &ge; 3</code>，乘积 <code>n! = 1&times;2&times;3&times;&hellip;&times;n</code> 里就已经包含数字 3 本身作为其中一个因子——所以 <code>3 | n!</code>，这意味着<em>不管 d 是多少</em>，<code>3 | (d &times; n!)</code> 都成立。而对于 9，我们需要 <code>n!</code> 里藏着<em>两个</em> 3 的因子（因为 <code>9 = 3&times;3</code>）——这一点要等到 <code>n &ge; 6</code> 才第一次成立，因为 <code>6!</code> 是第一个同时包含因子 3<em>和</em>因子 6（本身也是 3 的倍数）的阶乘。</p>
+
+      <table class="trace">
+        <thead><tr><th>n</th><th>n!</th><th>n! 内部藏着几个 3</th><th>3 | n! ?</th><th>9 | n! ?</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>2</td><td>0</td><td class="even">否</td><td class="even">否</td></tr>
+          <tr><td>3</td><td>6</td><td>1（来自"3"）</td><td class="odd">是</td><td class="even">否</td></tr>
+          <tr><td>4</td><td>24</td><td>1（还是只有"3"）</td><td class="odd">是</td><td class="even">否</td></tr>
+          <tr><td>5</td><td>120</td><td>1（还是只有"3"）</td><td class="odd">是</td><td class="even">否</td></tr>
+          <tr><td>6</td><td>720</td><td>2（"3" <em>加上</em>"6"）</td><td class="odd">是</td><td class="odd">是</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">从 n=6 开始，n! 永远至少藏着 2 个 3 的因子，之后 9 | n! 一直成立。</td></tr></tfoot>
+      </table>
+
+      <p>所以：当 <code>n &ge; 3</code> 时，<em>不管 d 是多少</em>，数字 3 都能整除这个数。当 <code>n &ge; 6</code> 时，<em>不管 d 是多少</em>，数字 9 也能整除。只有剩下的几个小情况（数字 9 在 <code>n = 3, 4, 5</code> 时）才真的取决于 <code>d</code>。</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>数字 7：回声再次出现</h2></div>
+      <p class="lead">7 没有数字和的捷径，所以我们换个角度想。看看 10 的各次幂除以 7 的余数会发生什么：</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">10&sup1; mod 7</div><div class="v">3</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">10&sup2; mod 7</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">10&sup3; mod 7</div><div class="v">6</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">10&#8308; mod 7</div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">10&#8309; mod 7</div><div class="v">5</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box picked"><div class="p">10&#8310; mod 7</div><div class="v">1</div></div>
+        <div class="chain-arrow"><span class="sym">&#8635;</span>回声！</div>
+        <div class="chain-box"><div class="p">10&#8311; mod 7</div><div class="v">3</div></div>
+      </div>
+
+      <p>是不是很眼熟？10 的各次幂，对 7 取余数，<em>每 6 步就会回声一次</em>——这和<a href="450B_zh.html">Jzzhu 的回声机器</a>那一页里数列"永远回声"的脾气一模一样，只不过换了一套数字来演。这个周期为 6 的回声，正是数字 7 这道题的全部秘密。</p>
+      <p>为什么这很重要？一段由 <code>m</code> 个重复数字组成的块，可以写成 <code>d &times; R<sub>m</sub></code>，其中 <code>R<sub>m</sub></code> 是"连续 1"数字 <code>111&hellip;1</code>（共 <code>m</code> 个 1）。可以证明，<code>7 | R<sub>m</sub></code> 当且仅当 <code>6 | m</code>——这正是周期为 6 的回声带来的直接结果。而且，就像第五关里因子 3 那样，只要 <code>n &ge; 3</code>，阶乘 <code>n!</code> 就已经<em>同时</em>包含一个因子 2<em>和</em>一个因子 3，二者合起来就能保证 <code>6 | n!</code>。所以当 <code>n &ge; 3</code> 时，<code>m = n!</code> 自动就是 6 的倍数，回声正好落回 1，于是<strong>不管 d 是多少，7 都能整除这个数。</strong></p>
+
+      <div class="callout fact">
+        <div class="ctitle">案卷线索</div>
+        <p>好奇"周期为 6 的回声如何强制推出整除"这套论证具体怎么一步步走通的？<a href="450B_zh.html">Jzzhu 的回声机器</a>那一页把这套循环推理连同代数细节一步步走了一遍——想看完整推导可以去读一读。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>汇总起来：大 n 情况下的一条简洁规则</h2></div>
+      <p class="lead">把我们发现的一切汇总一下。每个数字"不再依赖 d"的临界点是：3 和 7 在 <code>n &ge; 3</code> 时就锁定了，9 要等到 <code>n &ge; 6</code> 才锁定。一旦 <code>n &ge; 6</code>，<em>三个临界点全部越过</em>，我们就得到一条极其简洁的规则：</p>
+
+      <div class="callout tip">
+        <div class="ctitle">最重要的一句话</div>
+        <p>当 <code>n &ge; 6</code> 时：答案永远是 <code>{1, 3, 7, 9}</code>，再加上 <code>d = 5</code> 时额外多一个 <code>5</code>。此时 <code>d</code> 取什么值，压根不影响答案！</p>
+      </div>
+
+      <p>这样一来，只剩下 <code>n = 2, 3, 4, 5</code> 这几个特殊情况了——而有趣的转折在这里：这几个数对应的阶乘分别是 <code>2, 6, 24,</code> 和 <code>120</code>。全都小得很！对付这几个特殊情况根本不需要任何巧思——直接把真正的数字造出来（最多 120 位，对 Python 内置的大整数来说小菜一碟），然后老老实实检查整除就行。</p>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>逐行读代码</h2></div>
+      <p class="lead">下面是完整的解法。先看左边的代码，再看右边的大白话翻译。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>digits.py</div>
+        <pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="kw">solve</span>(n, d):
+    <span class="kw">if</span> n &gt;= <span class="nu">6</span>:
+        divisors = {<span class="nu">1</span>, <span class="nu">3</span>, <span class="nu">7</span>, <span class="nu">9</span>}
+        <span class="kw">if</span> d == <span class="nu">5</span>:
+            divisors.add(<span class="nu">5</span>)
+    <span class="kw">else</span>:
+        m = math.factorial(n)          <span class="cm"># n < 6，所以 m 最多是 120——非常小！</span>
+        number = <span class="kw">int</span>(<span class="kw">str</span>(d) * m)     <span class="cm"># 真的把这个数造出来</span>
+        divisors = {x <span class="kw">for</span> x <span class="kw">in</span> [<span class="nu">1</span>,<span class="nu">3</span>,<span class="nu">5</span>,<span class="nu">7</span>,<span class="nu">9</span>] <span class="kw">if</span> number % x == <span class="nu">0</span>}
+    <span class="kw">return</span> <span class="kw">sorted</span>(divisors)
+
+t = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(t):
+    n, d = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+    <span class="kw">print</span>(*solve(n, d))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">if n >= 6:
+    divisors = {1, 3, 7, 9}
+    if d == 5:
+        divisors.add(5)</div>
+          <div class="annot-note"><span>第七关的快速规则。这里完全不会去算任何阶乘——答案只取决于 <code>n</code> 有没有越过临界点，以及 <code>d</code> 是不是等于 5。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">m = math.factorial(n)
+number = int(str(d) * m)</div>
+          <div class="annot-note"><span>只有 <code>n &lt; 6</code> 时才会走到这里，所以 <code>m &le; 120</code>。Python 能轻松造出一个 120 位的整数并精确保存——永远不会溢出。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">divisors = {x for x in [1,3,5,7,9] if number % x == 0}</div>
+          <div class="annot-note"><span>既然真的把这个数造出来了，就直接问 Python：能不能整除？这么小的情况，根本不需要任何取巧。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>一起手算三个样例</h2></div>
+
+      <table class="trace">
+        <thead><tr><th>n</th><th>d</th><th>走的路径</th><th>答案</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>6</td><td>n &lt; 6 &rarr; 造出 "66"，检查余数</td><td class="odd">1 3</td></tr>
+          <tr><td>7</td><td>1</td><td>n &ge; 6 &rarr; {1,3,7,9}，d&ne;5 所以没有 5</td><td class="odd">1 3 7 9</td></tr>
+          <tr><td>8</td><td>5</td><td>n &ge; 6 &rarr; {1,3,7,9}，d=5 所以加上 5</td><td class="odd">1 3 5 7 9</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">三个都和题目给出的期望输出完全一致。</td></tr></tfoot>
+      </table>
+
+      <p>注意 <code>n=7</code> 和 <code>n=8</code> 都走了快速的 <code>n &ge; 6</code> 路径，完全不用碰阶乘——哪怕 <code>n</code> 是十亿，它们的行为也会完全一样。</p>
+    </section>
+
+    <!-- ============ LEVEL 10：互动小工具 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">第十关</span><h2>轮到你了：试试自己的 n 和 d</h2></div>
+      <p class="lead">自己挑几个数字，看看求解器走的是哪条路——小数字的暴力枚举，还是大 n 的瞬间捷径。</p>
+
+      <div class="widget">
+        <h3>数字谜题计算器</h3>
+        <div class="hint">提示：先试试 n=2, d=6 或 n=7, d=1 或 n=8, d=5，重现一下题目自带的样例。然后再试一个巨大的 n，比如 1000000000，你会发现答案依然瞬间就出来了。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="2" min="2" max="1000000000"></div>
+          <div class="field"><label for="inD">d</label>
+            <select id="inD">
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+            </select>
+          </div>
+          <div class="field"><button class="btn" id="runBtn">找出所有约数</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 11 ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">第十一关</span><h2>练习题：先自己算，再用工具核对</h2></div>
+      <p class="lead">每一题都先在纸上算一遍，再用上面的小工具验证答案。</p>
+
+      <details>
+        <summary>练习 1：n=2, d=9。黑板上是 "99"。哪些奇数数字能整除它？</summary>
+        <div class="reveal">
+          <p><code>99 = 9 &times; 11</code>。逐个检查：<code>99/1=99</code> 是，<code>99/3=33</code> 是，<code>99/5=19.8</code> 否，<code>99/7&approx;14.14</code> 否，<code>99/9=11</code> 是。答案：<b>1 3 9</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：n=3, d=2。不用把数造出来，说明为什么 3 和 7 必然整除它，而 9 不行。</summary>
+        <div class="reveal">
+          <p>因为 <code>n=3 &ge; 3</code>，第五关和第六关里"3 锁定"和"7 锁定"的临界点都已经越过了，所以不管 <code>d</code> 是多少，3 和 7 都能整除这个数。但 <code>n=3 &lt; 6</code>，所以 9 不是自动成立的——它需要 <code>d</code> 是 3 的倍数，而 <code>d=2</code> 不是。黑板上是 <code>222222</code>（6 个 2，因为 3!=6）：数字和是 12（能被 3 整除，不能被 9 整除），验证了 <b>1 3 7</b>，没有 9。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：n=5, d=6。哪些奇数数字能整除黑板上的数？</summary>
+        <div class="reveal">
+          <p><code>n=5 &ge; 3</code> 已经锁定了 3 和 7。对于 9，我们需要 <code>n &ge; 6</code> 或者 <code>d</code> 是 3 的倍数——这里 <code>n=5 &lt; 6</code>，但 <code>d=6</code> <em>确实</em>是 3 的倍数，所以 9 也能整除！对于 5，需要 <code>d=5</code>，而 <code>d=6&ne;5</code>，所以没有 5。答案：<b>1 3 7 9</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（挑战题）：n=1,000,000,000, d=5。这个数显然造不出来——用第七关的捷径求出答案。</summary>
+        <div class="reveal">
+          <p><code>n &ge; 6</code>，所以答案自动是 <code>{1, 3, 7, 9}</code>，又因为 <code>d = 5</code>，还要加上 5。答案：<b>1 3 5 7 9</b>——每一个奇数数字，瞬间算出，全程没碰过一次阶乘。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5（挑战题）：修改代码，同时判断黑板上的数能否被 6 整除。（提示：6 = 2 &times; 3，而你在这道题里已经知道怎么判断能不能被 2 和被 3 整除。）</summary>
+        <div class="reveal">
+          <p>能被 2 整除只需要最后一位是偶数——而这里每一位都是 <code>d</code>，所以就是要求 <code>d</code> 本身是偶数。能被 3 整除正是我们已经解决的问题：只要 <code>n &ge; 3</code> 就恒成立，或者（对更小的 n）看造出来的数的数字和。所以，能被 6 整除，当且仅当<em>两个条件同时成立</em>：</p>
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>digits_with_six.py</div>
+            <pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="kw">solve</span>(n, d):
+    <span class="kw">if</span> n &gt;= <span class="nu">6</span>:
+        divisors = {<span class="nu">1</span>, <span class="nu">3</span>, <span class="nu">7</span>, <span class="nu">9</span>}
+        <span class="kw">if</span> d == <span class="nu">5</span>:
+            divisors.add(<span class="nu">5</span>)
+        divisible_by_6 = (d % <span class="nu">2</span> == <span class="nu">0</span>)   <span class="cm"># n>=6 时 3 已经自动成立</span>
+    <span class="kw">else</span>:
+        m = math.factorial(n)
+        number = <span class="kw">int</span>(<span class="kw">str</span>(d) * m)
+        divisors = {x <span class="kw">for</span> x <span class="kw">in</span> [<span class="nu">1</span>,<span class="nu">3</span>,<span class="nu">5</span>,<span class="nu">7</span>,<span class="nu">9</span>] <span class="kw">if</span> number % x == <span class="nu">0</span>}
+        divisible_by_6 = (number % <span class="nu">6</span> == <span class="nu">0</span>)
+    <span class="kw">return</span> <span class="kw">sorted</span>(divisors), divisible_by_6</code></pre>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 2043B &mdash; Digits。还不熟悉"只看最后一位"的技巧，或者"每 6 步回声一次"的技巧？可以先看看<a href="271C_zh.html">神奇的 5</a>和<a href="450B_zh.html">Jzzhu 的回声机器</a>。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function factorial(n){
+    var result = 1n;
+    for (var i = 2n; i <= BigInt(n); i++){ result *= i; }
+    return result;
+  }
+
+  function solve(n, d){
+    if (n >= 6){
+      var divisors = [1, 3, 7, 9];
+      if (d === 5){ divisors.push(5); divisors.sort(function(a,b){return a-b;}); }
+      return { fast: true, divisors: divisors };
+    } else {
+      var m = factorial(n);
+      var number = BigInt(String(d).repeat(Number(m)));
+      var divs = [1, 3, 5, 7, 9].filter(function(x){ return number % BigInt(x) === 0n; });
+      return { fast: false, m: m, number: number, divisors: divs };
+    }
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var d = parseInt(document.getElementById('inD').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 2 || n > 1000000000 || isNaN(d) || d < 1 || d > 9){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>n 需要在 2 到 1,000,000,000 之间，d 需要在 1 到 9 之间。</p></div>';
+      return;
+    }
+
+    var r = solve(n, d);
+    var html = '';
+
+    if (r.fast){
+      html += '<div class="answer-line">n = ' + n + ' &ge; 6，所以走捷径：基础集合是 <b>{1, 3, 7, 9}</b>' +
+        (d === 5 ? '，又因为 d = 5，所以还要加上 <b>5</b>。' : '，因为 d &ne; 5，所以不包含 5。') + '</div>';
+    } else {
+      var numStr = r.number.toString();
+      var shown = numStr.length > 40 ? (numStr.slice(0, 40) + '&hellip;（共 ' + numStr.length + ' 位）') : numStr;
+      html += '<div class="answer-line">n = ' + n + ' &lt; 6，所以 n! = ' + r.m.toString() + '，直接把黑板上真正的数造出来：<br>' + shown + '</div>';
+    }
+
+    html += '<div class="answer-line">找到的约数：<b>' + r.divisors.join(' ') + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>
