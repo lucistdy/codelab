@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>龟兔赛跑：Floyd 判圈算法通俗讲解</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Chain / sequence ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 60px;min-width:56px;text-align:center;padding:10px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box.loopback{background:var(--accent-soft);border-color:var(--accent);}
+  .chain-box .p{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:16px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">算法 &middot; 技能讲解</div>
+      <h1>龟兔赛跑：<em>Floyd 判圈算法</em></h1>
+      <p class="sub">有些数字序列会一直往前走，永不重复；有些却会偷偷绕回去，陷入一个永远重复的循环。怎么才能区分这两种情况——而且不需要用无穷多的内存去记住见过的每一个数字？答案的名字，直接借用了伊索寓言的那个故事。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">双指针</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标：这串数字会不会绕圈？</h2></div>
+      <p class="lead">想象有一条规则，能把一个数字变成下一个数字：从某个数开始，套用规则得到下一个，再套用一次，再套用一次，一直下去。这就搭出了一条链：<code>x&#8320; &rarr; x&#8321; &rarr; x&#8322; &rarr; x&#8323; &rarr; &hellip;</code></p>
+      <p>这样一条链，可能会发生两种情况：</p>
+      <ul style="color:var(--ink-soft);">
+        <li>它一直不断产生新数字，永不重复（或者最终停在某个让过程终止的数字上，比如到达 1）。</li>
+        <li>在某个时刻，它碰到了一个<em>之前已经出现过</em>的数字——从那一刻起，它就注定要永远重复那一段循环。</li>
+      </ul>
+      <p>这一页要回答的问题是：<strong>给定规则和一个起始数字，怎么判断这条链会不会绕圈——甚至精确找出这个圈从哪里开始、有多长——而且不需要存下走过的每一个数字？</strong></p>
+
+      <div class="callout fact">
+        <div class="ctitle">这个名字是怎么来的？</div>
+        <p>这个算法有个外号叫<strong>龟兔赛跑算法</strong>，来自伊索寓言里那个"跑得慢但很稳的乌龟"和"跑得快但很粗心的兔子"的故事。它让两个"跑步者"以不同的速度在同一条数字链上前进——而且，就像寓言里一样，这场比赛的结局会让你有点意外。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么不干脆记住每一个数字？</div>
+        <p>你完全可以用一个列表（或者集合）记下你见过的每一个数字，每次拿新数字去比对一下。这确实管用！但链条越长，占用的内存就越多——在一些实际问题里（想象一条有几十亿步的链条，或者一条藏在计算机内存里、没法随便去挨个查看的链条），这个代价会很大。龟兔赛跑技巧用<strong>只有两个变量</strong>就解决了同样的问题，不管链条最后到底有多长。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>一个好玩的例子：快乐数</h2></div>
+      <p class="lead">这里有一条很有意思的规则可以玩玩：拿一个数字，把它<strong>每一位数字都平方，再加起来</strong>，得到下一个数字。一直这样下去。如果最终到达 <code>1</code>，这个数字就叫作<strong>快乐数</strong>。如果永远到不了 1（反而陷入一个不断重复的循环），它就是<strong>不快乐的数</strong>。</p>
+
+      <p>先试试 <code>7</code>：</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">开始</div><div class="v">7</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>7&sup2;</div>
+        <div class="chain-box"><div class="p">第1步</div><div class="v">49</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>4&sup2;+9&sup2;</div>
+        <div class="chain-box"><div class="p">第2步</div><div class="v">97</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>9&sup2;+7&sup2;</div>
+        <div class="chain-box"><div class="p">第3步</div><div class="v">130</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>1&sup2;+3&sup2;+0&sup2;</div>
+        <div class="chain-box"><div class="p">第4步</div><div class="v">10</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>1&sup2;+0&sup2;</div>
+        <div class="chain-box loopback"><div class="p">第5步</div><div class="v">1</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">7 是快乐数！走了 5 步就到达 1。（而且一旦到了 1，就会永远停在那儿：1&sup2;=1。）</p>
+
+      <p>再试试 <code>2</code>：</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">开始</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">16</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">37</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">58</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">89</div></div>
+      </div>
+      <div class="chain">
+        <div class="chain-box"><div class="p"></div><div class="v">145</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">42</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">20</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>绕回去了！</div>
+        <div class="chain-box loopback"><div class="p"></div><div class="v">4</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">2 是不快乐的数：它永远到不了 1。它会经过 4、16、37、58、89、145、42、20，然后又绕回 4，<em>永远</em>重复这同样的 8 个数字。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">每一个数字最终都会绕圈</div>
+        <p>这里有个很妙的事实：在这条规则下，<em>任何</em>起始数字最终都会进入某个循环——要么是只有 <code>{1}</code> 这一个数的"小循环"（快乐数），要么是所有不快乐的数最终都会掉进的那同一个 8 数字循环 <code>{4, 16, 37, 58, 89, 145, 42, 20}</code>。没有第三种可能。所以"这个数快不快乐"，本质上就是在问"它的链条最终会掉进哪个循环"——这正是我们这个算法要回答的问题。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>最直接的办法：记住见过的一切</h2></div>
+      <p class="lead">最简单的做法：用一个集合记录目前为止访问过的每一个数字。在走到下一个数字之前，先检查它是不是已经在集合里了。如果是，就说明找到了循环。如果最终到达 1，就是快乐数。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>happy_naive.py</div>
+        <pre><code><span class="kw">def</span> <span class="kw">next_number</span>(x):
+    <span class="kw">return</span> <span class="kw">sum</span>(<span class="kw">int</span>(d) ** <span class="nu">2</span> <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">str</span>(x))
+
+<span class="kw">def</span> <span class="kw">is_happy_naive</span>(x):
+    seen = <span class="kw">set</span>()
+    <span class="kw">while</span> x != <span class="nu">1</span> <span class="kw">and</span> x <span class="kw">not in</span> seen:
+        seen.add(x)
+        x = next_number(x)
+    <span class="kw">return</span> x == <span class="nu">1</span></code></pre>
+      </div>
+
+      <p>这个方法完全没问题，而且对这么小的问题来说，确实是个不错的解法——循环很短，集合也不会变得很大。但想象一条要走上<strong>几十亿步</strong>才会绕圈的链条（这在别的判圈问题里确实会发生，比如在一条巨大的链表上跟着指针一路走下去）。存下几十亿个访问过的值会把内存全部吃光。我们需要一种只用固定大小的额外空间就能检测出循环的方法。</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>巧妙的想法：两个跑步者，不同的速度</h2></div>
+      <p class="lead">诀窍来了。在同一条数字链上放两个"跑步者"，都从起点出发：</p>
+      <ul style="color:var(--ink-soft);">
+        <li><strong>乌龟</strong>每次走一步：<code>x &rarr; next(x)</code>。</li>
+        <li><strong>兔子</strong>每次走两步：<code>x &rarr; next(next(x))</code>。</li>
+      </ul>
+      <p>如果这条链永远往前走、从不重复，兔子就会一路领先乌龟越跑越远，两者永远不需要相遇——什么特别的事都不会发生（在快乐数这个例子里其实不会出现这种情况，因为每条链最终都会绕圈；但在别的场景里，比如以 <code>None</code> 结尾的链表，这就是"没有循环"的一般情形）。</p>
+      <p>但如果这条链<em>确实</em>绕圈了——把这个圈想象成一条真正的环形跑道——那么一旦两个跑步者都进了这条环形跑道，速度是两倍的兔子实际上就是在<strong>套圈</strong>乌龟。而在一条环形跑道上，跑得快的人套跑得慢的人的圈，迟早会追上、站到完全相同的位置。<strong>乌龟和兔子必然会在同一时刻站在同一个数字上。</strong>这就是循环存在的证明！</p>
+
+      <div class="callout tip">
+        <div class="ctitle">反过来的伊索寓言</div>
+        <p>在故事里，兔子因为粗心大意输掉了比赛。在这里，兔子做的正是它该做的事——它的速度恰恰<em>保证</em>了它迟早会一头撞回乌龟身上，证明这条跑道确实是个圈。不需要任何粗心大意，只需要一个 2 倍的速度差。</p>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>happy_floyd_detect.py</div>
+        <pre><code><span class="kw">def</span> <span class="kw">next_number</span>(x):
+    <span class="kw">return</span> <span class="kw">sum</span>(<span class="kw">int</span>(d) ** <span class="nu">2</span> <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">str</span>(x))
+
+<span class="kw">def</span> <span class="kw">is_happy_floyd</span>(x):
+    slow = next_number(x)
+    fast = next_number(next_number(x))
+    <span class="kw">while</span> slow != fast:
+        slow = next_number(slow)
+        fast = next_number(next_number(fast))
+    <span class="kw">return</span> slow == <span class="nu">1</span></code></pre>
+      </div>
+      <p>只用了两个变量，<code>slow</code> 和 <code>fast</code>——不管链条在绕圈之前有多长。等它们终于相遇了，只需要检查它们相遇在 <code>1</code>（快乐）还是别的地方（不快乐，困在那个 8 数字循环里）。</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>这到底为什么管用？</h2></div>
+      <p class="lead">下面把直觉讲精确一点。假设这条链有一段长度为 <code>&mu;</code> 的"尾巴"（进入循环之前的那些数字），后面跟着一个长度为 <code>&lambda;</code> 的循环（重复部分里有多少个数字）。</p>
+
+      <p>一旦乌龟和兔子都进入了循环，可以把它们的位置想象成一条有 <code>&lambda;</code> 个格子的环形跑道上的点。每一轮，乌龟前进 1 格，兔子前进 2 格——所以每一轮，兔子都比乌龟<strong>多领先 1 格</strong>（这里说的"领先多少"是沿着这个圈往前数的）。</p>
+
+      <p>因为这个圈总共只有 <code>&lambda;</code> 个格子，它们之间的差距（沿着圈计算）会依次经过 <code>0, 1, 2, &hellip;, &lambda;&minus;1, 0, 1, 2, &hellip;</code>，每 <code>&lambda;</code> 轮就回到 0 一次。差距为 <strong>0</strong> 就意味着它们站在完全相同的数字上。因为这个差距每一轮都恰好增加 1，它必然会在两个跑步者都进入循环之后的最多 <code>&lambda;</code> 轮之内再次回到 0——它不可能"跳过" 0，因为它每次只变化 1。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">结论</div>
+        <p>它们相遇不是运气，而是简单算术保证的必然结果。而且这个过程很快：最多不超过 <code>&mu; + &lambda;</code> 轮。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>更进一步：循环从哪开始，有多长？</h2></div>
+      <p class="lead">知道有循环存在固然好，但常常还想知道更多：到底哪个数字是<em>第一个</em>被重新访问的（这标志着尾巴的结束、循环的开始），以及循环里一共有多少个数字。Floyd 算法在找到相遇点之后，再用两个简短的阶段回答这两个问题。</p>
+
+      <div class="subhead">第二阶段：找到循环的起点</div>
+      <p>这里有个小小的奇迹：把一个新指针，叫作 <code>finder</code>，重新放回链条的最开头。让另一个指针继续停在乌龟和兔子相遇的地方。现在让<em>两个</em>指针都<strong>每次走一步</strong>，一起走。它们这一次相遇的地方，正好就是循环的起点。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">为什么"回到起点"这一招管用？</div>
+        <p>这归结于一点距离上的账目：乌龟和兔子第一次相遇的时候，乌龟走过的距离，减去尾巴长度 <code>&mu;</code> 之后，恰好是循环长度 <code>&lambda;</code> 的整数倍。正是这层特殊的关系，让"从最开头每次走一步"和"从相遇点每次走一步"这两条路径，会在同一时刻踏上循环的入口。这是一段很漂亮的算术——你不需要自己推导一遍也可以相信它（不过等你熟悉了模运算之后，这其实是个很有趣的证明，值得找来看看）。</p>
+      </div>
+
+      <div class="subhead">第三阶段：测量循环的长度</div>
+      <p>一旦知道了循环从哪开始，测量它的长度就很简单：站在那个数字上不动，用另一个指针一步一步走，数着步数，直到重新回到同一个数字。这个计数就是 <code>&lambda;</code>。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>floyd_full.py</div>
+        <pre><code><span class="kw">def</span> <span class="kw">find_cycle</span>(x0, next_fn):
+    <span class="cm"># 第一阶段：检测循环是否存在</span>
+    slow = next_fn(x0)
+    fast = next_fn(next_fn(x0))
+    <span class="kw">while</span> slow != fast:
+        slow = next_fn(slow)
+        fast = next_fn(next_fn(fast))
+
+    <span class="cm"># 第二阶段：找到循环的起点</span>
+    finder = x0
+    <span class="kw">while</span> finder != slow:
+        finder = next_fn(finder)
+        slow = next_fn(slow)
+    cycle_start = finder
+
+    <span class="cm"># 第三阶段：测量循环的长度</span>
+    length = <span class="nu">1</span>
+    p = next_fn(cycle_start)
+    <span class="kw">while</span> p != cycle_start:
+        p = next_fn(p)
+        length += <span class="nu">1</span>
+
+    <span class="kw">return</span> cycle_start, length</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>一起手把手推演一遍：从 2 开始</h2></div>
+      <p class="lead">从第二关我们已经知道答案：从 2 开始的链条是 <code>2, 4, 16, 37, 58, 89, 145, 42, 20, 4, 16, &hellip;</code>——尾巴长度 <code>&mu;=1</code>（只有数字 2），后面跟着一个从 4 开始、长度为 8 的循环。来看看算法自己是怎么发现这一切的。</p>
+
+      <div class="subhead">第一阶段：找到相遇点</div>
+      <table class="trace">
+        <thead><tr><th>轮次</th><th>slow（1步）</th><th>fast（2步）</th><th>相等？</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>4</td><td>16</td><td class="even">否</td></tr>
+          <tr><td>2</td><td>16</td><td>58</td><td class="even">否</td></tr>
+          <tr><td>3</td><td>37</td><td>145</td><td class="even">否</td></tr>
+          <tr><td>4</td><td>58</td><td>20</td><td class="even">否</td></tr>
+          <tr><td>5</td><td>89</td><td>16</td><td class="even">否</td></tr>
+          <tr><td>6</td><td>145</td><td>58</td><td class="even">否</td></tr>
+          <tr><td>7</td><td>42</td><td>145</td><td class="even">否</td></tr>
+          <tr><td>8</td><td>20</td><td>20</td><td class="odd"><b>是！</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">第 8 轮找到相遇点，都停在 <b>20</b>。</td></tr></tfoot>
+      </table>
+
+      <div class="subhead">第二阶段：找到循环的起点</div>
+      <table class="trace">
+        <thead><tr><th>步数</th><th>finder（从起点 2 出发）</th><th>slow（从相遇点 20 出发）</th><th>相等？</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>2</td><td>20</td><td class="even">否</td></tr>
+          <tr><td>1</td><td>4</td><td>4</td><td class="odd"><b>是！</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">循环从 <b>4</b> 开始，从最开头走了 <b>&mu;=1</b> 步到达。</td></tr></tfoot>
+      </table>
+
+      <div class="subhead">第三阶段：测量循环</div>
+      <table class="trace">
+        <thead><tr><th>步数</th><th>数值</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>16</td></tr>
+          <tr><td>2</td><td>37</td></tr>
+          <tr><td>3</td><td>58</td></tr>
+          <tr><td>4</td><td>89</td></tr>
+          <tr><td>5</td><td>145</td></tr>
+          <tr><td>6</td><td>42</td></tr>
+          <tr><td>7</td><td>20</td></tr>
+          <tr><td>8</td><td>4 &mdash; 回到起点了！</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">循环长度 <b>&lambda;=8</b>。</td></tr></tfoot>
+      </table>
+
+      <p>每一项都对上了：尾巴长度 1，循环从 4 开始，循环长度 8——而且因为 1 从来不在这个循环里，我们正确地得出结论：<b>2 是不快乐的数</b>。</p>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>该你上场了：换成你自己的起始数字</h2></div>
+      <p class="lead">挑一个正整数。工具会在"快乐数"规则上跑一遍龟兔赛跑算法，给出完整结果：快乐还是不快乐，以及尾巴长度、循环起点和循环长度。</p>
+
+      <div class="widget">
+        <h3>快乐数检测器</h3>
+        <div class="hint">小提示：试试 7（快乐数）、4（本身就在循环起点，尾巴长度为0），或者更大的数字比如 1111，看看更长的尾巴之后落进哪一个循环。</div>
+        <div class="field-row">
+          <div class="field"><label for="inX">起始数字</label><input type="number" id="inX" value="2" min="1" max="999999999"></div>
+          <div class="field"><button class="btn" id="runBtn">运行龟兔赛跑</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>该你练习了</h2></div>
+      <p class="lead">先自己在纸上算出来，再用上面的工具验证。</p>
+
+      <details>
+        <summary>挑战一：手动推演从 89 开始的链条。89 快乐吗？相对第七关的那个循环，它处在什么位置？</summary>
+        <div class="reveal">
+          <p><code>89 &rarr; 8&sup2;+9&sup2;=145 &rarr; 42 &rarr; 20 &rarr; 4 &rarr; 16 &rarr; 37 &rarr; 58 &rarr; 89</code>。它是不快乐的数，而且因为 89 本身就是那 8 个循环数字之一，它的尾巴长度是 <code>&mu;=0</code>——它一开始就已经<em>身处循环之中</em>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：如果乌龟和兔子从同一个数字出发，而这个数字本身就已经在循环里（尾巴长度为0），第一次比较就会相等吗？为什么？</summary>
+        <div class="reveal">
+          <p>不一定在第一轮就相等——到第一次比较的时候，乌龟已经走了 1 步，兔子已经走了 2 步，所以除非循环长度恰好是 1（比如快乐数的那个 <code>{1}</code> 循环，每一步都停在 1），否则走完第一轮之后它们通常会落在循环里的不同位置。按照第五关的论证，它们仍然保证会在 &lambda; 轮之内相遇——从循环内部出发只是意味着 <code>&mu;=0</code>，所以"最多 &mu;+&lambda; 轮"就变成了"最多 &lambda; 轮"。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么第三关那种"用集合记住一切"的朴素做法，链条越长占用的内存就越多，而龟兔赛跑的做法不会？</summary>
+        <div class="reveal">
+          <p>基于集合的做法会存下它访问过的每一个数字，所以内存占用跟走过的步数成正比——一条走了一百万步的链条，就需要一个最多能装一百万条记录的集合。龟兔赛跑的做法始终只跟踪两个当前位置（<code>slow</code> 和 <code>fast</code>），不管链条最后有多长——它只是不断覆盖旧的位置，而不是把所有位置都存下来，所以内存占用始终保持不变。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：这个算法在检测链表（一串盒子，每个都指向下一个，"next(x)"就是"顺着指针走"）中的循环时非常有名。你会怎么把第四关的快乐数代码改造成适用于链表？</summary>
+        <div class="reveal">
+          <p>算法的整体结构几乎不用变——只是"走一步"的含义变了。不再是用 <code>next_number(x)</code> 计算数字各位平方和，而是用 <code>slow = slow.next</code>，以及（两次）<code>fast = fast.next.next</code>，沿着链表的指针走，而不是套用数学公式。如果链表有循环（某个节点的指针绕回了前面的某个节点，而不是最终指向 <code>None</code>），快指针最终会等于慢指针，跟之前一模一样。如果链表没有循环，快指针就会先到达终点（<code>None</code>），这就告诉你根本不存在循环。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战五（较难）：所有不快乐的数最终都会掉进同一个 8 数字循环 <code>{4, 16, 37, 58, 89, 145, 42, 20}</code>。用第三关的朴素集合方法，你会怎么大致验证"对 1 到 10,000 之间的所有数字来说，这是唯一存在的不快乐循环"？</summary>
+        <div class="reveal">
+          <p>对 1 到 10,000 之间的每一个数字都跑一遍朴素算法（或者龟兔赛跑算法），对每一个结果是不快乐的数，都记录下它最终掉进的那个具体循环（也就是它开始重复时的那组数字）。然后把所有记录下来的循环互相比较一下。如果每一个都恰好是同一组 8 个数字 <code>{4, 16, 37, 58, 89, 145, 42, 20}</code>，这就是很强的经验证据（虽然不是对 10,000 以外的数字的数学证明），说明在这个范围内这是唯一的不快乐循环。这正是程序员几秒钟就能跑出来、而手算要花上很久的那种实验——也正是这个特定的 8 数字循环在快乐数爱好者里这么有名的原因之一。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Floyd 判圈算法（龟兔赛跑）——一种只用常数级额外内存就能检测循环的经典技巧。它出现在链表问题、快乐数这样的数论谜题里，甚至出现在 Pollard's rho 这样的密码学因数分解算法中。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function nextNumber(x){
+    var s = 0;
+    var str = String(x);
+    for (var i = 0; i < str.length; i++){
+      var d = str.charCodeAt(i) - 48;
+      s += d * d;
+    }
+    return s;
+  }
+
+  function findCycle(x0){
+    var slow = nextNumber(x0);
+    var fast = nextNumber(nextNumber(x0));
+    var phase1 = [];
+    var round = 1;
+    phase1.push({ round: round, slow: slow, fast: fast, match: slow === fast });
+    while (slow !== fast){
+      slow = nextNumber(slow);
+      fast = nextNumber(nextNumber(fast));
+      round++;
+      phase1.push({ round: round, slow: slow, fast: fast, match: slow === fast });
+    }
+
+    var finder = x0;
+    var meet = slow;
+    var phase2 = [{ step: 0, finder: finder, other: meet, match: finder === meet }];
+    var mu = 0;
+    while (finder !== meet){
+      finder = nextNumber(finder);
+      meet = nextNumber(meet);
+      mu++;
+      phase2.push({ step: mu, finder: finder, other: meet, match: finder === meet });
+    }
+    var cycleStart = finder;
+
+    var lambda = 1;
+    var p = nextNumber(cycleStart);
+    var phase3 = [{ step: 1, value: p }];
+    while (p !== cycleStart){
+      p = nextNumber(p);
+      lambda++;
+      phase3.push({ step: lambda, value: p });
+    }
+
+    return { mu: mu, lambda: lambda, cycleStart: cycleStart, happy: cycleStart === 1, phase1: phase1, phase2: phase2, phase3: phase3 };
+  }
+
+  function run(){
+    var x0 = parseInt(document.getElementById('inX').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(x0) || x0 < 1 || x0 > 999999999){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请输入一个 1 到 999,999,999 之间的整数。</p></div>';
+      return;
+    }
+
+    var r = findCycle(x0);
+    var html = '';
+
+    html += '<div class="answer-line"><b>' + (r.happy ? '快乐！' : '不快乐') + '</b> &mdash; ' + x0 + ' 最终会在 <b>' + r.cycleStart + '</b> 处绕圈，尾巴长度 &mu;=' + r.mu + '，循环长度 &lambda;=' + r.lambda + '</div>';
+
+    if (r.phase1.length <= 40){
+      html += '<div class="subhead">第一阶段：找到相遇点</div>';
+      html += '<table class="trace"><thead><tr><th>轮次</th><th>slow</th><th>fast</th><th>相等？</th></tr></thead><tbody>';
+      for (var i = 0; i < r.phase1.length; i++){
+        var s = r.phase1[i];
+        html += '<tr><td>' + s.round + '</td><td>' + s.slow + '</td><td>' + s.fast + '</td><td class="' + (s.match ? 'odd' : 'even') + '">' + (s.match ? '是！' : '否') + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    if (r.phase2.length <= 40){
+      html += '<div class="subhead">第二阶段：找到循环的起点</div>';
+      html += '<table class="trace"><thead><tr><th>步数</th><th>finder（从起点出发）</th><th>other（从相遇点出发）</th><th>相等？</th></tr></thead><tbody>';
+      for (var j = 0; j < r.phase2.length; j++){
+        var s2 = r.phase2[j];
+        html += '<tr><td>' + s2.step + '</td><td>' + s2.finder + '</td><td>' + s2.other + '</td><td class="' + (s2.match ? 'odd' : 'even') + '">' + (s2.match ? '是！' : '否') + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    if (r.phase3.length <= 40){
+      html += '<div class="subhead">第三阶段：测量循环</div>';
+      html += '<table class="trace"><thead><tr><th>步数</th><th>数值</th></tr></thead><tbody>';
+      for (var k = 0; k < r.phase3.length; k++){
+        var s3 = r.phase3[k];
+        html += '<tr><td>' + s3.step + '</td><td>' + s3.value + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

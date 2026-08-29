@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ebony and Ivory: Building the Exact Damage Tower (Codeforces 633A)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes (reused here as "reachable height" tiles) ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:44px;text-align:center;}
+  .bit .cell{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:15px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .bit .pw{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);margin-top:3px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 633A &middot; Problem Walkthrough</div>
+      <h1>Ebony and Ivory: <em>Build the Exact Tower</em></h1>
+      <p class="sub">Dante has two guns, Ebony and Ivory. Every Ebony bullet deals <code>a</code> damage, every Ivory bullet deals <code>b</code> damage, and he needs to deal <em>exactly</em> <code>c</code> damage &mdash; no more, no less. We'll figure this out the way an engineer would: by stacking blocks, not by guessing wildly.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Loops &amp; remainders</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">Dante is standing in front of a shield he needs to shatter. He fires bullets from two guns &mdash; Ebony deals <code>a</code> damage per bullet, Ivory deals <code>b</code> damage per bullet &mdash; and he can fire any number of bullets from each gun, including zero. The shield only breaks if the total damage is <strong>exactly</strong> <code>c</code>.</p>
+      <p>So the real question is: can you find two whole numbers <code>x &ge; 0</code> (Ebony shots) and <code>y &ge; 0</code> (Ivory shots) so that <code>a &times; x + b &times; y = c</code>?</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>a=4, b=6, c=15</code> &rarr; <b>No</b> &mdash; nothing works.<br>
+        <code>a=3, b=2, c=7</code> &rarr; <b>Yes</b> &mdash; 1 Ebony + 2 Ivory: 1&times;3 + 2&times;2 = 7.<br>
+        <code>a=6, b=11, c=6</code> &rarr; <b>Yes</b> &mdash; 1 Ebony + 0 Ivory: 1&times;6 + 0&times;11 = 6.</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why not just guess?</div>
+        <p><code>c</code> can be as big as <strong>10,000</strong>, and both <code>a</code> and <code>b</code> can be as small as 1. Randomly trying bullet combinations and hoping one lands on exactly <code>c</code> is not a strategy &mdash; we need a search that's guaranteed to find the answer if one exists, and to know for sure when one doesn't.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Forget the guns &mdash; think LEGO bricks</h2></div>
+      <p class="lead">Here's the exact same puzzle with the demon-hunting removed: you have an unlimited pile of <strong>red bricks</strong> that are <code>a</code> studs tall and <strong>blue bricks</strong> that are <code>b</code> studs tall. Can you stack some number of each (maybe zero of one color) to build a tower that is <em>exactly</em> <code>c</code> studs tall?</p>
+      <p>Try it in your head with red = 3 studs and blue = 2 studs. Can you build height 1? No brick is that short and you can't use a negative number of bricks, so 1 is impossible. Can you build height 4? Yes &mdash; two blue bricks. Height 5? One red + one blue. Height 7? One red + two blue, which is exactly sample 2 above.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">A pattern worth noticing</div>
+        <p>With red = 3 and blue = 2, the only height you can <em>never</em> build is 1. Every height from 2 upward is reachable somehow. Not every pair of brick sizes is this generous, though &mdash; you'll see one that leaves gaps forever in Level 6.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>The wasteful way: try every pair</h2></div>
+      <p class="lead">The most obvious plan: try every possible red-brick count <code>x</code> from 0 up to <code>c</code>, and for each one, try every possible blue-brick count <code>y</code> from 0 up to <code>c</code>, checking whether <code>a&times;x + b&times;y</code> lands exactly on <code>c</code>.</p>
+      <p>That plan works, but it's slow. If <code>a = b = 1</code> and <code>c = 10,000</code>, that's roughly <code>10,001 &times; 10,001</code> pairs to check &mdash; around <strong>100 million</strong> &mdash; just for one test case. We can do dramatically better.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">100,020,001</div><div class="lbl">(x, y) pairs to check, testing every combination the brute-force way</div></div>
+        <div class="stat fast"><div class="num">10,001</div><div class="lbl">values of x to check, using the smarter search from Level 4</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The trick: only guess the red bricks</h2></div>
+      <p class="lead">You never actually need to guess <code>y</code>. Once you've picked how many red bricks (<code>x</code>) to use, the equation <code>a&times;x + b&times;y = c</code> tells you exactly how many blue bricks you'd need:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:17px;">y = (c &minus; a&times;x) / b</p>
+      <p>So for each <code>x</code>, there's only one thing to check: is that division exact (no leftover), and is the result a whole number that's &ge; 0? If yes, you're done. If not, move to the next <code>x</code>.</p>
+
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">pick</div><div class="v">x = 0, 1, 2&hellip;</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>derive</div>
+        <div class="chain-box"><div class="p">check</div><div class="v">(c &minus; a&times;x) % b == 0?</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">Since a &ge; 1, x can only ever range from 0 to c &divide; a &mdash; at most c+1 values, ever, no matter how large b is.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The one sentence that matters most</div>
+        <p>Turning a two-number guessing game into a one-number guessing game (with the second number computed instead of guessed) is the whole trick. You'll see this exact move &mdash; <em>fix one variable, derive the rest</em> &mdash; again and again once you start solving more of these problems.</p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Bonus shortcut (optional but slick)</div>
+        <p>Before looping at all, you can check one thing: if <code>c</code> isn't a multiple of <code>gcd(a, b)</code>, the answer is instantly <b>No</b> &mdash; there is no way to combine a's and b's to reach c, ever. For example, <code>gcd(4, 6) = 2</code>, and 15 isn't a multiple of 2, so sample 1 fails before checking a single x. Curious why this rule is always true? The <a href="max_gcd_en.html">Maximum GCD</a> page explores the gcd side of this idea further.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Here's a clean way to write the Level 4 idea using a <code>for</code> loop over the range of possible x values. Read the code on the left, then the plain-English note on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>tower_height.py</div>
+        <pre><code>a, b, c = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+found = <span class="kw">False</span>
+<span class="kw">for</span> x <span class="kw">in</span> <span class="kw">range</span>(c // a + <span class="nu">1</span>):
+    remainder = c - a * x
+    <span class="kw">if</span> remainder % b == <span class="nu">0</span>:
+        found = <span class="kw">True</span>
+        <span class="kw">break</span>
+
+<span class="kw">print</span>(<span class="st">"Yes"</span> <span class="kw">if</span> found <span class="kw">else</span> <span class="st">"No"</span>)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">found = False</div>
+          <div class="annot-note"><span>Assume it's impossible until we prove otherwise.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for x in range(c // a + 1):</div>
+          <div class="annot-note"><span>Try every red-brick count from 0 up to <b>c // a</b> (integer division). Any higher and a&times;x alone would already overshoot c.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">remainder = c - a * x
+if remainder % b == 0:</div>
+          <div class="annot-note"><span>This is the height Ivory/blue bricks alone would need to cover. If it divides evenly by <b>b</b>, we've found a matching y.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">found = True
+break</div>
+          <div class="annot-note"><span>Success &mdash; no need to try any more x values.</span></div>
+        </div>
+      </div>
+
+      <div class="subhead">Bonus: the same logic in one line</div>
+      <p>Once the idea clicks, you can write the entire search as a single expression using Python's <code>any()</code>:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>tower_height_oneline.py</div>
+        <pre><code>a, b, c = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+ok = <span class="kw">any</span>((c - a * x) % b == <span class="nu">0</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="kw">range</span>(c // a + <span class="nu">1</span>))
+<span class="kw">print</span>(<span class="st">"Yes"</span> <span class="kw">if</span> ok <span class="kw">else</span> <span class="st">"No"</span>)</code></pre>
+      </div>
+      <p><code>any(...)</code> checks a whole list of true/false conditions and returns <code>True</code> the moment it finds one that's true &mdash; which is exactly the "stop as soon as we find a working x" behavior from the loop above, just written more compactly.</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Let's trace it together: a=3, b=2, c=7</h2></div>
+      <p class="lead">Time to run the code by hand on sample 2, where the judge says the answer is <b>Yes</b>. Watch how quickly it finds 1 red brick + 2 blue bricks.</p>
+
+      <table class="trace">
+        <thead><tr><th>x</th><th>a &times; x</th><th>remainder (c &minus; a&times;x)</th><th>remainder % b</th><th>verdict</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>7</td><td class="even">1</td><td>not divisible, try next x</td></tr>
+          <tr><td>1</td><td>3</td><td>4</td><td class="odd">0</td><td><b>Yes! stop here</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">Winner: x = 1, y = 4 &divide; 2 = 2 &rarr; 3&times;1 + 2&times;2 = 7</td></tr></tfoot>
+      </table>
+
+      <p>Only 2 values of <code>x</code> needed checking. Now compare that to a stubborn pair like red = 6, blue = 9: no matter how you combine them, you can never build height 1, 2, 4, or 5 &mdash; those gaps never close, because both brick sizes share a common factor of 3, and every tower you build will always be a multiple of 3. That's the gcd shortcut from Level 4 showing up again.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you drive: try your own a, b, c</h2></div>
+      <p class="lead">Pick any <code>a</code>, <code>b</code> (1 to 100) and <code>c</code> (1 to 10,000). The tool runs the exact same search, shows every round, and also lights up which small heights (0&ndash;19) are reachable at all with your chosen brick sizes.</p>
+
+      <div class="widget">
+        <h3>Tower height checker</h3>
+        <div class="hint">Tip: try a=6, b=9 to see how many small heights stay dark forever, or a=1, b=1, c=10000 to see the search grow to its largest size.</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a (red brick)</label><input type="number" id="inA" value="3" min="1" max="100"></div>
+          <div class="field"><label for="inB">b (blue brick)</label><input type="number" id="inB" value="2" min="1" max="100"></div>
+          <div class="field"><label for="inC">c (target height)</label><input type="number" id="inC" value="7" min="1" max="10000"></div>
+          <div class="field"><button class="btn" id="runBtn">Check the target height</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out on paper first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Can a=5, b=7 build a tower of exactly c=24? Find x and y.</summary>
+        <div class="reveal">
+          <p><code>x=0</code>: remainder 24, 24 % 7 = 3, no. <code>x=1</code>: remainder 19, 19 % 7 = 5, no. <code>x=2</code>: remainder 14, 14 % 7 = 0, <b>yes!</b> So <code>y = 14 / 7 = 2</code>. Check: <code>5&times;2 + 7&times;2 = 10 + 14 = 24</code>. Answer: <b>Yes</b>, with 2 red bricks and 2 blue bricks.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Without checking a single x, can you tell whether a=4, b=6, c=13 is possible?</summary>
+        <div class="reveal">
+          <p>Yes, using the gcd shortcut from Level 4: <code>gcd(4, 6) = 2</code>. Every tower built from 4s and 6s is automatically a multiple of 2, because both bricks are even. But 13 is odd &mdash; not a multiple of 2 &mdash; so the answer is instantly <b>No</b>, no loop required.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why is it safe to search only over x, and never separately over y?</summary>
+        <div class="reveal">
+          <p>Because once <code>a</code>, <code>c</code>, and a chosen <code>x</code> are fixed, the equation <code>a&times;x + b&times;y = c</code> leaves exactly one possible value for <code>y</code>: <code>y = (c &minus; a&times;x) / b</code>. There's nothing left to guess &mdash; either that value is a non-negative whole number, or it isn't. Searching y on its own would just recompute the same single number over and over.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: The judge only wants "Yes"/"No". Can you modify the code to also print the winning x and y?</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>tower_height_pair.py</div>
+            <pre><code>a, b, c = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+<span class="kw">for</span> x <span class="kw">in</span> <span class="kw">range</span>(c // a + <span class="nu">1</span>):
+    remainder = c - a * x
+    <span class="kw">if</span> remainder % b == <span class="nu">0</span>:
+        y = remainder // b
+        <span class="kw">print</span>(<span class="st">"Yes"</span>, x, y)
+        <span class="kw">break</span>
+<span class="kw">else</span>:
+    <span class="kw">print</span>(<span class="st">"No"</span>)</code></pre>
+          </div>
+          <p style="margin-top:12px;">The <code>else</code> attached to the <code>for</code> loop only runs if the loop never hit <code>break</code> &mdash; a neat Python feature for exactly this "did we find it, or did we search everything and come up empty?" pattern.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5 (harder): For a=6, b=9, what's the largest height you can never build, no matter how many bricks you use?</summary>
+        <div class="reveal">
+          <p>Trick question &mdash; there isn't one! Since <code>gcd(6, 9) = 3</code>, every tower you can build is a multiple of 3, and no non-multiple of 3 (like 1, 2, 4, 5, 7, 8, 10&hellip;) is <em>ever</em> reachable, no matter how tall you're allowed to go. The "largest impossible height" trick (the Chicken McNugget / Frobenius idea) only applies when <code>gcd(a, b) = 1</code> &mdash; otherwise, infinitely many heights stay permanently out of reach.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 633A &mdash; Ebony and Ivory. This exact statement, with the exact same constraints and examples, also appears as <a href="ebony_and_ivory_en.html">Codeforces 1036A</a> &mdash; check out that write-up for a coin-and-bills explanation and a different set of practice challenges. The gcd shortcut mentioned above is explored further on the <a href="max_gcd_en.html">Maximum GCD</a> page.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(a, b, c){
+    var rows = [];
+    var x = 0;
+    var found = false, fx = 0, fy = 0;
+    while (a * x <= c){
+      var remainder = c - a * x;
+      var mod = remainder % b;
+      var ok = mod === 0;
+      rows.push({ x: x, ax: a * x, remainder: remainder, mod: mod, ok: ok });
+      if (ok){ found = true; fx = x; fy = remainder / b; break; }
+      x++;
+    }
+    return { rows: rows, found: found, fx: fx, fy: fy };
+  }
+
+  function reachableGrid(a, b, limit){
+    var reachable = new Array(limit + 1).fill(false);
+    for (var x = 0; a * x <= limit; x++){
+      for (var y = 0; a * x + b * y <= limit; y++){
+        reachable[a * x + b * y] = true;
+      }
+    }
+    var html = '<div class="bits">';
+    for (var h = 0; h <= limit; h++){
+      html += '<div class="bit' + (reachable[h] ? ' on' : '') + '"><div class="cell">' + h + '</div><div class="pw">' + (reachable[h] ? 'yes' : '&mdash;') + '</div></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function run(){
+    var a = parseInt(document.getElementById('inA').value, 10);
+    var b = parseInt(document.getElementById('inB').value, 10);
+    var c = parseInt(document.getElementById('inC').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(a) || isNaN(b) || isNaN(c) || a < 1 || a > 100 || b < 1 || b > 100 || c < 1 || c > 10000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>a and b need to be between 1 and 100, and c needs to be between 1 and 10,000.</p></div>';
+      return;
+    }
+
+    var r = solve(a, b, c);
+    var html = '';
+
+    if (r.rows.length <= 40){
+      html += '<table class="trace"><thead><tr><th>x</th><th>a&times;x</th><th>remainder</th><th>remainder % b</th><th>verdict</th></tr></thead><tbody>';
+      for (var i = 0; i < r.rows.length; i++){
+        var row = r.rows[i];
+        var modCell = row.ok ? '<td class="odd">' + row.mod + '</td>' : '<td class="even">' + row.mod + '</td>';
+        var verdict = row.ok ? '<b>Yes! stop here</b>' : 'not divisible, try next x';
+        html += '<tr><td>' + row.x + '</td><td>' + row.ax + '</td><td>' + row.remainder + '</td>' + modCell + '<td>' + verdict + '</td></tr>';
+      }
+      html += '</tbody>';
+      if (r.found){
+        html += '<tfoot><tr><td colspan="5">Winner: x = ' + r.fx + ', y = ' + r.fy + ' &rarr; ' + a + '&times;' + r.fx + ' + ' + b + '&times;' + r.fy + ' = ' + c + '</td></tr></tfoot>';
+      } else {
+        html += '<tfoot><tr><td colspan="5">No x in range worked &rarr; answer is No</td></tr></tfoot>';
+      }
+      html += '</table>';
+    }
+
+    if (r.found){
+      html += '<div class="answer-line"><b>Yes</b> &mdash; ' + r.fx + ' red brick' + (r.fx === 1 ? '' : 's') + ' + ' + r.fy + ' blue brick' + (r.fy === 1 ? '' : 's') + ' = ' + (a * r.fx) + ' + ' + (b * r.fy) + ' = ' + c + '</div>';
+    } else {
+      html += '<div class="answer-line"><b>No</b> &mdash; no combination of red and blue bricks builds exactly height ' + c + '</div>';
+    }
+
+    var fastChecks = r.rows.length;
+    var slowChecks = (Math.floor(c / a) + 1) * (Math.floor(c / b) + 1);
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowChecks.toLocaleString() + '</div><div class="lbl">(x, y) pairs, brute force</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastChecks.toLocaleString() + '</div><div class="lbl">values of x actually checked</div></div>' +
+    '</div>';
+
+    html += '<div class="subhead">First 20 heights (0&ndash;19): which are reachable with a=' + a + ', b=' + b + '?</div>';
+    html += reachableGrid(a, b, 19);
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

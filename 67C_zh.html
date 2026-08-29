@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>珠串变形记：用最少时间改好项链（Codeforces 67C）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Toolkit chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin:22px 0;}
+  .chain-box{flex:1 1 140px;min-width:130px;text-align:center;padding:14px 10px;border-radius:var(--radius);background:var(--paper-raised);border:1px solid var(--line);box-shadow:var(--shadow);}
+  .chain-box .p{font-family:var(--font-stamp);font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-strong);}
+  .chain-box .v{font-family:var(--font-mono);font-size:14px;color:var(--ink-soft);margin-top:6px;}
+
+  /* ---------- Ball beads ---------- */
+  .beads{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .bead{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .bead.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bead.gone{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);text-decoration:line-through;opacity:.7;}
+  .bead.new{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+  .dp-table{overflow-x:auto;margin:18px 0;}
+  table.dpgrid{border-collapse:collapse;font-family:var(--font-mono);font-size:13px;background:var(--paper-raised);border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.dpgrid th, table.dpgrid td{border:1px solid var(--line);padding:8px 10px;text-align:center;min-width:36px;}
+  table.dpgrid th{background:var(--paper-raised-2);color:var(--ink-soft);font-weight:700;}
+  table.dpgrid td.win{background:var(--accent-soft);color:var(--accent-strong);font-weight:800;}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:220px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 67C &middot; 题目精讲</div>
+      <h1>珠串变形记：<em>用最少时间改好项链</em></h1>
+      <p class="sub">你有一串带字母标签的珠子 <code>A</code>，想把它变成另一串珠子 <code>B</code>。你有四种工具——插入、删除、替换、交换相邻两颗珠子——每种工具花费的时间都不一样。怎样才能用最少的总时间，把 <code>A</code> 变成 <code>B</code>？</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">动态规划</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">想象一串穿着字母珠子的项链——这就是序列 <code>A</code>。老师要求你把它变成另一串项链 <code>B</code>，只能用下面这四种工具：</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">插入</div><div class="v">在任意位置加一颗珠子——花费 t<sub>i</sub></div></div>
+        <div class="chain-box"><div class="p">删除</div><div class="v">拿掉任意一颗珠子——花费 t<sub>d</sub></div></div>
+        <div class="chain-box"><div class="p">替换</div><div class="v">给任意珠子换个字母——花费 t<sub>r</sub></div></div>
+        <div class="chain-box"><div class="p">交换</div><div class="v">交换相邻两颗珠子的位置——花费 t<sub>e</sub></div></div>
+      </div>
+
+      <p>四种工具可以任意顺序、任意次数使用。问题说起来很简单，做起来却出乎意料地难：<strong>把 A 变成 B，最少要花多少时间？</strong></p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>t_i=1, t_d=1, t_r=1, t_e=1</code>，A=<code>youshouldnot</code>，B=<code>thoushaltnot</code> &rarr; <b>5</b><br>
+        <code>t_i=2, t_d=4, t_r=10, t_e=3</code>，A=<code>ab</code>，B=<code>ba</code> &rarr; <b>3</b><br>
+        <code>t_i=1, t_d=10, t_r=20, t_e=30</code>，A=<code>a</code>，B=<code>za</code> &rarr; <b>1</b></p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">提醒一下：这题真的不容易</div>
+        <p>这是整个系列里最硬核的一道——字符串长度可以到 <strong>4,000 颗珠子</strong>，把每一种操作顺序都试一遍完全不现实。我们会把这个想法拆成很小的几步、一点一点搭起来，如果一开始觉得信息量大也别担心，讲到最后自然就通了。</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">题目悄悄保证的一条规则</div>
+        <p>题目还告诉你 <code>2&times;t_e &ge; t_i + t_d</code> 永远成立。先把这条记在心里——它其实正是让这道题能被解出来的关键。第五关会揭晓为什么。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>热身：先只用插入和删除</h2></div>
+      <p class="lead">先把替换和交换放一边，假装手上只有插入和删除两种工具。样例三正好是个好例子：<code>A = "a"</code>，<code>B = "za"</code>，<code>t_i=1</code>，<code>t_d=10</code>。</p>
+
+      <div class="beads">
+        <div class="bead new">z</div><div class="bead hi">a</div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">'a' 这颗珠子本来就已经在正确的位置上——只需要在它前面插入一颗 'z'。</p>
+
+      <p>笨办法是：先删掉 'a'（花费 10），再插入 'z' 和一颗新的 'a'（花费 1+1=2），一共 12。但仔细看——<code>A</code> 里的 'a' 相对 <code>B</code> 来说，其实<em>已经在正确的位置上了</em>！根本不用动它。只要在它前面插入一颗 'z'，总花费只要 <b>1</b>——正好是题目给出的答案。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">核心想法</div>
+        <p>解这类问题的聪明做法，是先想清楚哪些珠子可以<strong>原封不动地留着</strong>，只为真正需要改动的珠子付出代价。也就是从头开始，一颗一颗地对比 <code>A</code> 和 <code>B</code>：这颗珠子已经对上了吗，还是需要用工具？</p>
+      </div>
+
+      <p>为了同时记录"A 用掉了多少颗"和"B 已经搭出了多少颗"，我们可以搭一张网格：行数表示已经处理了 <code>A</code> 的多少颗珠子，列数表示已经搭出了 <code>B</code> 的多少颗珠子。每个格子存的是走到这一步的最小花费。这种"用网格搭答案"的技巧有个名字：<strong>动态规划</strong>——把一个大问题拆成许多更小的、已经解决过的小问题来组合出答案。</p>
+
+      <p>只用插入和删除时，格子 <code>(i, j)</code>（意思是"A 的前 i 颗珠子变成 B 的前 j 颗珠子"）的规则是：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">如果 A[i&minus;1] == B[j&minus;1]：dp[i][j] = dp[i&minus;1][j&minus;1] <span style="color:var(--ink-soft);">（免费——本来就对上了）</span><br>
+      否则：dp[i][j] = min(dp[i&minus;1][j] + t_d, dp[i][j&minus;1] + t_i)</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>加上替换：经典的"编辑距离"</h2></div>
+      <p class="lead">现在把第三种工具请回来：替换。如果当前两颗珠子对不上，与其删掉一颗再插入另一颗（两次操作），不如直接原地换个标签（一次操作），花费 <code>t_r</code>。有时候这样更划算，有时候不是——网格会自动算出哪种更便宜。</p>
+
+      <p>规则只多了一个选项：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">dp[i][j] = min(<br>
+        &nbsp;&nbsp;dp[i&minus;1][j] + t_d,&nbsp;&nbsp;<span style="color:var(--ink-soft);">删掉 A 的珠子</span><br>
+        &nbsp;&nbsp;dp[i][j&minus;1] + t_i,&nbsp;&nbsp;<span style="color:var(--ink-soft);">插入 B 的珠子</span><br>
+        &nbsp;&nbsp;dp[i&minus;1][j&minus;1] + (0 或 t_r，取决于 A[i&minus;1]==B[j&minus;1] 是否成立)&nbsp;&nbsp;<span style="color:var(--ink-soft);">保留或替换</span><br>
+        )</p>
+
+      <div class="callout fact">
+        <div class="ctitle">你其实早就见过它的"名门表亲"</div>
+        <p>当 <code>t_i = t_d = t_r = 1</code> 时，这张网格算出来的东西有个正式名字：<strong>莱文斯坦距离</strong>（也叫"编辑距离"）——拼写检查、"你是不是想输入……"提示背后用的就是这个想法，用来衡量两个单词有多不一样。样例一（<code>youshouldnot</code> &rarr; <code>thoushaltnot</code>，所有花费都是 1）其实就是一道披着外壳的编辑距离题，答案正好是 <b>5</b>。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>特殊招式：交换相邻珠子</h2></div>
+      <p class="lead">这道题真正有意思的地方来了。看样例二：<code>A = "ab"</code>，<code>B = "ba"</code>，<code>t_i=2, t_d=4, t_r=10, t_e=3</code>。</p>
+
+      <div class="beads">
+        <div class="bead hi">a</div><div class="bead hi">b</div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin:-8px 0 18px;">要变成</p>
+      <div class="beads">
+        <div class="bead hi">b</div><div class="bead hi">a</div>
+      </div>
+
+      <p>只用前三种工具的话，最便宜的方案是：从前面删掉 'a'（花费 4），再在末尾插入一颗新的 'a'（花费 2）——总共 <b>6</b>。把两颗珠子都换个标签要花 <code>2 &times; 10 = 20</code>，更贵。但还有一招，前面两种方案都没想到：直接<strong>原地交换这两颗珠子</strong>。这只是一次交换，花费 <code>t_e = 3</code>——只要删除加插入方案的一半价钱！</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目笔记原文</div>
+        <p>"在第二个样例中，你可以从第一个位置删掉标记为 'a' 的珠子，再在新的第二个位置插入另一颗 'a'，总时间为 6。但是交换这两颗珠子的总时间是 3。"</p>
+      </div>
+
+      <p>所以网格需要第四个选项，但它只在一种非常特定的情况下才适用：目前用到的 <code>A</code> 那一段的<em>最后两颗珠子</em>，正好是目前搭出的 <code>B</code> 那一段<em>最后两颗珠子</em>的镜像。用符号写出来，对于格子 <code>(i, j)</code>，当 <code>i &ge; 2</code> 且 <code>j &ge; 2</code> 时：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">如果 A[i&minus;1] == B[j&minus;2] 且 A[i&minus;2] == B[j&minus;1]：<br>
+      &nbsp;&nbsp;还可以考虑 dp[i&minus;2][j&minus;2] + t_e</p>
+      <p>"ab" 变 "ba" 的最后一个格子正好符合这个条件：A 的最后一颗珠子（'b'）等于 B 的倒数第二颗（'b'），A 的倒数第二颗（'a'）等于 B 的最后一颗（'a'）。这正是一次完美的相邻交换。</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>完整配方（以及那条奇怪的规则）</h2></div>
+      <p class="lead">把四种工具全部合在一起，每个格子 <code>(i, j)</code> 的完整规则是：</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:14.5px;">dp[0][0] = 0<br>
+      dp[i][0] = i &times; t_d&nbsp;&nbsp;<span style="color:var(--ink-soft);">（全部删掉）</span>&nbsp;&nbsp;&nbsp;&nbsp;dp[0][j] = j &times; t_i&nbsp;&nbsp;<span style="color:var(--ink-soft);">（全部插入）</span><br><br>
+      dp[i][j] = 以下几项取最小：<br>
+      &nbsp;&nbsp;dp[i&minus;1][j] + t_d&nbsp;&nbsp;<span style="color:var(--ink-soft);">删除</span><br>
+      &nbsp;&nbsp;dp[i][j&minus;1] + t_i&nbsp;&nbsp;<span style="color:var(--ink-soft);">插入</span><br>
+      &nbsp;&nbsp;dp[i&minus;1][j&minus;1] + (0 或 t_r)&nbsp;&nbsp;<span style="color:var(--ink-soft);">保留 / 替换</span><br>
+      &nbsp;&nbsp;dp[i&minus;2][j&minus;2] + t_e&nbsp;&nbsp;<span style="color:var(--ink-soft);">交换（仅当交叉图案匹配，且 i,j &ge; 2）</span></p>
+
+      <p>最终答案就是 <code>dp[len(A)][len(B)]</code>。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">为什么 2&times;t_e &ge; t_i + t_d 这么重要？</div>
+        <p>我们的配方每一步只交换<em>一对</em>相邻珠子。但如果交换特别便宜呢？比如 <code>t_e = 1</code>，而 <code>t_i = t_d = 10</code>。那你就可以用两次便宜的交换（花费 2），把一颗珠子"月球漫步"般挪动两个位置，而不是花费 20 去删除再插入——而且这颗珠子还能继续这样一步步挪得更远，几乎不花什么钱。我们这个简单的配方从来没考虑过这种"连环交换"，所以算出来的答案会偏贵——是错的。</p>
+        <p>而 <code>2&times;t_e &ge; t_i + t_d</code> 这条保证，恰好排除了这种情况。它意味着<em>两次</em>交换（花费 <code>2&times;t_e</code>）永远不会比一次删除加一次插入（花费 <code>t_i + t_d</code>）更便宜。所以连环交换去把一颗珠子挪得很远，永远不划算——单独一次相邻交换，就是你能占到的最大便宜了。这正是让"每一步只考虑一次交换"的配方值得信赖、能给出真正最小值的原因。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>用 Python 把它写出来</h2></div>
+      <p class="lead">下面是把第五关的配方直接翻译成代码，一行一行地把整张网格搭出来。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sequence_of_balls.py</div>
+        <pre><code>ti, td, tr, te = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+A = <span class="kw">input</span>()
+B = <span class="kw">input</span>()
+n, m = <span class="kw">len</span>(A), <span class="kw">len</span>(B)
+
+dp = [[<span class="nu">0</span>] * (m + <span class="nu">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(n + <span class="nu">1</span>)]
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    dp[i][<span class="nu">0</span>] = i * td
+<span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, m + <span class="nu">1</span>):
+    dp[<span class="nu">0</span>][j] = j * ti
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, m + <span class="nu">1</span>):
+        cost_replace = <span class="nu">0</span> <span class="kw">if</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">1</span>] <span class="kw">else</span> tr
+        best = <span class="kw">min</span>(
+            dp[i - <span class="nu">1</span>][j] + td,
+            dp[i][j - <span class="nu">1</span>] + ti,
+            dp[i - <span class="nu">1</span>][j - <span class="nu">1</span>] + cost_replace,
+        )
+        <span class="kw">if</span> (i &gt;= <span class="nu">2</span> <span class="kw">and</span> j &gt;= <span class="nu">2</span>
+                <span class="kw">and</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">2</span>]
+                <span class="kw">and</span> A[i - <span class="nu">2</span>] == B[j - <span class="nu">1</span>]):
+            best = <span class="kw">min</span>(best, dp[i - <span class="nu">2</span>][j - <span class="nu">2</span>] + te)
+        dp[i][j] = best
+
+<span class="kw">print</span>(dp[n][m])</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">dp = [[0] * (m + 1) for _ in range(n + 1)]</div>
+          <div class="annot-note"><span>一张 (n+1) 行、(m+1) 列的网格——多出来的那一行一列表示"还没用到任何珠子"。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">dp[i][0] = i * td
+dp[0][j] = j * ti</div>
+          <div class="annot-note"><span>网格的边界：把 i 颗珠子变成什么都没有，就要把它们全删光；把什么都没有变成 j 颗珠子，就要全部插入。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">cost_replace = 0 if A[i-1] == B[j-1] else tr</div>
+          <div class="annot-note"><span>如果两颗珠子已经一样，"替换"就是免费的——什么都不用做。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">best = min(delete, insert, keep/replace)</div>
+          <div class="annot-note"><span>三个"普通"选项，跟第三关的配方一模一样。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if ... A[i-1]==B[j-2] and A[i-2]==B[j-1]:
+    best = min(best, dp[i-2][j-2] + te)</div>
+          <div class="annot-note"><span>第四关那个特殊的第四选项——只有在最后两颗珠子正好交叉对称时才会被检查。</span></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">关于"变大"的提醒</div>
+        <p>字符串长度最多可以到 4,000，也就是大约 1600 万个网格格子。对 C++ 这样的快语言没问题，但纯 Python 会明显感觉到吃力。如果要处理最大规模的数据，下面这个技巧只在内存里保留两行网格，而不是整张网格——因为网格永远只往前看一行和两行，剩下的完全不需要留着。</p>
+      </div>
+
+      <div class="subhead">加餐：省内存的"滚动数组"写法</div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sequence_of_balls_rolling.py</div>
+        <pre><code>ti, td, tr, te = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+A = <span class="kw">input</span>()
+B = <span class="kw">input</span>()
+n, m = <span class="kw">len</span>(A), <span class="kw">len</span>(B)
+
+prev2 = [<span class="nu">0</span>] * (m + <span class="nu">1</span>)              <span class="cm"># 第 i-2 行</span>
+prev1 = [j * ti <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(m + <span class="nu">1</span>)]  <span class="cm"># 第 i-1 行（一开始就是第 0 行）</span>
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    curr = [<span class="nu">0</span>] * (m + <span class="nu">1</span>)
+    curr[<span class="nu">0</span>] = i * td
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, m + <span class="nu">1</span>):
+        cost_replace = <span class="nu">0</span> <span class="kw">if</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">1</span>] <span class="kw">else</span> tr
+        best = <span class="kw">min</span>(prev1[j] + td, curr[j - <span class="nu">1</span>] + ti, prev1[j - <span class="nu">1</span>] + cost_replace)
+        <span class="kw">if</span> (i &gt;= <span class="nu">2</span> <span class="kw">and</span> j &gt;= <span class="nu">2</span>
+                <span class="kw">and</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">2</span>]
+                <span class="kw">and</span> A[i - <span class="nu">2</span>] == B[j - <span class="nu">1</span>]):
+            best = <span class="kw">min</span>(best, prev2[j - <span class="nu">2</span>] + te)
+        curr[j] = best
+    prev2, prev1 = prev1, curr
+
+<span class="kw">print</span>(prev1[m])</code></pre>
+      </div>
+      <p>不再保留一整张巨大的网格，而是只留最近算完的两行（<code>prev2</code>，往前两行；<code>prev1</code>，往前一行），再加上正在搭的这一行（<code>curr</code>）。一行搭完之后，就往下挪一格，变成下一轮的"前一行"。</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>一起手把手推演一遍：样例二</h2></div>
+      <p class="lead">现在亲手把整张网格填出来：<code>A = "ab"</code>，<code>B = "ba"</code>，<code>t_i=2, t_d=4, t_r=10, t_e=3</code>。网格只有 3&times;3，正好可以完整走一遍。</p>
+
+      <div class="dp-table">
+        <table class="dpgrid">
+          <thead>
+            <tr><th></th><th>&#8709;</th><th>b</th><th>a</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>&#8709;</th><td>0</td><td>2</td><td>4</td></tr>
+            <tr><th>a</th><td>4</td><td>6</td><td>2</td></tr>
+            <tr><th>b</th><td>8</td><td>4</td><td class="win">3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>表头上方拼出的是 <code>B = "ba"</code>，左侧拼出的是 <code>A = "ab"</code>。挑几个格子仔细看看：</p>
+
+      <table class="trace">
+        <thead><tr><th>格子 (i, j)</th><th>含义</th><th>推算过程</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>(1, 1)</td><td>"a" &rarr; "b"</td><td>对不上：min(删除 2+4=6，插入 4+2=6，替换 0+10=10)</td><td class="even">6</td></tr>
+          <tr><td>(1, 2)</td><td>"a" &rarr; "ba"</td><td>A[0]='a' 正好等于 "ba" 的最后一个字符 'a'，直接沿用 dp[0][1] + 0</td><td class="odd">2</td></tr>
+          <tr><td>(2, 1)</td><td>"ab" &rarr; "b"</td><td>A[1]='b' 正好等于 "b" 的最后一个字符 'b'，直接沿用 dp[1][0] + 0</td><td class="odd">4</td></tr>
+          <tr><td>(2, 2)</td><td>"ab" &rarr; "ba"</td><td>对不上，但出现了交叉配对——交换获胜：dp[0][0] + 3 = 3</td><td class="odd">3</td></tr>
+        </tbody>
+      </table>
+
+      <p>最重要的是右下角那个格子，<code>dp[2][2] = 3</code>。它的四个候选值分别是 16（两个都替换）、6（先删再插）、6（先插再删），以及交换选项 <code>dp[0][0] + t_e = 0 + 3 = 3</code>——交换直接胜出，因为 A 的最后一颗珠子（'b'）等于 B 的倒数第二颗（'b'），A 的倒数第二颗（'a'）等于 B 的最后一颗（'a'）：正好是一次完美的交叉配对。这正是题目给出的答案：<b>3</b>。</p>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>该你上场了：换成你自己的花费和字符串</h2></div>
+      <p class="lead">输入四种花费，再输入两个短字符串（这里限制得比较短，好让整张网格能显示在屏幕上——正式题目允许每个字符串最多 4,000 颗珠子）。</p>
+
+      <div class="widget">
+        <h3>项链改造花费计算器</h3>
+        <div class="hint">小提示：可以试试上面的三个官方样例，或者把 t_e 设得比 t_i 和 t_d 小很多，看看交换能赢多少。</div>
+        <div class="field-row">
+          <div class="field"><label for="inTi">t_i（插入）</label><input type="number" id="inTi" value="2" min="1" max="100"></div>
+          <div class="field"><label for="inTd">t_d（删除）</label><input type="number" id="inTd" value="4" min="1" max="100"></div>
+          <div class="field"><label for="inTr">t_r（替换）</label><input type="number" id="inTr" value="10" min="1" max="100"></div>
+          <div class="field"><label for="inTe">t_e（交换）</label><input type="number" id="inTe" value="3" min="1" max="100"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="inA">A</label><input type="text" class="wide" id="inA" value="ab" maxlength="16"></div>
+          <div class="field"><label for="inB">B</label><input type="text" class="wide" id="inB" value="ba" maxlength="16"></div>
+          <div class="field"><button class="btn" id="runBtn">计算最小花费</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>该你练习了</h2></div>
+      <p class="lead">先自己在纸上算出来，再用上面的工具验证。</p>
+
+      <details>
+        <summary>挑战一：A="ab"，B="ba"，四种花费都等于 1。最小花费是多少？</summary>
+        <div class="reveal">
+          <p>把同样的 3&times;3 网格用花费全为 1 重新填一遍：dp[1][1]=1（替换），dp[1][2]=1（'a' 正好对上 "ba" 里的 'a'），dp[2][1]=1（'b' 正好对上 "ab" 里的 'b'），最后 dp[2][2] = min(替换：1+1=2，先删再插：1+1=2，先插再删：1+1=2，<b>交换：dp[0][0]+1 = 1</b>)。交换又一次胜出——答案是 <b>1</b>。注意这正是第五关那条规则的边界情况：<code>2&times;t_e = 2</code>，<code>t_i+t_d = 2</code>，两边正好相等——规则允许取等号，不只是严格小于。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：A="cat"，B="cot"，t_i=t_d=t_r=1（t_e 这里用不上）。最小花费是多少？</summary>
+        <div class="reveal">
+          <p>'c' 对上 'c'，'t' 对上 't'——只有中间那颗珠子不一样（'a' 对 'o'），而且完全没有出现交叉配对可以让交换派上用场。一次替换就能搞定。最小花费：<b>1</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么交换选项只会去看 A[i&minus;1]、A[i&minus;2]、B[j&minus;1]、B[j&minus;2]——也就是各自前缀的最后两颗珠子——而不是检查字符串里任意两颗珠子？</summary>
+        <div class="reveal">
+          <p>因为 dp[i][j] 的定义就是"把 A 的<em>前 i 颗</em>珠子变成 B 的<em>前 j 颗</em>珠子的最便宜方式"——它是从左到右、一个前缀一个前缀搭起来的。填 dp[i][j] 的每一个选项，都必须能接回到某个更小的、已经算好的前缀问题。一次刚好在 (i, j) 这里完成的交换，只可能牵扯到这个前缀边界处的那两颗珠子——字符串里更早的部分，在算更小的子问题时早就已经决定好了。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：假设（只是假设！）t_e=1，而 t_i=t_d=10，这就打破了 2&times;t_e &ge; t_i+t_d 这条规则。用你自己的话解释一下，为什么第五关的配方在这种情况下可能算错。</summary>
+        <div class="reveal">
+          <p>交换这么便宜的话，你可以用两次交换把一颗珠子挪动两个位置，总花费只要 2——比删掉再重新插入（花费 20）便宜得多。这颗珠子甚至可以一次又一次地交换，几乎不花什么钱地"挪"过很长的距离。我们的配方每个格子只考虑<em>一次</em>相邻交换，没办法表示一颗珠子通过一连串交换挪动很远这种情况。所以在这个假设的世界里，真正的最小花费可能比配方算出来的低得多——配方算出来的答案会是错的。这正是题目为什么要保证 <code>2&times;t_e &ge; t_i+t_d</code>：它让"连环交换"永远不划算，这样每个格子只考虑一次交换就已经足够了。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战五（较难）：修改第六关的代码，让它也打印出在最后一个格子（dp[n][m]）达到最优答案时，用到的是四种工具里的哪一种。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sequence_of_balls_trace.py</div>
+            <pre><code>i, j = n, m
+cost_replace = <span class="nu">0</span> <span class="kw">if</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">1</span>] <span class="kw">else</span> tr
+options = {
+    <span class="st">"delete"</span>: dp[i - <span class="nu">1</span>][j] + td,
+    <span class="st">"insert"</span>: dp[i][j - <span class="nu">1</span>] + ti,
+    <span class="st">"keep/replace"</span>: dp[i - <span class="nu">1</span>][j - <span class="nu">1</span>] + cost_replace,
+}
+<span class="kw">if</span> (i &gt;= <span class="nu">2</span> <span class="kw">and</span> j &gt;= <span class="nu">2</span>
+        <span class="kw">and</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">2</span>]
+        <span class="kw">and</span> A[i - <span class="nu">2</span>] == B[j - <span class="nu">1</span>]):
+    options[<span class="st">"swap"</span>] = dp[i - <span class="nu">2</span>][j - <span class="nu">2</span>] + te
+
+winner = <span class="kw">min</span>(options, key=options.get)
+<span class="kw">print</span>(<span class="st">"Last tool used:"</span>, winner, <span class="st">"costing"</span>, options[winner])</code></pre>
+          </div>
+          <p style="margin-top:12px;">如果在<em>每一个</em>格子都这样做（不只是最后一个），并且记住每次是哪个选项赢了，就能把<em>完整的</em>操作序列还原出来，而不只是知道总花费。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 67C &mdash; Sequence of Balls。这道题是拼写检查、DNA 序列比对工具背后常用的经典编辑距离（莱文斯坦距离）算法的加权、带相邻交换的进阶版本。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(ti, td, tr, te, A, B){
+    var n = A.length, m = B.length;
+    var dp = [];
+    for (var i = 0; i <= n; i++){ dp.push(new Array(m + 1).fill(0)); }
+    for (i = 1; i <= n; i++){ dp[i][0] = i * td; }
+    for (var j = 1; j <= m; j++){ dp[0][j] = j * ti; }
+
+    for (i = 1; i <= n; i++){
+      for (j = 1; j <= m; j++){
+        var costReplace = (A[i - 1] === B[j - 1]) ? 0 : tr;
+        var best = Math.min(dp[i - 1][j] + td, dp[i][j - 1] + ti, dp[i - 1][j - 1] + costReplace);
+        if (i >= 2 && j >= 2 && A[i - 1] === B[j - 2] && A[i - 2] === B[j - 1]){
+          var swapVal = dp[i - 2][j - 2] + te;
+          if (swapVal < best){ best = swapVal; }
+        }
+        dp[i][j] = best;
+      }
+    }
+    return dp;
+  }
+
+  function run(){
+    var ti = parseInt(document.getElementById('inTi').value, 10);
+    var td = parseInt(document.getElementById('inTd').value, 10);
+    var tr = parseInt(document.getElementById('inTr').value, 10);
+    var te = parseInt(document.getElementById('inTe').value, 10);
+    var A = document.getElementById('inA').value;
+    var B = document.getElementById('inB').value;
+    var out = document.getElementById('out');
+
+    if ([ti, td, tr, te].some(function(v){ return isNaN(v) || v < 1 || v > 100; })){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>四种花费都需要是 1 到 100 之间的整数。</p></div>';
+      return;
+    }
+    if (A.length < 1 || B.length < 1){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>A 和 B 都至少要有一颗珠子。</p></div>';
+      return;
+    }
+
+    var dp = solve(ti, td, tr, te, A, B);
+    var n = A.length, m = B.length;
+    var html = '';
+
+    html += '<div class="dp-table"><table class="dpgrid"><thead><tr><th></th><th>&#8709;</th>';
+    for (var j = 0; j < m; j++){ html += '<th>' + B[j] + '</th>'; }
+    html += '</tr></thead><tbody>';
+    for (var i = 0; i <= n; i++){
+      html += '<tr><th>' + (i === 0 ? '&#8709;' : A[i - 1]) + '</th>';
+      for (j = 0; j <= m; j++){
+        var isWin = (i === n && j === m);
+        html += '<td' + (isWin ? ' class="win"' : '') + '>' + dp[i][j] + '</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+
+    html += '<div class="answer-line"><b>最小花费：' + dp[n][m] + '</b>，把 "' + A + '" 变成 "' + B + '"</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

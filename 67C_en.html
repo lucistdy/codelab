@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sequence of Balls: The Cheapest Way to Rebuild a Necklace (Codeforces 67C)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Toolkit chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin:22px 0;}
+  .chain-box{flex:1 1 140px;min-width:130px;text-align:center;padding:14px 10px;border-radius:var(--radius);background:var(--paper-raised);border:1px solid var(--line);box-shadow:var(--shadow);}
+  .chain-box .p{font-family:var(--font-stamp);font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-strong);}
+  .chain-box .v{font-family:var(--font-mono);font-size:14px;color:var(--ink-soft);margin-top:6px;}
+
+  /* ---------- Ball beads ---------- */
+  .beads{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .bead{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .bead.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .bead.gone{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);text-decoration:line-through;opacity:.7;}
+  .bead.new{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+  .dp-table{overflow-x:auto;margin:18px 0;}
+  table.dpgrid{border-collapse:collapse;font-family:var(--font-mono);font-size:13px;background:var(--paper-raised);border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.dpgrid th, table.dpgrid td{border:1px solid var(--line);padding:8px 10px;text-align:center;min-width:36px;}
+  table.dpgrid th{background:var(--paper-raised-2);color:var(--ink-soft);font-weight:700;}
+  table.dpgrid td.win{background:var(--accent-soft);color:var(--accent-strong);font-weight:800;}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:220px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 67C &middot; Problem Walkthrough</div>
+      <h1>Sequence of Balls: <em>Rebuild the Necklace, Cheaply</em></h1>
+      <p class="sub">You have a string of lettered balls, <code>A</code>, and you want to turn it into a different string of balls, <code>B</code>. You have four tools &mdash; insert, delete, replace, and swap two neighbors &mdash; and each one costs a different amount of time. What's the cheapest possible way to get from <code>A</code> to <code>B</code>?</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Dynamic programming</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">Picture a string of lettered balls threaded on a necklace &mdash; that's sequence <code>A</code>. Your teacher wants you to turn it into a different necklace, <code>B</code>, using exactly four tools:</p>
+
+      <div class="chain">
+        <div class="chain-box"><div class="p">Insert</div><div class="v">add any ball anywhere &mdash; costs t<sub>i</sub></div></div>
+        <div class="chain-box"><div class="p">Delete</div><div class="v">remove any ball &mdash; costs t<sub>d</sub></div></div>
+        <div class="chain-box"><div class="p">Replace</div><div class="v">relabel any ball &mdash; costs t<sub>r</sub></div></div>
+        <div class="chain-box"><div class="p">Exchange</div><div class="v">swap two neighboring balls &mdash; costs t<sub>e</sub></div></div>
+      </div>
+
+      <p>You can use any tool as many times as you like, in any order. The question is simple to state and surprisingly tricky to answer: <strong>what's the minimum total time to turn A into B?</strong></p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>t_i=1, t_d=1, t_r=1, t_e=1</code>, A=<code>youshouldnot</code>, B=<code>thoushaltnot</code> &rarr; <b>5</b><br>
+        <code>t_i=2, t_d=4, t_r=10, t_e=3</code>, A=<code>ab</code>, B=<code>ba</code> &rarr; <b>3</b><br>
+        <code>t_i=1, t_d=10, t_r=20, t_e=30</code>, A=<code>a</code>, B=<code>za</code> &rarr; <b>1</b></p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Heads up: this one's a real challenge</div>
+        <p>This is one of the hardest problems in this whole series &mdash; strings can be up to <strong>4,000 balls long</strong>, so trying every possible sequence of moves is completely out of the question. We're going to build up the idea slowly, one small piece at a time, so don't worry if it feels like a lot at first. By the end, it'll click.</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">One rule the judge quietly guarantees</div>
+        <p>You're also told that <code>2&times;t_e &ge; t_i + t_d</code> always holds. Keep that fact in your back pocket &mdash; it turns out to be the exact thing that makes this problem solvable at all. We'll see why in Level 5.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Warm-up: just insert and delete</h2></div>
+      <p class="lead">Let's ignore replace and swap for a moment and pretend you only have two tools: insert and delete. Sample 3 is a perfect example: <code>A = "a"</code>, <code>B = "za"</code>, with <code>t_i=1</code> and <code>t_d=10</code>.</p>
+
+      <div class="beads">
+        <div class="bead new">z</div><div class="bead hi">a</div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">The 'a' ball is already exactly where it needs to be &mdash; only a 'z' needs to be inserted in front of it.</p>
+
+      <p>The clumsy plan would be: delete the 'a' (cost 10), then insert 'z' and a fresh 'a' (cost 1+1=2), for a total of 12. But look closer &mdash; the 'a' in <code>A</code> is <em>already sitting in the right spot</em> relative to <code>B</code>! You don't need to touch it at all. Just insert a 'z' in front of it, for a total cost of just <b>1</b> &mdash; exactly what the judge expects.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The big idea</div>
+        <p>The smart way to solve these problems is to figure out which balls you can <strong>leave alone</strong>, and only pay for the balls that actually need to change. That means comparing <code>A</code> and <code>B</code> ball by ball, from the front, and asking: "does this next ball already match, or do I need a tool?"</p>
+      </div>
+
+      <p>To track "how much of A have I processed" and "how much of B have I built so far" at the same time, we'll build a grid: rows count how many balls of <code>A</code> we've consumed, columns count how many balls of <code>B</code> we've built. Each cell will hold the cheapest cost to get that far. This kind of grid-building technique has a name: <strong>dynamic programming</strong> &mdash; solving a big problem by combining answers to smaller versions of itself.</p>
+
+      <p>With only insert and delete, the rule for filling cell <code>(i, j)</code> &mdash; meaning "the first <code>i</code> balls of A turned into the first <code>j</code> balls of B" &mdash; is:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">if A[i&minus;1] == B[j&minus;1]: dp[i][j] = dp[i&minus;1][j&minus;1] <span style="color:var(--ink-soft);">(free &mdash; they already match)</span><br>
+      else: dp[i][j] = min(dp[i&minus;1][j] + t_d, dp[i][j&minus;1] + t_i)</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Adding replace: the classic "edit distance"</h2></div>
+      <p class="lead">Now bring back the third tool: replace. If the current balls don't match, instead of deleting one and inserting a different one (two operations), you could just relabel the ball in place (one operation) for cost <code>t_r</code>. Sometimes that's cheaper, sometimes it isn't &mdash; the grid figures out which, automatically.</p>
+
+      <p>The rule grows by exactly one option:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">dp[i][j] = min(<br>
+        &nbsp;&nbsp;dp[i&minus;1][j] + t_d,&nbsp;&nbsp;<span style="color:var(--ink-soft);">delete A's ball</span><br>
+        &nbsp;&nbsp;dp[i][j&minus;1] + t_i,&nbsp;&nbsp;<span style="color:var(--ink-soft);">insert B's ball</span><br>
+        &nbsp;&nbsp;dp[i&minus;1][j&minus;1] + (0 if A[i&minus;1]==B[j&minus;1] else t_r)&nbsp;&nbsp;<span style="color:var(--ink-soft);">keep or replace</span><br>
+        )</p>
+
+      <div class="callout fact">
+        <div class="ctitle">You already know this algorithm's famous cousin</div>
+        <p>When <code>t_i = t_d = t_r = 1</code>, this exact grid computes something called the <strong>Levenshtein distance</strong> (also just called "edit distance") &mdash; the same idea spell-checkers and "Did you mean...?" suggestions use to measure how different two words are. Sample 1 (<code>youshouldnot</code> &rarr; <code>thoushaltnot</code>, all costs = 1) is a plain edit-distance question in disguise, and the answer is exactly <b>5</b>.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The special move: swapping neighbors</h2></div>
+      <p class="lead">Here's where this problem gets interesting. Look at sample 2: <code>A = "ab"</code>, <code>B = "ba"</code>, with <code>t_i=2, t_d=4, t_r=10, t_e=3</code>.</p>
+
+      <div class="beads">
+        <div class="bead hi">a</div><div class="bead hi">b</div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin:-8px 0 18px;">turning into</p>
+      <div class="beads">
+        <div class="bead hi">b</div><div class="bead hi">a</div>
+      </div>
+
+      <p>Using only the three tools from before, the cheapest plan is: delete 'a' from the front (cost 4), then insert a fresh 'a' at the end (cost 2) &mdash; total <b>6</b>. Replacing both balls costs <code>2 &times; 10 = 20</code>, even worse. But there's a move neither of those plans considers: just <strong>swap the two balls in place</strong>. That's a single exchange, for cost <code>t_e = 3</code> &mdash; half the price of the delete-and-insert plan!</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge's note</div>
+        <p>"In the second sample, you could delete the ball labeled 'a' from the first position and then insert another 'a' at the new second position with total time 6. However exchanging the balls gives total time 3."</p>
+      </div>
+
+      <p>So the grid needs a fourth option, but it only applies in a very specific situation: the <em>last two balls</em> of the piece of <code>A</code> you've used so far are the exact mirror image of the <em>last two balls</em> of the piece of <code>B</code> you've built so far. In symbols, for cell <code>(i, j)</code> with <code>i &ge; 2</code> and <code>j &ge; 2</code>:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">if A[i&minus;1] == B[j&minus;2] and A[i&minus;2] == B[j&minus;1]:<br>
+      &nbsp;&nbsp;you may also consider dp[i&minus;2][j&minus;2] + t_e</p>
+      <p>That's exactly what happens at the very last cell for "ab" &rarr; "ba": the last ball of A ('b') matches the second-to-last ball of B ('b'), and the second-to-last ball of A ('a') matches the last ball of B ('a'). A perfect adjacent swap.</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>The full recipe (and that one weird rule)</h2></div>
+      <p class="lead">Putting all four tools together, here's the complete rule for every cell <code>(i, j)</code>:</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:14.5px;">dp[0][0] = 0<br>
+      dp[i][0] = i &times; t_d&nbsp;&nbsp;<span style="color:var(--ink-soft);">(delete everything)</span>&nbsp;&nbsp;&nbsp;&nbsp;dp[0][j] = j &times; t_i&nbsp;&nbsp;<span style="color:var(--ink-soft);">(insert everything)</span><br><br>
+      dp[i][j] = min of:<br>
+      &nbsp;&nbsp;dp[i&minus;1][j] + t_d&nbsp;&nbsp;<span style="color:var(--ink-soft);">delete</span><br>
+      &nbsp;&nbsp;dp[i][j&minus;1] + t_i&nbsp;&nbsp;<span style="color:var(--ink-soft);">insert</span><br>
+      &nbsp;&nbsp;dp[i&minus;1][j&minus;1] + (0 if match else t_r)&nbsp;&nbsp;<span style="color:var(--ink-soft);">keep / replace</span><br>
+      &nbsp;&nbsp;dp[i&minus;2][j&minus;2] + t_e&nbsp;&nbsp;<span style="color:var(--ink-soft);">swap (only if the crossing pattern matches, and i,j &ge; 2)</span></p>
+
+      <p>The final answer is <code>dp[len(A)][len(B)]</code>.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Why does 2&times;t_e &ge; t_i + t_d matter so much?</div>
+        <p>Our recipe only ever swaps <em>one pair</em> of neighbors per step. But what if swapping were amazingly cheap &mdash; say <code>t_e = 1</code> while <code>t_i = t_d = 10</code>? Then you could "moonwalk" a ball two spots over using two cheap swaps (cost 2) instead of a delete-and-insert (cost 20) &mdash; and a ball could keep moonwalking further and further for almost free. Our simple recipe never considers chains of swaps like that, so it would compute an answer that's too expensive &mdash; wrong.</p>
+        <p>The guarantee <code>2&times;t_e &ge; t_i + t_d</code> rules this out. It says <em>two</em> swaps (cost <code>2&times;t_e</code>) are never cheaper than one delete plus one insert (cost <code>t_i + t_d</code>). So it's never worth chaining swaps to walk a ball a long distance &mdash; a single adjacent swap is always as far as it's ever worth going. That's exactly what lets our one-swap-per-step recipe be trusted to give the true minimum.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Here's a direct translation of the Level 5 recipe into code. It builds the whole grid, row by row.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sequence_of_balls.py</div>
+        <pre><code>ti, td, tr, te = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+A = <span class="kw">input</span>()
+B = <span class="kw">input</span>()
+n, m = <span class="kw">len</span>(A), <span class="kw">len</span>(B)
+
+dp = [[<span class="nu">0</span>] * (m + <span class="nu">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(n + <span class="nu">1</span>)]
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    dp[i][<span class="nu">0</span>] = i * td
+<span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, m + <span class="nu">1</span>):
+    dp[<span class="nu">0</span>][j] = j * ti
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, m + <span class="nu">1</span>):
+        cost_replace = <span class="nu">0</span> <span class="kw">if</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">1</span>] <span class="kw">else</span> tr
+        best = <span class="kw">min</span>(
+            dp[i - <span class="nu">1</span>][j] + td,
+            dp[i][j - <span class="nu">1</span>] + ti,
+            dp[i - <span class="nu">1</span>][j - <span class="nu">1</span>] + cost_replace,
+        )
+        <span class="kw">if</span> (i &gt;= <span class="nu">2</span> <span class="kw">and</span> j &gt;= <span class="nu">2</span>
+                <span class="kw">and</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">2</span>]
+                <span class="kw">and</span> A[i - <span class="nu">2</span>] == B[j - <span class="nu">1</span>]):
+            best = <span class="kw">min</span>(best, dp[i - <span class="nu">2</span>][j - <span class="nu">2</span>] + te)
+        dp[i][j] = best
+
+<span class="kw">print</span>(dp[n][m])</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">dp = [[0] * (m + 1) for _ in range(n + 1)]</div>
+          <div class="annot-note"><span>A grid with (n+1) rows and (m+1) columns &mdash; one extra row/column for "zero balls used yet".</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">dp[i][0] = i * td
+dp[0][j] = j * ti</div>
+          <div class="annot-note"><span>The edges of the grid: turning i balls into nothing means deleting all of them; turning nothing into j balls means inserting all of them.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">cost_replace = 0 if A[i-1] == B[j-1] else tr</div>
+          <div class="annot-note"><span>If the two balls already match, "replacing" is free &mdash; there's nothing to do.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">best = min(delete, insert, keep/replace)</div>
+          <div class="annot-note"><span>The three "ordinary" options, exactly like Level 3's recipe.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if ... A[i-1]==B[j-2] and A[i-2]==B[j-1]:
+    best = min(best, dp[i-2][j-2] + te)</div>
+          <div class="annot-note"><span>The special fourth option from Level 4 &mdash; only checked when the last two balls form a perfect crossed pair.</span></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">A note on going big</div>
+        <p>Strings can be up to 4,000 balls, which means up to roughly 16 million grid cells. That's fine for a fast language like C++, but plain Python will feel this. If you need to handle the largest inputs, the trick below keeps only two rows of the grid in memory at once instead of the whole thing &mdash; the grid only ever looks one and two rows backward, so there's no need to keep the rest around.</p>
+      </div>
+
+      <div class="subhead">Bonus: memory-friendly rolling rows</div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sequence_of_balls_rolling.py</div>
+        <pre><code>ti, td, tr, te = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+A = <span class="kw">input</span>()
+B = <span class="kw">input</span>()
+n, m = <span class="kw">len</span>(A), <span class="kw">len</span>(B)
+
+prev2 = [<span class="nu">0</span>] * (m + <span class="nu">1</span>)              <span class="cm"># row i-2</span>
+prev1 = [j * ti <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(m + <span class="nu">1</span>)]  <span class="cm"># row i-1 (starts as row 0)</span>
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    curr = [<span class="nu">0</span>] * (m + <span class="nu">1</span>)
+    curr[<span class="nu">0</span>] = i * td
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, m + <span class="nu">1</span>):
+        cost_replace = <span class="nu">0</span> <span class="kw">if</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">1</span>] <span class="kw">else</span> tr
+        best = <span class="kw">min</span>(prev1[j] + td, curr[j - <span class="nu">1</span>] + ti, prev1[j - <span class="nu">1</span>] + cost_replace)
+        <span class="kw">if</span> (i &gt;= <span class="nu">2</span> <span class="kw">and</span> j &gt;= <span class="nu">2</span>
+                <span class="kw">and</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">2</span>]
+                <span class="kw">and</span> A[i - <span class="nu">2</span>] == B[j - <span class="nu">1</span>]):
+            best = <span class="kw">min</span>(best, prev2[j - <span class="nu">2</span>] + te)
+        curr[j] = best
+    prev2, prev1 = prev1, curr
+
+<span class="kw">print</span>(prev1[m])</code></pre>
+      </div>
+      <p>Instead of one giant grid, we only ever keep the two most recently finished rows (<code>prev2</code>, two rows back, and <code>prev1</code>, one row back) plus the row we're currently building (<code>curr</code>). Once a row is finished, it slides down and becomes the new "one row back" for the next iteration.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Let's trace it together: sample 2</h2></div>
+      <p class="lead">Time to fill in the whole grid by hand for <code>A = "ab"</code>, <code>B = "ba"</code>, with <code>t_i=2, t_d=4, t_r=10, t_e=3</code>. It's small enough (3&times;3) to do completely.</p>
+
+      <div class="dp-table">
+        <table class="dpgrid">
+          <thead>
+            <tr><th></th><th>&#8709;</th><th>b</th><th>a</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>&#8709;</th><td>0</td><td>2</td><td>4</td></tr>
+            <tr><th>a</th><td>4</td><td>6</td><td>1</td></tr>
+            <tr><th>b</th><td>8</td><td>4</td><td class="win">3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Row and column headers spell out <code>B = "ba"</code> across the top and <code>A = "ab"</code> down the side. A few cells worth zooming in on:</p>
+
+      <table class="trace">
+        <thead><tr><th>cell (i, j)</th><th>meaning</th><th>working</th><th>value</th></tr></thead>
+        <tbody>
+          <tr><td>(1, 1)</td><td>"a" &rarr; "b"</td><td>mismatch: min(delete 2+4=6, insert 4+2=6, replace 0+10=10)</td><td class="even">6</td></tr>
+          <tr><td>(1, 2)</td><td>"a" &rarr; "ba"</td><td>A[0]='a' matches the last ball of "ba" ('a'), so just carry over dp[0][1] + 0</td><td class="odd">2</td></tr>
+          <tr><td>(2, 1)</td><td>"ab" &rarr; "b"</td><td>A[1]='b' matches the last ball of "b" ('b'), so just carry over dp[1][0] + 0</td><td class="odd">4</td></tr>
+          <tr><td>(2, 2)</td><td>"ab" &rarr; "ba"</td><td>mismatch, but a crossed pair exists &mdash; swap wins: dp[0][0] + 3 = 3</td><td class="odd">3</td></tr>
+        </tbody>
+      </table>
+
+      <p>The cell that matters most is the bottom-right corner, <code>dp[2][2] = 3</code>. Its four candidate values were 16 (replace both), 6 (delete then insert), 6 (insert then delete), and the swap option <code>dp[0][0] + t_e = 0 + 3 = 3</code> &mdash; which wins outright, because the last ball of A ('b') matches the second-to-last ball of B ('b'), and the second-to-last ball of A ('a') matches the last ball of B ('a'): a perfect crossed pair. That's the judge's answer: <b>3</b>.</p>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Now you drive: try your own costs and strings</h2></div>
+      <p class="lead">Enter the four costs and two short strings (kept small here so the whole grid fits on screen &mdash; the real judge allows up to 4,000 balls per string).</p>
+
+      <div class="widget">
+        <h3>Necklace rebuild cost calculator</h3>
+        <div class="hint">Tip: try the three judge samples above, or set t_e very small compared to t_i and t_d to see how dramatically swapping can win.</div>
+        <div class="field-row">
+          <div class="field"><label for="inTi">t_i (insert)</label><input type="number" id="inTi" value="2" min="1" max="100"></div>
+          <div class="field"><label for="inTd">t_d (delete)</label><input type="number" id="inTd" value="4" min="1" max="100"></div>
+          <div class="field"><label for="inTr">t_r (replace)</label><input type="number" id="inTr" value="10" min="1" max="100"></div>
+          <div class="field"><label for="inTe">t_e (exchange)</label><input type="number" id="inTe" value="3" min="1" max="100"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="inA">A</label><input type="text" class="wide" id="inA" value="ab" maxlength="16"></div>
+          <div class="field"><label for="inB">B</label><input type="text" class="wide" id="inB" value="ba" maxlength="16"></div>
+          <div class="field"><button class="btn" id="runBtn">Compute minimum time</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out by hand first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: A="ab", B="ba", with all four costs equal to 1. What's the minimum time?</summary>
+        <div class="reveal">
+          <p>Filling the same 3&times;3 grid with every cost set to 1: dp[1][1]=1 (replace), dp[1][2]=1 (a matches the 'a' in "ba"), dp[2][1]=1 (b matches the 'b' in "ab"), and finally dp[2][2] = min(replace: 1+1=2, delete+insert: 1+1=2, insert+delete: 1+1=2, <b>swap: dp[0][0]+1 = 1</b>). The swap wins again &mdash; answer is <b>1</b>. Notice this is the boundary case of the rule from Level 5: <code>2&times;t_e = 2</code> and <code>t_i+t_d = 2</code>, so they're exactly equal &mdash; the rule allows equality, not just strict inequality.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: A="cat", B="cot", with t_i=t_d=t_r=1 (t_e doesn't matter here). What's the minimum time?</summary>
+        <div class="reveal">
+          <p>'c' matches 'c', and 't' matches 't' &mdash; only the middle ball differs ('a' vs 'o'), and there's no crossed pair anywhere for a swap to help with. A single replace fixes it. Minimum time: <b>1</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why does the swap option only ever look at A[i&minus;1], A[i&minus;2], B[j&minus;1], B[j&minus;2] &mdash; the very last two balls of each prefix &mdash; instead of checking any two balls anywhere in the strings?</summary>
+        <div class="reveal">
+          <p>Because dp[i][j] is defined as "the cheapest way to turn the <em>first i</em> balls of A into the <em>first j</em> balls of B" &mdash; it's built up prefix by prefix, left to right. Every option for filling dp[i][j] has to connect back to a smaller, already-solved prefix problem. A swap that finishes exactly at position (i, j) can only ever involve the two balls sitting right at the boundary of that prefix &mdash; anything earlier in the strings was already decided when we computed the smaller subproblems.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: Suppose (hypothetically!) t_e=1 while t_i=t_d=10, breaking the 2&times;t_e &ge; t_i+t_d rule. In your own words, explain why our Level 5 recipe could give the wrong answer here.</summary>
+        <div class="reveal">
+          <p>With t_e this cheap, you could slide a ball two positions over using two swaps for a total cost of 2 &mdash; far cheaper than deleting and reinserting it (cost 20). A ball could keep sliding, swap after swap, almost for free, effectively "teleporting" long distances cheaply. Our recipe only ever considers <em>one single</em> adjacent swap per grid cell; it has no way to represent a ball sliding many positions through a chain of swaps. So in this hypothetical world, the true minimum cost could be much lower than what our formula computes &mdash; the formula would be provably wrong. This is exactly why the problem guarantees <code>2&times;t_e &ge; t_i+t_d</code>: it makes chains of swaps never worthwhile, so a single swap per cell is always enough.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5 (harder): Modify the code from Level 6 so it also prints which one of the four tools was used at the final cell (dp[n][m]) to reach the optimal answer.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sequence_of_balls_trace.py</div>
+            <pre><code>i, j = n, m
+cost_replace = <span class="nu">0</span> <span class="kw">if</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">1</span>] <span class="kw">else</span> tr
+options = {
+    <span class="st">"delete"</span>: dp[i - <span class="nu">1</span>][j] + td,
+    <span class="st">"insert"</span>: dp[i][j - <span class="nu">1</span>] + ti,
+    <span class="st">"keep/replace"</span>: dp[i - <span class="nu">1</span>][j - <span class="nu">1</span>] + cost_replace,
+}
+<span class="kw">if</span> (i &gt;= <span class="nu">2</span> <span class="kw">and</span> j &gt;= <span class="nu">2</span>
+        <span class="kw">and</span> A[i - <span class="nu">1</span>] == B[j - <span class="nu">2</span>]
+        <span class="kw">and</span> A[i - <span class="nu">2</span>] == B[j - <span class="nu">1</span>]):
+    options[<span class="st">"swap"</span>] = dp[i - <span class="nu">2</span>][j - <span class="nu">2</span>] + te
+
+winner = <span class="kw">min</span>(options, key=options.get)
+<span class="kw">print</span>(<span class="st">"Last tool used:"</span>, winner, <span class="st">"costing"</span>, options[winner])</code></pre>
+          </div>
+          <p style="margin-top:12px;">Doing this at every cell (not just the last one), and remembering which option won each time, is how you'd reconstruct the <em>entire</em> sequence of operations, not just the total cost.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 67C &mdash; Sequence of Balls. This problem is a weighted, transposition-aware relative of the classic edit distance / Levenshtein distance algorithm used in spell-checkers and DNA comparison tools.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(ti, td, tr, te, A, B){
+    var n = A.length, m = B.length;
+    var dp = [];
+    for (var i = 0; i <= n; i++){ dp.push(new Array(m + 1).fill(0)); }
+    for (i = 1; i <= n; i++){ dp[i][0] = i * td; }
+    for (var j = 1; j <= m; j++){ dp[0][j] = j * ti; }
+
+    for (i = 1; i <= n; i++){
+      for (j = 1; j <= m; j++){
+        var costReplace = (A[i - 1] === B[j - 1]) ? 0 : tr;
+        var best = Math.min(dp[i - 1][j] + td, dp[i][j - 1] + ti, dp[i - 1][j - 1] + costReplace);
+        var usedSwap = false;
+        if (i >= 2 && j >= 2 && A[i - 1] === B[j - 2] && A[i - 2] === B[j - 1]){
+          var swapVal = dp[i - 2][j - 2] + te;
+          if (swapVal < best){ best = swapVal; usedSwap = true; }
+        }
+        dp[i][j] = best;
+      }
+    }
+    return dp;
+  }
+
+  function run(){
+    var ti = parseInt(document.getElementById('inTi').value, 10);
+    var td = parseInt(document.getElementById('inTd').value, 10);
+    var tr = parseInt(document.getElementById('inTr').value, 10);
+    var te = parseInt(document.getElementById('inTe').value, 10);
+    var A = document.getElementById('inA').value;
+    var B = document.getElementById('inB').value;
+    var out = document.getElementById('out');
+
+    if ([ti, td, tr, te].some(function(v){ return isNaN(v) || v < 1 || v > 100; })){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>All four costs need to be whole numbers between 1 and 100.</p></div>';
+      return;
+    }
+    if (A.length < 1 || B.length < 1){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Both A and B need at least one ball.</p></div>';
+      return;
+    }
+
+    var dp = solve(ti, td, tr, te, A, B);
+    var n = A.length, m = B.length;
+    var html = '';
+
+    html += '<div class="dp-table"><table class="dpgrid"><thead><tr><th></th><th>&#8709;</th>';
+    for (var j = 0; j < m; j++){ html += '<th>' + B[j] + '</th>'; }
+    html += '</tr></thead><tbody>';
+    for (var i = 0; i <= n; i++){
+      html += '<tr><th>' + (i === 0 ? '&#8709;' : A[i - 1]) + '</th>';
+      for (j = 0; j <= m; j++){
+        var isWin = (i === n && j === m);
+        html += '<td' + (isWin ? ' class="win"' : '') + '>' + dp[i][j] + '</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+
+    html += '<div class="answer-line"><b>Minimum time: ' + dp[n][m] + '</b> to turn "' + A + '" into "' + B + '"</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

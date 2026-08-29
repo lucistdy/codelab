@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>逃脱之路：平均要拉多少次随机数才能逃出去？（Codeforces 1139D）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Machine / chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 110px;min-width:100px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box.stop{background:var(--alert-soft);border-color:var(--alert);}
+  .chain-box .p{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Probability bar ---------- */
+  .pbar-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-family:var(--font-mono);font-size:13px;}
+  .pbar-label{flex:0 0 74px;color:var(--ink-soft);}
+  .pbar-track{flex:1 1 auto;height:20px;border-radius:6px;background:var(--paper-raised-2);border:1px solid var(--line);overflow:hidden;}
+  .pbar-fill{height:100%;background:var(--clue);}
+  .pbar-val{flex:0 0 54px;text-align:right;color:var(--ink-soft);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.zero{color:var(--ink-soft);opacity:.55;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1139D &middot; 题目精讲</div>
+      <h1>逃脱之路：<em>GCD 逃脱机</em></h1>
+      <p class="sub">维维克不断拉动一台机器的拉杆，每次都会吐出一个 1 到 <code>m</code> 之间的随机数，加进一个列表里。一旦列表里所有数字的最大公约数变成 1，他就成功逃脱。平均下来，他需要拉多少次才能逃出去？</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">概率 &amp; 数论</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">维维克手上有一个空列表和一个固定的数字 <code>m</code>。他不断重复下面这个循环：</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">1. 拉拉杆</div><div class="v">随机得到 x，1 &le; x &le; m</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">2. 加入 x</div><div class="v">列表长度 +1</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box stop"><div class="p">3. 检查 gcd</div><div class="v">gcd == 1？逃脱！ : 继续</div></div>
+      </div>
+      <p>他想知道：<strong>平均下来，成功逃脱时列表会有多长？</strong>这就叫作<em>期望长度</em>。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>m=1</code> &rarr; 期望长度 <b>1</b>（唯一能拉到的数字就是 1，立刻 gcd=1）。<br>
+        <code>m=2</code> &rarr; 期望长度 <b>2</b>。<br>
+        <code>m=4</code> &rarr; 输出 <b>333333338</b>（一个看起来很奇怪的数字——马上就来揭晓！）。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">等等，m=4 为什么答案这么奇怪、这么大？</div>
+        <p>m=4 时真正的期望长度其实是分数 <code>7/3</code>——根本不是整数！由于计算机一般没办法直接打印分母巨大的精确分数，题目要求把这个分数用<em>模运算</em>编码成一个整数（第八关会完整揭晓这个技巧）。先记住这个分数 <code>7/3</code>，本页后面会手把手把它算出来。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>热身：什么是"期望值"？</h2></div>
+      <p class="lead">想象反复抛一枚硬币，直到抛出正面为止。有时候第一次就正面朝上（走运！）。有时候要抛 2 次、3 次，甚至更多。<strong>期望值</strong>的意思就是：如果你把这个游戏玩上成千上万次，把每次用掉的次数求平均，会落在哪个数字上？</p>
+
+      <p>对于这种"一直重复直到成功"的经典情形，答案是有名的结论：用一枚公平的硬币（每次正面概率 50%），期望的抛掷次数正好是 <b>2</b>。这可不是巧合——它正好和上面的样例二一模一样！当 <code>m=2</code> 时，维维克其实就是在抛硬币：每次拉到的要么是 1（立刻逃脱），要么是 2（继续），概率各占一半。题目的提示原文正好把这个和式写了出来：</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">1&times;&frac12; + 2&times;&frac14; + 3&times;&frac18; + &hellip; = 2</p>
+
+      <div class="callout tip">
+        <div class="ctitle">这有什么用</div>
+        <p>"把每种可能长度乘以对应概率再全部加起来"这种做法当然可行，但它需要你知道<em>每一种可能长度</em>（1、2、3、4……一直到无穷）各自的概率，加起来的项数太多了。第三关会介绍一条完全绕开这个麻烦的捷径。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>捷径：数一数有多少轮"还在继续"</h2></div>
+      <p class="lead">对付这类"一直重复直到发生某件事"的游戏，有一个很妙的技巧。与其直接问"最终长度到底是多少"，不如反复问一个更简单的问题：<strong>"拉了 k 次之后，游戏还在继续吗？"</strong>然后把这个答案（继续记 1，结束记 0）从 k=0 开始一直加起来。</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">期望长度 = P(拉0次后还在继续) + P(拉1次后还在继续) + P(拉2次后还在继续) + &hellip;</p>
+
+      <p>先用第二关的抛硬币游戏来验证一下这个公式。"抛 0 次后还在继续"永远成立（概率是 1，因为你压根还没抛呢）。"抛 1 次后还在继续"意味着那一次是反面（概率 &frac12;）。"抛 2 次后还在继续"意味着两次都是反面（概率 &frac14;）。以此类推：</p>
+
+      <div class="pbar-row"><div class="pbar-label">抛0次后</div><div class="pbar-track"><div class="pbar-fill" style="width:100%"></div></div><div class="pbar-val">1</div></div>
+      <div class="pbar-row"><div class="pbar-label">抛1次后</div><div class="pbar-track"><div class="pbar-fill" style="width:50%"></div></div><div class="pbar-val">1/2</div></div>
+      <div class="pbar-row"><div class="pbar-label">抛2次后</div><div class="pbar-track"><div class="pbar-fill" style="width:25%"></div></div><div class="pbar-val">1/4</div></div>
+      <div class="pbar-row"><div class="pbar-label">抛3次后</div><div class="pbar-track"><div class="pbar-fill" style="width:12.5%"></div></div><div class="pbar-val">1/8</div></div>
+
+      <p><code>1 + &frac12; + &frac14; + &frac18; + &hellip; = 2</code>——和之前算出来的答案一样，但用了完全不同的算法！这个"还在继续"的技巧对维维克这道题特别好用，因为"还在继续"用 gcd 的语言描述起来非常干净，这正是接下来要讲的内容。</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>维维克的游戏什么时候"还在继续"？</h2></div>
+      <p class="lead">拉了 k 次之后，维维克的游戏还在继续，正好就是这 k 个数字的 gcd <strong>还没变成 1</strong> 的时候。而一组数字的 gcd 大于 1，正好就是<strong>它们全部共享某个公共因子</strong>的时候——存在某个数 <code>d &ge; 2</code>，能整除这 k 个数字中的每一个。</p>
+
+      <p>所以："拉了 k 次后还在继续"这个事件，跟"存在某个 <code>d &ge; 2</code>，能整除这 k 个随机拉出来的数字"是同一件事。接下来两关就是要算出这件事的概率。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">提前剧透一个具体例子</div>
+        <p>对 <code>m=4</code> 来说，如果维维克拉到了两个 2 和一个 4，那么 <code>gcd(2,2,4) = 2</code>——还在继续，因为目前拉到的每一个数字都是 2 的倍数。一旦出现一个<em>不是</em> 2 的倍数的数字（比如拉到 1 或 3），共同的因子就被打破了，gcd 就有可能掉到 1。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>每一次都是 d 的倍数的概率</h2></div>
+      <p class="lead">在 1 到 <code>m</code> 之间，有多少个数是 <code>d</code> 的倍数？正好 <code>&lfloor;m/d&rfloor;</code> 个（这是整数除法——"d 能在 m 里装下几次"）。所以单单一次随机拉动结果是 <code>d</code> 的倍数的概率是：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:17px;">p<sub>d</sub> = &lfloor;m/d&rfloor; / m</p>
+
+      <p>对于 <code>k</code> 次独立的拉动，<em>每一次</em>都是 <code>d</code> 的倍数的概率，就是把 <code>p<sub>d</sub></code> 自己连乘 <code>k</code> 次：<code>p<sub>d</sub><sup>k</sup></code>。把这个对所有 <code>k &ge; 0</code> 求和，正好是一个经典的等比数列：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">1 + p<sub>d</sub> + p<sub>d</sub><sup>2</sup> + p<sub>d</sub><sup>3</sup> + &hellip; = 1 / (1 &minus; p<sub>d</sub>)</p>
+
+      <div class="callout tip">
+        <div class="ctitle">如果只有一个可能的公共因子</div>
+        <p>如果"还在继续"就只是简单地表示"每一次拉动都是<em>这一个特定的</em> <code>d</code> 的倍数"，那我们其实已经算完了：对期望长度的贡献就是 <code>1/(1&minus;p<sub>d</sub>)</code>。麻烦在于，"还在继续"其实是"是<em>任意某个</em> <code>d &ge; 2</code> 的倍数"，而不同的 <code>d</code> 之间会互相重叠——这正是这道题里最棘手、也最有意思的部分。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>重叠的麻烦，以及莫比乌斯函数的修正</h2></div>
+      <p class="lead">陷阱在这里：你可能会以为"gcd 不等于 1 的概率"等于"对每一个 <code>d &ge; 2</code>，把'全部拉动都是 d 的倍数'的概率加起来"。但这样会<strong>重复计数</strong>。一组全都是 6 的倍数的数字，会在 <code>d=2</code> 时被算一次，在 <code>d=3</code> 时又被算一次，<em>还会</em>在 <code>d=6</code> 时再算一次——一共算了三遍！</p>
+
+      <p>你可能在更简单的场景里见过这种重叠问题：要数出 1 到 30 之间能被 2 或者 3 整除的数字，不能直接把"2 的倍数"（15 个）和"3 的倍数"（10 个）加起来——那样会把"6 的倍数"（5 个）重复算了两次，所以要把它们减回去：<code>15 + 10 &minus; 5 = 20</code>。这就是<strong>容斥原理</strong>。</p>
+
+      <p>当可能同时存在很多个（不只是两个）互相重叠的因子时，数学家们用一套很巧妙的修正权重，叫作<strong>莫比乌斯函数</strong>，写作 <code>&mu;(n)</code>：</p>
+
+      <div class="stats">
+        <div class="stat fast"><div class="num">&mu;(1) = 1</div><div class="lbl">空的情况，永远是 +1</div></div>
+        <div class="stat fast"><div class="num">&mu;(n) = (&minus;1)<sup>k</sup></div><div class="lbl">如果 n 是 k 个<em>互不相同</em>的质数相乘（比如 6=2&times;3，或 30=2&times;3&times;5）</div></div>
+        <div class="stat slow"><div class="num">&mu;(n) = 0</div><div class="lbl">如果某个质因数在 n 里重复出现（比如 4=2&times;2，或 12=2&times;2&times;3）</div></div>
+      </div>
+
+      <p>所以 <code>&mu;(2) = &minus;1</code>，<code>&mu;(3) = &minus;1</code>，<code>&mu;(6) = +1</code>（两个不同的质数），<code>&mu;(4) = 0</code>（2 重复了），<code>&mu;(12) = 0</code>（2 重复了）。这些正负号，正好就是容斥原理里"先加上，再减掉重叠部分"这套模式，只不过被推广到能自动处理任意多个同时重叠的因子。有了 <code>&mu;</code>，k 个随机数字的 gcd <em>不等于</em> 1 的精确概率（不会重复计数！）就是：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">P(gcd &ne; 1) = &minus; &sum;<sub>d=2</sub><sup>m</sup> &mu;(d) &times; p<sub>d</sub><sup>k</sup></p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>把它们全部拼起来：最终公式</h2></div>
+      <p class="lead">现在把第三关"还在继续"的求和，和第六关不会重复计数的概率结合起来，再套用第五关的等比数列求和（从 <code>k=1</code> 开始，因为 <code>k=0</code> 那一项已经作为"第一次拉动一定会发生"这个保证的 <code>+1</code> 单独处理过了）：</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">期望长度 = 1 + &sum;<sub>d=2</sub><sup>m</sup> (&minus;&mu;(d)) &times; &lfloor;m/d&rfloor; / (m &minus; &lfloor;m/d&rfloor;)</p>
+
+      <p>就是这样——一个干净的公式覆盖了所有情况。来验证一下它是否能算出我们已经知道的样例：</p>
+
+      <table class="trace">
+        <thead><tr><th>d</th><th>&mu;(d)</th><th>&lfloor;m/d&rfloor;</th><th>m &minus; &lfloor;m/d&rfloor;</th><th>贡献</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="text-align:left;font-weight:700;background:var(--paper-raised-2);">m = 2</td></tr>
+          <tr><td>2</td><td class="even">&minus;1</td><td>1</td><td>1</td><td class="odd">+1</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">期望长度 = 1 + 1 = <b>2</b>——和题目给出的答案一致！</td></tr></tfoot>
+      </table>
+
+      <table class="trace">
+        <thead><tr><th>d</th><th>&mu;(d)</th><th>&lfloor;m/d&rfloor;</th><th>m &minus; &lfloor;m/d&rfloor;</th><th>贡献</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="text-align:left;font-weight:700;background:var(--paper-raised-2);">m = 4</td></tr>
+          <tr><td>2</td><td class="even">&minus;1</td><td>2</td><td>2</td><td class="odd">+1</td></tr>
+          <tr><td>3</td><td class="even">&minus;1</td><td>1</td><td>3</td><td class="odd">+1/3</td></tr>
+          <tr><td>4</td><td class="zero">0</td><td>1</td><td>3</td><td class="zero">0（跳过）</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">期望长度 = 1 + 1 + 1/3 = <b>7/3</b>——正是第一关提到的那个分数！</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>藏起来的分数：333333338 是怎么来的？</h2></div>
+      <p class="lead">我们刚刚算出 m=4 时真正的答案是 <code>7/3</code>。但题目想要的是一个单独的整数，而计算机通常没法精确存下一个分母巨大又不确定的分数。解决办法是：所有运算都<strong>对一个大质数取模</strong>，<code>P = 1,000,000,007</code>，并且把"除以 3"表示成"乘以能抵消乘以 3 这件事的那个数"，这个数就叫 3 的<strong>模逆元</strong>。</p>
+
+      <p>多亏了一个叫<strong>费马小定理</strong>的著名捷径，只要 <code>P</code> 是质数，任意数 <code>x</code>（只要不是 P 的倍数）的模逆元就是：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">x<sup>&minus;1</sup> mod P = x<sup>P&minus;2</sup> mod P</p>
+
+      <p>在 Python 里，<code>pow(x, P-2, P)</code> 能瞬间算出这个结果（快速幂让即便像 <code>P-2</code> 这样巨大的指数也毫无压力）。所以 <code>7/3 mod P</code> 就变成了 <code>(7 &times; pow(3, P-2, P)) % P</code>：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>python3</div>
+        <pre><code>&gt;&gt;&gt; P = <span class="nu">1_000_000_007</span>
+&gt;&gt;&gt; (<span class="nu">7</span> * <span class="kw">pow</span>(<span class="nu">3</span>, P - <span class="nu">2</span>, P)) % P
+<span class="nu">333333338</span></code></pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">记住这一点</div>
+        <p>以后在 Codeforces 上碰到概率/计数类题目输出一个奇怪的大数字，几乎总是一个普通分数披上了伪装：<code>P &times; Q<sup>&minus;1</sup> mod (10<sup>9</sup>+7)</code>。一旦知道这个套路，"奇怪"就完全消失了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>用 Python 把它写出来</h2></div>
+      <p class="lead">需要两样东西：能算出每个 <code>d</code>（从 2 到 m）的 <code>&mu;(d)</code> 的方法，以及第七关的最终求和公式。下面是最简单的版本，用试除法分解每个数字来判断它的莫比乌斯值：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>steps_to_one.py</div>
+        <pre><code>MOD = <span class="nu">1_000_000_007</span>
+
+<span class="kw">def</span> <span class="kw">mobius</span>(n):
+    result = <span class="nu">1</span>
+    p = <span class="nu">2</span>
+    <span class="kw">while</span> p * p &lt;= n:
+        <span class="kw">if</span> n % p == <span class="nu">0</span>:
+            n //= p
+            <span class="kw">if</span> n % p == <span class="nu">0</span>:
+                <span class="kw">return</span> <span class="nu">0</span>  <span class="cm"># p 在 n 里出现了两次 -> mu 是 0</span>
+            result = -result
+        p += <span class="nu">1</span>
+    <span class="kw">if</span> n &gt; <span class="nu">1</span>:
+        result = -result  <span class="cm"># 还剩一个质因子</span>
+    <span class="kw">return</span> result
+
+m = <span class="kw">int</span>(<span class="kw">input</span>())
+answer = <span class="nu">1</span>
+<span class="kw">for</span> d <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, m + <span class="nu">1</span>):
+    mu = mobius(d)
+    <span class="kw">if</span> mu == <span class="nu">0</span>:
+        <span class="kw">continue</span>
+    fd = m // d
+    term = (-mu * fd) % MOD
+    term = term * <span class="kw">pow</span>(m - fd, MOD - <span class="nu">2</span>, MOD) % MOD
+    answer = (answer + term) % MOD
+
+<span class="kw">print</span>(answer)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">def mobius(n):
+    ...</div>
+          <div class="annot-note"><span>用不超过 &radic;n 的每一个候选质数去试除 n，每找到一个<em>新的</em>质因子就翻一次符号，一旦某个质因子重复出现就立刻返回 0。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for d in range(2, m + 1):
+    mu = mobius(d)
+    if mu == 0: continue</div>
+          <div class="annot-note"><span>直接跳过 &mu;(d)=0 的 d——第七关的公式说这些完全不贡献。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">fd = m // d
+term = (-mu * fd) % MOD
+term = term * pow(m - fd, MOD - 2, MOD) % MOD</div>
+          <div class="annot-note"><span>正好就是第七关每个 d 的贡献：(&minus;&mu;(d)) &times; &lfloor;m/d&rfloor; / (m&minus;&lfloor;m/d&rfloor;)，只是把真正的除法换成了模逆元。</span></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">关于"变大"的提醒</div>
+        <p><code>m</code> 最大可以到 100,000。对每个数字都做一次试除是可行的，但会重复做很多分解工作。更快的做法是用一种"线性筛"，一次性把 <code>m</code> 以内所有 <code>&mu;(d)</code> 都算出来——这跟埃拉托斯特尼筛法是同一类技巧，只是用来跟踪质因子的重复次数，而不只是标记合数。</p>
+      </div>
+
+      <div class="subhead">加餐：一次性筛出所有莫比乌斯值的线性筛</div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>steps_to_one_sieve.py</div>
+        <pre><code>MOD = <span class="nu">1_000_000_007</span>
+m = <span class="kw">int</span>(<span class="kw">input</span>())
+
+mu = [<span class="nu">1</span>] * (m + <span class="nu">1</span>)
+is_composite = [<span class="kw">False</span>] * (m + <span class="nu">1</span>)
+primes = []
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, m + <span class="nu">1</span>):
+    <span class="kw">if</span> <span class="kw">not</span> is_composite[i]:
+        primes.append(i)
+        mu[i] = -<span class="nu">1</span>
+    <span class="kw">for</span> p <span class="kw">in</span> primes:
+        <span class="kw">if</span> i * p &gt; m:
+            <span class="kw">break</span>
+        is_composite[i * p] = <span class="kw">True</span>
+        <span class="kw">if</span> i % p == <span class="nu">0</span>:
+            mu[i * p] = <span class="nu">0</span>
+            <span class="kw">break</span>
+        mu[i * p] = -mu[i]
+
+answer = <span class="nu">1</span>
+<span class="kw">for</span> d <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, m + <span class="nu">1</span>):
+    <span class="kw">if</span> mu[d] == <span class="nu">0</span>:
+        <span class="kw">continue</span>
+    fd = m // d
+    term = (-mu[d] * fd) % MOD
+    term = term * <span class="kw">pow</span>(m - fd, MOD - <span class="nu">2</span>, MOD) % MOD
+    answer = (answer + term) % MOD
+
+<span class="kw">print</span>(answer)</code></pre>
+      </div>
+      <p>这样只需要一次遍历，就能把从 2 到 <code>m</code> 的每一个莫比乌斯值都算出来，而不用对每个数字都从头分解一遍——正是这个区别，让它在 <code>m = 100,000</code> 时也能轻松跑得很快。</p>
+    </section>
+
+    <!-- ============ LEVEL 10 : INTERACTIVE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">第十关</span><h2>该你上场了：换成你自己的 m</h2></div>
+      <p class="lead">挑一个 1 到 100,000 之间的 <code>m</code>。工具会（对较小的 m）展示每个因子的详细拆解，以及最终答案——同时给出精确分数和题目要求的模运算编码。</p>
+
+      <div class="widget">
+        <h3>期望长度计算器</h3>
+        <div class="hint">小提示：试试 m=1、2、4 来对照官方样例，或者试试 m=6，看看 &mu;(6)=+1 是怎么发挥作用的（6 有两个不同的质因子）。</div>
+        <div class="field-row">
+          <div class="field"><label for="inM">m</label><input type="number" id="inM" value="4" min="1" max="100000"></div>
+          <div class="field"><button class="btn" id="runBtn">计算期望长度</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 11 ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">第十一关</span><h2>该你练习了</h2></div>
+      <p class="lead">先自己在纸上算出来，再用上面的工具验证。</p>
+
+      <details>
+        <summary>挑战一：用第七关的公式手算 m=3 时的期望长度。</summary>
+        <div class="reveal">
+          <p>要检查的因子是 d=2 和 d=3。&mu;(2)=&minus;1，&lfloor;3/2&rfloor;=1，贡献 = 1 &times; 1/(3&minus;1) = 1/2。&mu;(3)=&minus;1，&lfloor;3/3&rfloor;=1，贡献 = 1 &times; 1/(3&minus;1) = 1/2。总和：<code>1 + 1/2 + 1/2 = 2</code>。m=3 的期望长度正好是 <b>2</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：为什么公式会完全跳过所有 &mu;(d)=0 的 d，比如 d=4、8、9、12？</summary>
+        <div class="reveal">
+          <p>&mu;(d)=0 正好发生在 d 有重复质因子的时候（比如 4=2&times;2 或 12=2&times;2&times;3）。在容斥的过程里，这样的 d 所代表的"是 d 的倍数"这个事件，早就已经被它的无平方因子除数（也就是不重复的质因子组合）完全考虑进去了——再把它加进来只会重复修正，把总数算错。莫比乌斯函数很巧妙地把这种情况的权重直接设成 0，所以求和时完全不需要特殊处理——直接跳过就行。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：第七关里，为什么等比数列的贡献是从 k=1 开始，而不是从 k=0 开始，尽管第三关"还在继续"的求和本身是从 k=0 开始的？</summary>
+        <div class="reveal">
+          <p>k=0 这一项（"拉0次后还在继续"）不管怎样都必然成立，概率是 1——它压根不依赖 gcd 或任何因子，因为根本还没拉过数字。这正是公式最前面那个必然出现的 <code>+1</code>。莫比乌斯求和只需要描述 k=1, 2, 3, ……（至少拉过一次之后）发生的事情，这就是为什么它的等比数列要从 k=1 开始算。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：计算 &mu;(30)。（提示：先把 30 分解质因数。）</summary>
+        <div class="reveal">
+          <p><code>30 = 2 &times; 3 &times; 5</code>——三个互不相同的质因子，没有重复。所以 <code>&mu;(30) = (&minus;1)<sup>3</sup> = &minus;1</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战五（较难）：题目保证 m &le; 100,000。第九关那个线性筛大概要做多少次"质因子检查"，为什么比对每个数分别做试除快得多？</summary>
+        <div class="reveal">
+          <p>线性筛的外层循环把 2 到 m 的每个数字恰好访问一次，而每个合数在内层循环里都恰好被它的最小质因子标记一次——所以总工作量跟 <code>m</code> 本身成正比（严格说是 <code>O(m)</code>），最大输入时大约是 10 万次操作。相比之下，试除法要独立地从头分解每一个数字，对每个数字 <code>d</code> 大约要做 <code>&radic;d</code> 次工作——大约 <code>&radic;100,000 &approx; 316</code> 次每个数字，总共大约 3000 万次操作。这两种方法在这道题的数据范围内都能轻松跑进时间限制，但如果 <code>m</code> 以后被出到更大，线性筛的优势会明显得多。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1139D &mdash; Steps to One。这道题把期望值（借助"尾部概率求和"这个恒等式）、莫比乌斯函数 / 因子上的容斥原理、等比数列，以及模逆元结合在了一起——非常适合体会几种看似不相关的想法是怎么拼成一个干净公式的。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 1000000007n;
+
+  function modpow(base, exp, mod){
+    base = ((base % mod) + mod) % mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n) result = (result * base) % mod;
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  function modinv(x, mod){
+    return modpow(x, mod - 2n, mod);
+  }
+
+  function mobiusSieve(n){
+    var mu = new Int8Array(n + 1);
+    mu[1] = 1;
+    var isComposite = new Uint8Array(n + 1);
+    var primes = [];
+    for (var i = 2; i <= n; i++){
+      if (!isComposite[i]){
+        primes.push(i);
+        mu[i] = -1;
+      }
+      for (var k = 0; k < primes.length; k++){
+        var p = primes[k];
+        if (i * p > n) break;
+        isComposite[i * p] = 1;
+        if (i % p === 0){
+          mu[i * p] = 0;
+          break;
+        } else {
+          mu[i * p] = -mu[i];
+        }
+      }
+    }
+    return mu;
+  }
+
+  function gcd(a, b){ while (b){ var t = b; b = a % b; a = t; } return a; }
+
+  function solve(m){
+    var mu = mobiusSieve(m);
+    var rows = [];
+    var ansMod = 1n;
+    var numer = 1n, denom = 1n;
+    var exactOk = m <= 2000;
+
+    for (var d = 2; d <= m; d++){
+      if (mu[d] === 0) continue;
+      var fd = Math.floor(m / d);
+      var denomVal = m - fd;
+      var muD = mu[d];
+      var contribMod = (BigInt(-muD) * BigInt(fd)) % MOD;
+      contribMod = ((contribMod * modinv(BigInt(denomVal), MOD)) % MOD + MOD) % MOD;
+      ansMod = (ansMod + contribMod) % MOD;
+
+      if (rows.length < 60){
+        rows.push({ d: d, mu: muD, fd: fd, denomVal: denomVal });
+      }
+
+      if (exactOk){
+        var addN = BigInt(-muD) * BigInt(fd);
+        var addD = BigInt(denomVal);
+        var newN = numer * addD + addN * denom;
+        var newD = denom * addD;
+        var g = gcd(newN < 0n ? -newN : newN, newD);
+        if (g > 0n){ newN /= g; newD /= g; }
+        numer = newN; denom = newD;
+      }
+    }
+
+    return { rows: rows, ansMod: ansMod, numer: numer, denom: denom, exactOk: exactOk };
+  }
+
+  function run(){
+    var m = parseInt(document.getElementById('inM').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(m) || m < 1 || m > 100000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>m 需要是 1 到 100,000 之间的整数。</p></div>';
+      return;
+    }
+
+    var r = solve(m);
+    var html = '';
+
+    if (r.rows.length > 0){
+      html += '<table class="trace"><thead><tr><th>d</th><th>&mu;(d)</th><th>&lfloor;m/d&rfloor;</th><th>m&minus;&lfloor;m/d&rfloor;</th></tr></thead><tbody>';
+      for (var i = 0; i < r.rows.length; i++){
+        var row = r.rows[i];
+        html += '<tr><td>' + row.d + '</td><td class="' + (row.mu > 0 ? 'odd' : 'even') + '">' + row.mu + '</td><td>' + row.fd + '</td><td>' + row.denomVal + '</td></tr>';
+      }
+      html += '</tbody></table>';
+      if (m > 60 || r.rows.length >= 60){
+        html += '<p style="font-size:12.5px;color:var(--ink-soft);">（只显示 &mu;(d)&ne;0 的因子，最多前 60 个）</p>';
+      }
+    }
+
+    var fractionText = r.exactOk ? (r.denom === 1n ? r.numer.toString() : (r.numer.toString() + ' / ' + r.denom.toString())) : '（太大了，这里没法精确显示）';
+
+    html += '<div class="answer-line"><b>精确期望长度：</b>' + fractionText + '</div>';
+    html += '<div class="answer-line"><b>题目要求的答案（对 1,000,000,007 取模）：</b>' + r.ansMod.toString() + '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

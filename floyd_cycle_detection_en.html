@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tortoise and Hare: Floyd's Cycle Detection Algorithm, Explained for Real Humans</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Chain / sequence ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 60px;min-width:56px;text-align:center;padding:10px 6px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box.loopback{background:var(--accent-soft);border-color:var(--accent);}
+  .chain-box .p{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:16px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Algorithms &middot; Skill Explainer</div>
+      <h1>Tortoise and Hare: <em>Floyd's Cycle Detection</em></h1>
+      <p class="sub">Some number sequences march on forever. Others sneak into an infinite loop and just keep repeating. How do you tell the difference &mdash; without an infinite amount of memory to remember every number you've ever seen? The answer borrows its name straight from Aesop's fable.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Two pointers</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission: does this chain of numbers ever loop?</h2></div>
+      <p class="lead">Imagine a rule that turns one number into the next: start with some number, apply the rule to get the next one, apply it again, and again, forever. This makes a chain: <code>x&#8320; &rarr; x&#8321; &rarr; x&#8322; &rarr; x&#8323; &rarr; &hellip;</code></p>
+      <p>Two things can happen to a chain like this:</p>
+      <ul style="color:var(--ink-soft);">
+        <li>It keeps producing new numbers forever, never repeating (or it eventually lands on a number that stops the process, like reaching 1).</li>
+        <li>At some point, it reaches a number it has <em>already seen before</em> &mdash; and then it's doomed to repeat that same loop of numbers forever.</li>
+      </ul>
+      <p>The question this page answers: <strong>given the rule and a starting number, how do you detect whether the chain loops &mdash; and even find exactly where the loop starts and how long it is &mdash; without storing every number you've ever visited?</strong></p>
+
+      <div class="callout fact">
+        <div class="ctitle">Where does the name come from?</div>
+        <p>This algorithm is nicknamed the <strong>tortoise and hare</strong> algorithm, after Aesop's fable about the slow-but-steady tortoise and the fast-but-careless hare. It uses two "runners" moving through the same chain of numbers at different speeds &mdash; and, just like in the fable, the race has a surprising ending.</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why not just remember every number?</div>
+        <p>You could keep a list (or a set) of every number you've ever seen, and check each new number against it. That works! But it uses more and more memory the longer the chain gets &mdash; and in some real problems (imagine a chain with billions of steps, or one living inside a computer's memory where you can't just casually inspect everything), that's a serious cost. The tortoise and hare trick solves the same problem using only <strong>two variables</strong>, no matter how long the chain turns out to be.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>A fun example: Happy Numbers</h2></div>
+      <p class="lead">Here's a delightful little rule to play with: take a number, <strong>square each of its digits and add them up</strong>, to get the next number. Keep going. If you ever reach <code>1</code>, the number is called <strong>happy</strong>. If you never reach 1 (and instead fall into a repeating loop), it's <strong>unhappy</strong>.</p>
+
+      <p>Let's try <code>7</code>:</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">start</div><div class="v">7</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>7&sup2;</div>
+        <div class="chain-box"><div class="p">step 1</div><div class="v">49</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>4&sup2;+9&sup2;</div>
+        <div class="chain-box"><div class="p">step 2</div><div class="v">97</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>9&sup2;+7&sup2;</div>
+        <div class="chain-box"><div class="p">step 3</div><div class="v">130</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>1&sup2;+3&sup2;+0&sup2;</div>
+        <div class="chain-box"><div class="p">step 4</div><div class="v">10</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>1&sup2;+0&sup2;</div>
+        <div class="chain-box loopback"><div class="p">step 5</div><div class="v">1</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">7 is happy! It reaches 1 after 5 steps. (And once you're at 1, you stay there forever: 1&sup2;=1.)</p>
+
+      <p>Now let's try <code>2</code>:</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">start</div><div class="v">2</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">4</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">16</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">37</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">58</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">89</div></div>
+      </div>
+      <div class="chain">
+        <div class="chain-box"><div class="p"></div><div class="v">145</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">42</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p"></div><div class="v">20</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>loops back!</div>
+        <div class="chain-box loopback"><div class="p"></div><div class="v">4</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">2 is unhappy: it never hits 1. Instead it wanders into the numbers 4, 16, 37, 58, 89, 145, 42, 20 &mdash; and then lands back on 4, repeating that same group of 8 numbers <em>forever</em>.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Every single number eventually loops</div>
+        <p>Here's a nice fact: <em>every</em> starting number under this rule eventually enters a loop &mdash; either the tiny "loop" of just <code>{1}</code> (happy numbers), or that same 8-number unhappy loop <code>{4, 16, 37, 58, 89, 145, 42, 20}</code> that every unhappy number eventually falls into. There's no third option. So "is this number happy?" is really just "which loop does its chain eventually fall into?" &mdash; exactly the kind of question our algorithm is built to answer.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>The obvious way: remember everything you've seen</h2></div>
+      <p class="lead">The simplest approach: keep a set of every number visited so far. Before moving to the next number, check if it's already in the set. If it is, you've found a loop. If you ever reach 1, it's happy.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>happy_naive.py</div>
+        <pre><code><span class="kw">def</span> <span class="kw">next_number</span>(x):
+    <span class="kw">return</span> <span class="kw">sum</span>(<span class="kw">int</span>(d) ** <span class="nu">2</span> <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">str</span>(x))
+
+<span class="kw">def</span> <span class="kw">is_happy_naive</span>(x):
+    seen = <span class="kw">set</span>()
+    <span class="kw">while</span> x != <span class="nu">1</span> <span class="kw">and</span> x <span class="kw">not in</span> seen:
+        seen.add(x)
+        x = next_number(x)
+    <span class="kw">return</span> x == <span class="nu">1</span></code></pre>
+      </div>
+
+      <p>This works perfectly, and for a problem this small, it's genuinely a fine solution &mdash; the loop is short and the set never gets very big. But imagine a chain that runs for <strong>billions</strong> of steps before looping (this happens in other cycle-detection problems, like following pointers through a huge linked list). Storing billions of visited values would eat up all your memory. We need a way to detect the loop using only a small, fixed amount of extra space.</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The clever idea: two racers, different speeds</h2></div>
+      <p class="lead">Here's the trick. Put two "runners" on the same chain of numbers, both starting from the beginning:</p>
+      <ul style="color:var(--ink-soft);">
+        <li>The <strong>tortoise</strong> moves one step at a time: <code>x &rarr; next(x)</code>.</li>
+        <li>The <strong>hare</strong> moves two steps at a time: <code>x &rarr; next(next(x))</code>.</li>
+      </ul>
+      <p>If the chain runs forever without ever repeating, the hare just zooms off ahead of the tortoise and neither one ever needs to catch the other &mdash; nothing exciting happens (in our Happy Number example, this can't actually occur since every chain loops eventually, but it's the general shape of "no cycle found" in other settings, like a linked list ending in <code>None</code>).</p>
+      <p>But if the chain <em>does</em> loop &mdash; imagine the loop as an actual circular racetrack &mdash; then once both runners are on that circular track, the hare (moving twice as fast) is essentially <strong>lapping</strong> the tortoise. And on a circular track, a faster runner lapping a slower one always eventually catches up to the exact same spot. <strong>The tortoise and hare are guaranteed to land on the same number at the same time.</strong> That's your proof a loop exists!</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Aesop's fable, but backwards</div>
+        <p>In the story, the hare loses the race by being careless. Here, the hare is doing exactly what it's supposed to &mdash; and its speed is precisely what <em>guarantees</em> it will eventually run right back into the tortoise, proving the racetrack loops. No carelessness required, just a factor-of-2 speed difference.</p>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>happy_floyd_detect.py</div>
+        <pre><code><span class="kw">def</span> <span class="kw">next_number</span>(x):
+    <span class="kw">return</span> <span class="kw">sum</span>(<span class="kw">int</span>(d) ** <span class="nu">2</span> <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">str</span>(x))
+
+<span class="kw">def</span> <span class="kw">is_happy_floyd</span>(x):
+    slow = next_number(x)
+    fast = next_number(next_number(x))
+    <span class="kw">while</span> slow != fast:
+        slow = next_number(slow)
+        fast = next_number(next_number(fast))
+    <span class="kw">return</span> slow == <span class="nu">1</span></code></pre>
+      </div>
+      <p>Only two variables, <code>slow</code> and <code>fast</code> &mdash; no matter how long the chain is before it loops. When they finally meet, check whether they met at <code>1</code> (happy) or somewhere else (unhappy, stuck in the 8-number loop).</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Why does this actually work?</h2></div>
+      <p class="lead">Here's the intuition, made precise. Suppose the chain has a "tail" of length <code>&mu;</code> (some numbers before the loop starts) followed by a loop of length <code>&lambda;</code> (how many numbers are in the repeating part).</p>
+
+      <p>Once both the tortoise and the hare have entered the loop, think of their positions as points going around a circular track of <code>&lambda;</code> spots. Every round, the tortoise advances 1 spot and the hare advances 2 spots &mdash; so the hare gains exactly <strong>1 extra spot</strong> on the tortoise, every single round (measuring "how far ahead" the hare is, going around the loop).</p>
+
+      <p>Since the loop only has <code>&lambda;</code> spots total, the gap between them (measured going around the loop) cycles through <code>0, 1, 2, &hellip;, &lambda;&minus;1, 0, 1, 2, &hellip;</code> and back to 0 every <code>&lambda;</code> rounds. A gap of <strong>0</strong> means they're standing on the exact same number. Since the gap increases by exactly 1 every round, it's guaranteed to hit 0 again within at most <code>&lambda;</code> rounds after both runners are in the loop &mdash; it can't "jump over" 0, since it only ever changes by 1 at a time.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">The takeaway</div>
+        <p>The meeting is not luck &mdash; it's guaranteed by simple arithmetic. And it happens quickly: within <code>&mu; + &lambda;</code> rounds at the very most.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Going deeper: where does the loop start, and how long is it?</h2></div>
+      <p class="lead">Knowing a loop exists is nice, but often you want more: exactly which number is the <em>first</em> one that gets revisited (this marks where the tail ends and the loop begins), and how many numbers are in the loop. Floyd's algorithm answers both, using two more short phases after the meeting point is found.</p>
+
+      <div class="subhead">Phase 2: finding where the loop starts</div>
+      <p>Here's a small miracle: reset a new pointer, called <code>finder</code>, back to the very start of the chain. Leave the other pointer sitting right where the tortoise and hare met. Now move <em>both</em> of them <strong>one step at a time</strong>, together. The point where they meet <em>this</em> time is exactly the start of the loop.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Why does resetting to the start work?</div>
+        <p>It comes down to a bit of distance bookkeeping: by the time the tortoise and hare first met, the tortoise had traveled a distance that happens to be a multiple of the loop length <code>&lambda;</code>, once you subtract off the tail length <code>&mu;</code>. That special relationship is exactly what makes walking from the very start, one step at a time, land on the loop's entrance at the same moment as walking one step at a time from the meeting point. It's a beautiful bit of arithmetic &mdash; you don't have to derive it yourself to trust it (though it's a fun proof to look up once you're comfortable with modular arithmetic).</p>
+      </div>
+
+      <div class="subhead">Phase 3: measuring the loop's length</div>
+      <p>Once you know where the loop starts, measuring its length is easy: stay put at that number, and take single steps with another pointer, counting each step, until you land back on the same number. That count is <code>&lambda;</code>.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>floyd_full.py</div>
+        <pre><code><span class="kw">def</span> <span class="kw">find_cycle</span>(x0, next_fn):
+    <span class="cm"># Phase 1: detect that a cycle exists</span>
+    slow = next_fn(x0)
+    fast = next_fn(next_fn(x0))
+    <span class="kw">while</span> slow != fast:
+        slow = next_fn(slow)
+        fast = next_fn(next_fn(fast))
+
+    <span class="cm"># Phase 2: find where the cycle starts</span>
+    finder = x0
+    <span class="kw">while</span> finder != slow:
+        finder = next_fn(finder)
+        slow = next_fn(slow)
+    cycle_start = finder
+
+    <span class="cm"># Phase 3: measure the cycle's length</span>
+    length = <span class="nu">1</span>
+    p = next_fn(cycle_start)
+    <span class="kw">while</span> p != cycle_start:
+        p = next_fn(p)
+        length += <span class="nu">1</span>
+
+    <span class="kw">return</span> cycle_start, length</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Let's trace it together: starting from 2</h2></div>
+      <p class="lead">We already know the answer from Level 2: the chain from 2 is <code>2, 4, 16, 37, 58, 89, 145, 42, 20, 4, 16, &hellip;</code> &mdash; a tail of length <code>&mu;=1</code> (just the number 2) followed by an 8-number loop starting at 4. Let's watch the algorithm discover this on its own.</p>
+
+      <div class="subhead">Phase 1: finding the meeting point</div>
+      <table class="trace">
+        <thead><tr><th>round</th><th>slow (1 step)</th><th>fast (2 steps)</th><th>match?</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>4</td><td>16</td><td class="even">no</td></tr>
+          <tr><td>2</td><td>16</td><td>58</td><td class="even">no</td></tr>
+          <tr><td>3</td><td>37</td><td>145</td><td class="even">no</td></tr>
+          <tr><td>4</td><td>58</td><td>20</td><td class="even">no</td></tr>
+          <tr><td>5</td><td>89</td><td>16</td><td class="even">no</td></tr>
+          <tr><td>6</td><td>145</td><td>58</td><td class="even">no</td></tr>
+          <tr><td>7</td><td>42</td><td>145</td><td class="even">no</td></tr>
+          <tr><td>8</td><td>20</td><td>20</td><td class="odd"><b>yes!</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">Meeting point found at round 8, both at <b>20</b>.</td></tr></tfoot>
+      </table>
+
+      <div class="subhead">Phase 2: finding the loop's start</div>
+      <table class="trace">
+        <thead><tr><th>step</th><th>finder (from start, 2)</th><th>slow (from meeting point, 20)</th><th>match?</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>2</td><td>20</td><td class="even">no</td></tr>
+          <tr><td>1</td><td>4</td><td>4</td><td class="odd"><b>yes!</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">The loop starts at <b>4</b>, reached after <b>&mu;=1</b> step from the very beginning.</td></tr></tfoot>
+      </table>
+
+      <div class="subhead">Phase 3: measuring the loop</div>
+      <table class="trace">
+        <thead><tr><th>step</th><th>value</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>16</td></tr>
+          <tr><td>2</td><td>37</td></tr>
+          <tr><td>3</td><td>58</td></tr>
+          <tr><td>4</td><td>89</td></tr>
+          <tr><td>5</td><td>145</td></tr>
+          <tr><td>6</td><td>42</td></tr>
+          <tr><td>7</td><td>20</td></tr>
+          <tr><td>8</td><td>4 &mdash; back to the start!</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">Loop length <b>&lambda;=8</b>.</td></tr></tfoot>
+      </table>
+
+      <p>Everything checks out exactly: tail length 1, loop starting at 4, loop length 8 &mdash; and since 1 is never part of the loop, we correctly conclude <b>2 is unhappy</b>.</p>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Now you drive: try your own starting number</h2></div>
+      <p class="lead">Pick any positive whole number. The tool runs the tortoise-and-hare algorithm on the Happy Number rule and reports the full result: happy or unhappy, plus the tail length, loop start, and loop length.</p>
+
+      <div class="widget">
+        <h3>Happy number checker</h3>
+        <div class="hint">Tip: try 7 (happy), 4 (already at the start of the loop, so tail length 0), or a bigger number like 1111 to see a longer tail before it settles into one of the two loops.</div>
+        <div class="field-row">
+          <div class="field"><label for="inX">starting number</label><input type="number" id="inX" value="2" min="1" max="999999999"></div>
+          <div class="field"><button class="btn" id="runBtn">Run tortoise &amp; hare</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out on paper first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Trace the chain starting from 89 by hand. Is 89 happy? Where does it fall relative to the loop from Level 7?</summary>
+        <div class="reveal">
+          <p><code>89 &rarr; 8&sup2;+9&sup2;=145 &rarr; 42 &rarr; 20 &rarr; 4 &rarr; 16 &rarr; 37 &rarr; 58 &rarr; 89</code>. It's unhappy, and since 89 itself is one of the 8 numbers in the loop, its tail length is <code>&mu;=0</code> &mdash; it starts <em>already inside</em> the loop.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: If the tortoise and hare start at the very same number and that number is already inside a loop (tail length 0), will the very first comparison already show a match? Why or why not?</summary>
+        <div class="reveal">
+          <p>Not necessarily on the very first round &mdash; the tortoise has moved 1 step and the hare has moved 2 steps by the time of the first comparison, so unless the loop has length 1 (like the happy-number loop <code>{1}</code>, where every step stays at 1), they'll usually be at different points within the loop after round 1. They're still guaranteed to meet within &lambda; rounds, per Level 5's argument &mdash; starting inside the loop just means <code>&mu;=0</code>, so the "at most &mu;+&lambda; rounds" bound becomes "at most &lambda; rounds."</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why does the naive "remember everything in a set" approach from Level 3 use more and more memory as the chain gets longer, while the tortoise-and-hare approach doesn't?</summary>
+        <div class="reveal">
+          <p>The set-based approach stores every single number it has ever visited, so its memory usage grows in direct proportion to how many steps have happened &mdash; a chain with a million steps needs a set with up to a million entries. The tortoise-and-hare approach only ever keeps track of two current positions (<code>slow</code> and <code>fast</code>), no matter how long the chain turns out to be &mdash; it overwrites old positions instead of saving all of them, so its memory usage stays constant.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: This algorithm is famous for detecting cycles in linked lists (a chain of boxes, each pointing to the next one, where "next(x)" means "follow the pointer"). How would you adapt the Happy Number code from Level 4 to work on a linked list instead of numbers?</summary>
+        <div class="reveal">
+          <p>The shape of the algorithm barely changes &mdash; only what "one step" means. Instead of <code>next_number(x)</code> computing a digit-square-sum, you'd have <code>slow = slow.next</code> and (twice) <code>fast = fast.next.next</code>, moving along the list's pointers instead of applying a math formula. If the list has a cycle (some node's pointer loops back to an earlier node instead of ending at <code>None</code>), the fast pointer will eventually equal the slow pointer, exactly as before. If the list has no cycle, the fast pointer will simply reach the end (<code>None</code>) first, which tells you there's no cycle to find.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5 (harder): Every unhappy number eventually falls into the exact same 8-number loop, <code>{4, 16, 37, 58, 89, 145, 42, 20}</code>. Using the naive set-based method from Level 3, roughly how would you go about proving this is the <em>only</em> unhappy loop that exists, for say all numbers from 1 up to 10,000?</summary>
+        <div class="reveal">
+          <p>Run the naive (or tortoise-and-hare) algorithm on every number from 1 to 10,000, and for each one that turns out unhappy, record the exact loop it eventually lands in (the set of numbers from where it starts repeating). Then compare all those recorded loops to each other. If every single one turns out to be the same 8-number set <code>{4, 16, 37, 58, 89, 145, 42, 20}</code>, that's strong empirical evidence (though not a mathematical proof for numbers beyond 10,000) that this is the only unhappy loop in that range. This is exactly the kind of experiment a programmer can run in a few seconds that would take forever by hand &mdash; and it's part of why this specific 8-number loop is so famous among Happy Number fans.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Floyd's Cycle Detection Algorithm (tortoise and hare) &mdash; a classic technique for detecting loops using only constant extra memory. It shows up everywhere from linked-list problems to number-theory puzzles like Happy Numbers, and even in cryptographic factoring algorithms like Pollard's rho.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function nextNumber(x){
+    var s = 0;
+    var str = String(x);
+    for (var i = 0; i < str.length; i++){
+      var d = str.charCodeAt(i) - 48;
+      s += d * d;
+    }
+    return s;
+  }
+
+  function findCycle(x0){
+    var slow = nextNumber(x0);
+    var fast = nextNumber(nextNumber(x0));
+    var phase1 = [];
+    var round = 1;
+    phase1.push({ round: round, slow: slow, fast: fast, match: slow === fast });
+    while (slow !== fast){
+      slow = nextNumber(slow);
+      fast = nextNumber(nextNumber(fast));
+      round++;
+      phase1.push({ round: round, slow: slow, fast: fast, match: slow === fast });
+    }
+
+    var finder = x0;
+    var meet = slow;
+    var phase2 = [{ step: 0, finder: finder, other: meet, match: finder === meet }];
+    var mu = 0;
+    while (finder !== meet){
+      finder = nextNumber(finder);
+      meet = nextNumber(meet);
+      mu++;
+      phase2.push({ step: mu, finder: finder, other: meet, match: finder === meet });
+    }
+    var cycleStart = finder;
+
+    var lambda = 1;
+    var p = nextNumber(cycleStart);
+    var phase3 = [{ step: 1, value: p }];
+    while (p !== cycleStart){
+      p = nextNumber(p);
+      lambda++;
+      phase3.push({ step: lambda, value: p });
+    }
+
+    return { mu: mu, lambda: lambda, cycleStart: cycleStart, happy: cycleStart === 1, phase1: phase1, phase2: phase2, phase3: phase3 };
+  }
+
+  function run(){
+    var x0 = parseInt(document.getElementById('inX').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(x0) || x0 < 1 || x0 > 999999999){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Please enter a whole number between 1 and 999,999,999.</p></div>';
+      return;
+    }
+
+    var r = findCycle(x0);
+    var html = '';
+
+    html += '<div class="answer-line"><b>' + (r.happy ? 'Happy!' : 'Unhappy') + '</b> &mdash; ' + x0 + ' eventually loops at <b>' + r.cycleStart + '</b>, tail length &mu;=' + r.mu + ', loop length &lambda;=' + r.lambda + '</div>';
+
+    if (r.phase1.length <= 40){
+      html += '<div class="subhead">Phase 1: finding the meeting point</div>';
+      html += '<table class="trace"><thead><tr><th>round</th><th>slow</th><th>fast</th><th>match?</th></tr></thead><tbody>';
+      for (var i = 0; i < r.phase1.length; i++){
+        var s = r.phase1[i];
+        html += '<tr><td>' + s.round + '</td><td>' + s.slow + '</td><td>' + s.fast + '</td><td class="' + (s.match ? 'odd' : 'even') + '">' + (s.match ? 'yes!' : 'no') + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    if (r.phase2.length <= 40){
+      html += '<div class="subhead">Phase 2: finding the loop\'s start</div>';
+      html += '<table class="trace"><thead><tr><th>step</th><th>finder (from start)</th><th>other (from meeting point)</th><th>match?</th></tr></thead><tbody>';
+      for (var j = 0; j < r.phase2.length; j++){
+        var s2 = r.phase2[j];
+        html += '<tr><td>' + s2.step + '</td><td>' + s2.finder + '</td><td>' + s2.other + '</td><td class="' + (s2.match ? 'odd' : 'even') + '">' + (s2.match ? 'yes!' : 'no') + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    if (r.phase3.length <= 40){
+      html += '<div class="subhead">Phase 3: measuring the loop</div>';
+      html += '<table class="trace"><thead><tr><th>step</th><th>value</th></tr></thead><tbody>';
+      for (var k = 0; k < r.phase3.length; k++){
+        var s3 = r.phase3[k];
+        html += '<tr><td>' + s3.step + '</td><td>' + s3.value + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Birthday Paradox: Taming a Fraction With 10^18 in It (Codeforces 711E)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- People dots ---------- */
+  .people{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .person{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:14px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .person.match{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:170px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 711E &middot; Problem Walkthrough</div>
+      <h1>The Birthday Paradox: <em>Taming a Fraction With 10<sup>18</sup> in It</em></h1>
+      <p class="sub">In a year with <code>2<sup>n</sup></code> days, ZS interviews <code>k</code> people. What's the probability that at least two of them share a birthday? The catch: <code>n</code> and <code>k</code> can be as large as <b>10<sup>18</sup></b> &mdash; far too big to compute anything the direct way.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Probability &amp; number theory</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">Udayland has <code>2<sup>n</sup></code> days in a year. ZS interviews <code>k</code> people, each with a birthday chosen uniformly at random from those <code>2<sup>n</sup></code> days. He wants the probability that at least two of them share a birthday, written as a fraction <code>A/B</code> in <strong>lowest terms</strong> (A and B share no common factor), and then printed <code>mod (10<sup>6</sup>+3)</code>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>n=3, k=2</code> &rarr; <code>A=1, B=8</code> &nbsp;(8 days, 2 people, probability 1/8)<br>
+        <code>n=1, k=3</code> &rarr; <code>A=1, B=1</code> &nbsp;(only 2 days but 3 people &mdash; a match is guaranteed!)<br>
+        <code>n=4, k=3</code> &rarr; <code>A=23, B=128</code></p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why is this hard?</div>
+        <p><code>n</code> and <code>k</code> can each be up to <b>10<sup>18</sup></b>. That means <code>2<sup>n</sup></code> could be a number with hundreds of quintillion digits &mdash; you couldn't even store it, let alone compute a probability with it directly. And yet the judge wants an exact, fully-reduced fraction. This page is about the clever shortcuts that make that possible.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Wait, what's the Birthday Paradox?</h2></div>
+      <p class="lead">Here's a classic party trick: get 23 random people in a room, and there's already about a <strong>50% chance</strong> that two of them share a birthday &mdash; even though there are 365 days in a year and only 23 people! Most people find this shocking at first, since 23 feels tiny compared to 365.</p>
+
+      <p>The trick to understanding it: you're not checking whether someone shares <em>your specific</em> birthday (that really would need much more than 23 people). You're checking whether <em>any</em> two of the 23 people match each other &mdash; and with 23 people, there are <code>23&times;22/2 = 253</code> different <em>pairs</em> of people who could potentially match. 253 chances for a coincidence adds up fast!</p>
+
+      <div class="people">
+        <div class="person">A</div><div class="person">B</div><div class="person match">C</div><div class="person">D</div><div class="person match">E</div><div class="person">F</div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">Even with just 6 people, there are already 15 possible pairs to check for a coincidence.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">This problem, in plain words</div>
+        <p>Udayland's version just swaps "365 days" for "<code>2<sup>n</sup></code> days" and "23 people" for "<code>k</code> people" &mdash; and instead of an approximate percentage, it wants the <em>exact</em> probability as a fraction.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>The formula: flip the question around</h2></div>
+      <p class="lead">"At least two people share a birthday" is awkward to compute directly &mdash; there are tons of ways that could happen. It's much easier to compute the opposite: <strong>the probability that everyone has a completely different birthday</strong>, and then subtract from 1.</p>
+
+      <p>Imagine interviewing people one at a time, with <code>m = 2<sup>n</sup></code> possible days. The 1st person can have any birthday (probability 1 of "no clash yet"). The 2nd person must avoid the 1st person's day: probability <code>(m&minus;1)/m</code>. The 3rd person must avoid 2 taken days: probability <code>(m&minus;2)/m</code>. And so on, for all <code>k</code> people:</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">P(no match) = <sup>m</sup>&frasl;<sub>m</sub> &times; <sup>(m&minus;1)</sup>&frasl;<sub>m</sub> &times; <sup>(m&minus;2)</sup>&frasl;<sub>m</sub> &times; &hellip; &times; <sup>(m&minus;k+1)</sup>&frasl;<sub>m</sub></p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">P(at least one match) = 1 &minus; P(no match)</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Checking it against sample 1</div>
+        <p>For <code>n=3, k=2</code>: <code>m=8</code>. <code>P(no match) = 8/8 &times; 7/8 = 7/8</code>. So <code>P(match) = 1 &minus; 7/8 = 1/8</code>. Matches <code>A=1, B=8</code> exactly!</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>When is a match 100% guaranteed?</h2></div>
+      <p class="lead">If you try to interview more people than there are days in the year, a shared birthday isn't just likely &mdash; it's <strong>certain</strong>. This is the classic <em>pigeonhole principle</em>: if you have more pigeons than pigeonholes, at least one hole must contain two pigeons.</p>
+
+      <p>Here, "pigeons" are people and "pigeonholes" are days. If <code>k &gt; 2<sup>n</sup></code>, the answer is instantly <code>P = 1</code>, i.e. <code>A=1, B=1</code> &mdash; no computation needed at all!</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Checking it against sample 2</div>
+        <p>For <code>n=1, k=3</code>: there are only <code>2<sup>1</sup>=2</code> days but 3 people. Since <code>3 &gt; 2</code>, a match is guaranteed. Output: <code>1 1</code>. Exactly what the judge expects.</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">A useful shortcut for huge n</div>
+        <p>Since <code>k &le; 10<sup>18</sup></code>, once <code>n &ge; 60</code>, <code>2<sup>n</sup></code> is already bigger than <code>2<sup>60</sup> &approx; 1.15 &times; 10<sup>18</sup></code>, which is already bigger than any possible <code>k</code>. So this "guaranteed match" case can only ever happen when <code>n</code> is small (under 60) &mdash; meaning <code>2<sup>n</sup></code> is small enough to actually compute and compare directly against <code>k</code>, no huge-number trouble involved.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>The real problem: numbers too big to even write down</h2></div>
+      <p class="lead">Once we know a match <em>isn't</em> guaranteed (so <code>k &le; 2<sup>n</sup></code>), we still need to compute Level 3's formula &mdash; and that's where things get scary. <code>2<sup>n</sup></code> with <code>n</code> up to 10<sup>18</sup> is a number so large it would take more storage than exists on Earth to write out in full. And <code>k</code> itself can be up to 10<sup>18</sup> terms in that product &mdash; far too many to multiply one at a time.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>18</sup></div><div class="lbl">terms in the product, in the worst case &mdash; can't loop through them one by one</div></div>
+        <div class="stat slow"><div class="num">&ge; 10<sup>17</sup> digits</div><div class="lbl">roughly how long 2<sup>n</sup> could be written out, for large n &mdash; can't even store the number</div></div>
+      </div>
+
+      <p>So we need to find shortcuts that let us compute the <em>final answer</em> without ever computing the astronomically large intermediate numbers along the way. The next few levels build up exactly those shortcuts, one at a time.</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>The big insight: the answer's denominator is always a power of 2</h2></div>
+      <p class="lead">Look again at Level 3's formula for <code>P(no match)</code>: its denominator is <code>m<sup>k</sup> = (2<sup>n</sup>)<sup>k</sup> = 2<sup>n&times;k</sup></code>. That's it &mdash; a pure power of 2, with no other prime factors anywhere in it!</p>
+
+      <p>When you reduce a fraction to lowest terms, you can only cancel out factors that the numerator and denominator <em>share</em>. Since the denominator here is 100% made of 2's, the only thing that can ever get cancelled is 2's. That means: <strong>no matter how ugly the numerator looks, the fully-reduced fraction's denominator will always come out as some power of 2.</strong></p>
+
+      <div class="callout tip">
+        <div class="ctitle">Why this changes everything</div>
+        <p>This turns our problem into a much narrower question: <em>exactly how many factors of 2 does the numerator contain?</em> If we can count that single number, we instantly know exactly how much to cancel &mdash; and we never have to deal with any other prime factor at all.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Counting the 2's: Legendre's formula</h2></div>
+      <p class="lead">The numerator of <code>P(no match)</code> is <code>2<sup>n</sup> &times; (2<sup>n</sup>&minus;1) &times; (2<sup>n</sup>&minus;2) &times; &hellip; &times; (2<sup>n</sup>&minus;k+1)</code>. The very first term, <code>2<sup>n</sup></code>, contributes exactly <code>n</code> factors of 2, since it's a pure power of 2. What about the rest?</p>
+
+      <p>Here's a neat fact: since <code>i</code> is always much smaller than <code>2<sup>n</sup></code> in this problem, the number of factors of 2 in <code>(2<sup>n</sup> &minus; i)</code> turns out to be <em>exactly</em> the number of factors of 2 in <code>i</code> itself, for every <code>i</code> from 1 to <code>k&minus;1</code>. So the <em>total</em> count of 2's hiding in all those terms combined equals the number of factors of 2 hiding inside <code>1 &times; 2 &times; 3 &times; &hellip; &times; (k&minus;1)</code>, in other words inside <code>(k&minus;1)!</code>.</p>
+
+      <p>Counting factors of 2 in a factorial has a classic shortcut called <strong>Legendre's formula</strong>: just keep dividing by increasing powers of 2 and adding up the whole-number results.</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">v<sub>2</sub>(m!) = &lfloor;m/2&rfloor; + &lfloor;m/4&rfloor; + &lfloor;m/8&rfloor; + &hellip;</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Worked example: v<sub>2</sub>(10!)</div>
+        <p><code>&lfloor;10/2&rfloor; + &lfloor;10/4&rfloor; + &lfloor;10/8&rfloor; + &lfloor;10/16&rfloor; = 5 + 2 + 1 + 0 = 8</code>. So <code>10!</code> is divisible by <code>2<sup>8</sup> = 256</code>, but not by <code>2<sup>9</sup></code>. (Double-check if you like: 2,4,6,8,10 each contribute at least one factor of 2 &mdash; that's 5. Then 4 and 8 contribute an <em>extra</em> factor each &mdash; that's 2 more. Then 8 contributes yet another &mdash; that's 1 more. Total: 5+2+1=8.)</p>
+      </div>
+
+      <p>So the total power of 2 in Level 3's numerator is:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">V = n + v<sub>2</sub>((k&minus;1)!)</p>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>A second pigeonhole trick: stop multiplying early</h2></div>
+      <p class="lead">We still need the numerator's <em>odd part</em> (everything left over after all the 2's are pulled out), reduced modulo the prime <code>p = 1,000,003</code>. The naive plan &mdash; multiply out all <code>k</code> terms one by one, mod <code>p</code> &mdash; is a problem again if <code>k</code> is up to 10<sup>18</sup>.</p>
+
+      <p>Here's the rescue: <code>p</code> itself is "only" about a million. The numerator's terms are <code>k</code> consecutive whole numbers counting downward. Once you line up <code>p</code> or more <em>consecutive</em> integers, by the pigeonhole principle, their remainders when divided by <code>p</code> must cover <em>every single</em> remainder from 0 to <code>p&minus;1</code> at least once &mdash; including remainder 0! That means one of those terms is an exact multiple of <code>p</code>.</p>
+
+      <div class="callout warn">
+        <div class="ctitle">The shortcut</div>
+        <p>So: if <code>k &ge; p</code>, we know for certain that the product (mod <code>p</code>) is exactly <code>0</code> &mdash; without checking a single term. We only ever need to actually run the multiplication loop when <code>k &lt; p</code>, meaning <strong>at most about a million iterations, ever</strong> &mdash; regardless of how astronomically large <code>k</code> is allowed to be.</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>18</sup></div><div class="lbl">the worst-case value of k allowed by the problem</div></div>
+        <div class="stat fast"><div class="num">&lt; 1,000,003</div><div class="lbl">the most multiplication steps we will ever actually perform</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Removing the 2's with a modular inverse</h2></div>
+      <p class="lead">We now have two mod-<code>p</code> ingredients: <code>NumMod</code> (the full numerator mod <code>p</code>, computed the fast way from Level 8) and <code>V</code> (the exact count of 2's to remove, from Level 7). To "divide out" <code>2<sup>V</sup></code> under modular arithmetic, we multiply by its <strong>modular inverse</strong> instead &mdash; the same Fermat's-little-theorem trick used elsewhere in this series:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">(2<sup>V</sup>)<sup>&minus;1</sup> mod p = (2<sup>V</sup>)<sup>p&minus;2</sup> mod p</p>
+
+      <p>Multiplying <code>NumMod</code> by this inverse gives us <code>OddMod</code> &mdash; the numerator's "everything but the 2's" part, reduced mod <code>p</code>. From here:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">B = 2<sup>E</sup>, &nbsp;where E = n&times;k &minus; V &nbsp;(the leftover power of 2 in the denominator after cancelling)<br>
+      A = B &minus; OddMod &nbsp;(since P(match) = 1 &minus; OddMod/B = (B&minus;OddMod)/B)</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Why A and B are automatically coprime</div>
+        <p>Since <code>OddMod</code> came from a number with all factors of 2 already stripped out, it's odd. Subtracting an odd number from an even power of 2 (as long as <code>E &ge; 1</code>) always gives an odd result. So <code>A</code> is odd and <code>B</code> is a pure power of 2 &mdash; they share no common factor greater than 1, exactly satisfying the judge's "already reduced" requirement.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">LEVEL 10</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Time to assemble everything from Levels 4&ndash;9 into working code. Python's built-in arbitrary-size integers and 3-argument <code>pow(base, exp, mod)</code> (which handles even gigantic exponents efficiently) make this remarkably short.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>birthday_paradox.py</div>
+        <pre><code>MOD = <span class="nu">1_000_003</span>
+
+<span class="kw">def</span> <span class="kw">v2_factorial</span>(m):
+    total = <span class="nu">0</span>
+    p = <span class="nu">2</span>
+    <span class="kw">while</span> p &lt;= m:
+        total += m // p
+        p *= <span class="nu">2</span>
+    <span class="kw">return</span> total
+
+n, k = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+<span class="cm"># Level 4: is a match guaranteed?</span>
+<span class="kw">if</span> n &lt; <span class="nu">63</span> <span class="kw">and</span> k &gt; (<span class="nu">1</span> &lt;&lt; n):
+    <span class="kw">print</span>(<span class="nu">1</span>, <span class="nu">1</span>)
+<span class="kw">else</span>:
+    <span class="cm"># Level 7: total power of 2 in the numerator</span>
+    V = n + v2_factorial(k - <span class="nu">1</span>)
+
+    <span class="cm"># Level 8: numerator mod p, short-circuited past a million terms</span>
+    n_mod = <span class="kw">pow</span>(<span class="nu">2</span>, n, MOD)
+    <span class="kw">if</span> k &gt;= MOD:
+        num_mod = <span class="nu">0</span>
+    <span class="kw">else</span>:
+        num_mod = <span class="nu">1</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(k):
+            num_mod = num_mod * ((n_mod - i) % MOD) % MOD
+
+    <span class="cm"># Level 9: strip out the 2's using a modular inverse</span>
+    inv_2V = <span class="kw">pow</span>(<span class="kw">pow</span>(<span class="nu">2</span>, V, MOD), MOD - <span class="nu">2</span>, MOD)
+    odd_mod = num_mod * inv_2V % MOD
+
+    E = n * k - V
+    B = <span class="kw">pow</span>(<span class="nu">2</span>, E, MOD)
+    A = (B - odd_mod) % MOD
+
+    <span class="kw">print</span>(A, B)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">if n < 63 and k > (1 << n):
+    print(1, 1)</div>
+          <div class="annot-note"><span>Level 4's pigeonhole shortcut. Checking <code>n &lt; 63</code> first avoids ever computing <code>1 &lt;&lt; n</code> for astronomically large n (where it's unnecessary anyway, since k could never exceed it).</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">V = n + v2_factorial(k - 1)</div>
+          <div class="annot-note"><span>Level 7's factor-of-2 count, using Legendre's formula &mdash; only about 60 loop iterations even when k is 10<sup>18</sup>.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if k >= MOD:
+    num_mod = 0
+else:
+    ... loop ...</div>
+          <div class="annot-note"><span>Level 8's second pigeonhole shortcut &mdash; the loop only ever runs when it's guaranteed to be short.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">E = n * k - V
+B = pow(2, E, MOD)</div>
+          <div class="annot-note"><span>Python happily computes <code>n * k</code> exactly even when it's around 10<sup>36</sup>, and <code>pow(2, E, MOD)</code> handles that huge exponent efficiently via fast exponentiation under the hood.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 11 ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">LEVEL 11</span><h2>Let's trace it together: n=4, k=3</h2></div>
+      <p class="lead">Small enough to do completely by hand &mdash; and it should land on the judge's sample answer, <code>23 128</code>.</p>
+
+      <table class="trace">
+        <thead><tr><th>step</th><th>quantity</th><th>value</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>guaranteed match? (2<sup>4</sup>=16 vs k=3)</td><td class="even">16 &ge; 3, no &mdash; keep going</td></tr>
+          <tr><td>2</td><td>V = n + v<sub>2</sub>((k&minus;1)!) = 4 + v<sub>2</sub>(2!)</td><td class="odd">4 + 1 = 5</td></tr>
+          <tr><td>3</td><td>Nmod = 2<sup>4</sup> mod p</td><td class="odd">16</td></tr>
+          <tr><td>4</td><td>k=3 &lt; p, so multiply directly: 16 &times; 15 &times; 14</td><td class="odd">3360</td></tr>
+          <tr><td>5</td><td>inv(2<sup>5</sup>) = inv(32) mod p</td><td class="even">(a modular inverse)</td></tr>
+          <tr><td>6</td><td>OddMod = 3360 &times; inv(32) mod p</td><td class="odd">3360 &divide; 32 = 105</td></tr>
+          <tr><td>7</td><td>E = n&times;k &minus; V = 4&times;3 &minus; 5</td><td class="odd">7</td></tr>
+          <tr><td>8</td><td>B = 2<sup>7</sup> mod p</td><td class="odd">128</td></tr>
+          <tr><td>9</td><td>A = B &minus; OddMod = 128 &minus; 105</td><td class="odd">23</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">Output: <b>23 128</b> &mdash; matches the judge exactly!</td></tr></tfoot>
+      </table>
+
+      <p>Every step used only small, ordinary numbers &mdash; even though the underlying formula (Level 3's product) technically involves a denominator of <code>16<sup>3</sup> = 4096</code> and a numerator that's a product of three terms near 2<sup>4</sup>. The tricks from Levels 6&ndash;9 let us skip straight to the reduced answer.</p>
+    </section>
+
+    <!-- ============ LEVEL 12 : INTERACTIVE ============ -->
+    <section class="level" id="level12">
+      <div class="level-head"><span class="level-num">LEVEL 12</span><h2>Now you drive: try your own n and k</h2></div>
+      <p class="lead">Enter any <code>n</code> and <code>k</code> from 1 to 10<sup>18</sup> &mdash; yes, the full range the judge allows.</p>
+
+      <div class="widget">
+        <h3>Birthday paradox calculator</h3>
+        <div class="hint">Tip: try n=4, k=3 to match the trace above, or n=1000000000000000000, k=1000000000000000000 to see it handle the full 10<sup>18</sup> range instantly.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="text" id="inN" value="4"></div>
+          <div class="field"><label for="inK">k</label><input type="text" id="inK" value="3"></div>
+          <div class="field"><button class="btn" id="runBtn">Compute A and B</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 13 ============ -->
+    <section class="level" id="level13">
+      <div class="level-head"><span class="level-num">LEVEL 13</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out by hand first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Compute v<sub>2</sub>(6!) using Legendre's formula, and double check it by listing out the factors of 2 in 1,2,3,4,5,6 directly.</summary>
+        <div class="reveal">
+          <p>Legendre: <code>&lfloor;6/2&rfloor; + &lfloor;6/4&rfloor; + &lfloor;6/8&rfloor; = 3 + 1 + 0 = 4</code>. Direct check: 2 contributes one 2, 4 contributes two 2's (2&times;2), 6 contributes one 2 &mdash; total <code>1+2+1 = 4</code>. They match: <code>6! = 720 = 2<sup>4</sup> &times; 45</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: For n=2, k=5, is a shared birthday guaranteed? What should the output be?</summary>
+        <div class="reveal">
+          <p><code>2<sup>2</sup> = 4</code> days, but 5 people &mdash; since <code>5 &gt; 4</code>, a match is guaranteed by the pigeonhole principle. Output: <code>1 1</code>, with no further computation needed.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why does the problem specifically check "n &lt; 63" before computing 1 &lt;&lt; n, instead of just always computing 2<sup>n</sup> and comparing?</summary>
+        <div class="reveal">
+          <p>Because <code>n</code> can be as large as 10<sup>18</sup>, and <code>2<sup>n</sup></code> for such an <code>n</code> would be an unimaginably large number &mdash; way too big to compute, store, or compare against anything in any reasonable time or memory. But since <code>k &le; 10<sup>18</sup> &lt; 2<sup>60</sup></code>, the moment <code>n</code> reaches 60 or so, we already know for certain that <code>2<sup>n</sup> &gt; k</code> without needing to compute the actual value &mdash; so we simply skip the "guaranteed match" branch and move on to the modular-arithmetic approach, which handles huge n just fine.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: Explain in your own words why, once k &ge; 1,000,003, the numerator's remainder mod p is guaranteed to be exactly 0 &mdash; without doing any multiplication.</summary>
+        <div class="reveal">
+          <p>The numerator is a product of <code>k</code> consecutive descending whole numbers: <code>2<sup>n</sup>, 2<sup>n</sup>&minus;1, 2<sup>n</sup>&minus;2, &hellip;</code>. Any <code>p</code> consecutive whole numbers, when you look at their remainders after dividing by <code>p</code>, must include every possible remainder from 0 to <code>p&minus;1</code> exactly once (they can't skip any, since they're consecutive and there are exactly <code>p</code> of them). Since 0 is one of those possible remainders, at least one of the terms must be an exact multiple of <code>p</code> &mdash; and multiplying anything by a multiple of <code>p</code> gives a result that's also a multiple of <code>p</code>, i.e. <code>0</code> modulo <code>p</code>. Once k is at least p, we're guaranteed to have at least p consecutive terms in the product, so this always applies.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5 (harder): Modify the Level 10 code so that it works even if the input uses n=0 (meaning there's only 1 day in the year). What should happen, and does the existing code already handle it correctly?</summary>
+        <div class="reveal">
+          <p>With <code>n=0</code>, there's <code>2<sup>0</sup>=1</code> day in the year, and since <code>k &ge; 2</code> is guaranteed by the problem's own constraints, we'd have <code>k &ge; 2 &gt; 1 = 2<sup>n</sup></code> &mdash; so the pigeonhole check <code>n &lt; 63 and k &gt; (1 &lt;&lt; n)</code> catches this immediately and prints <code>1 1</code>, correctly reflecting that with only one possible day, any 2 or more people are guaranteed to share it. No extra code changes needed &mdash; it's already handled by the very first check.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 711E &mdash; ZS and The Birthday Paradox. This problem stacks several ideas from across this series &mdash; the pigeonhole principle, modular inverses via Fermat's little theorem, and counting prime factors in a factorial &mdash; into one elegant solution for handling numbers far too large to compute directly.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var P = 1000003n;
+
+  function modpow(base, exp, mod){
+    base = ((base % mod) + mod) % mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n) result = (result * base) % mod;
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  function v2Factorial(m){
+    var s = 0n;
+    var p = 2n;
+    while (p <= m){
+      s += m / p;
+      p *= 2n;
+    }
+    return s;
+  }
+
+  function solve(n, k){
+    if (n < 63n){
+      var twoN = 1n << n;
+      if (k > twoN){
+        return { guaranteed: true, A: 1n % P, B: 1n % P };
+      }
+    }
+    var V = n + v2Factorial(k - 1n);
+    var Nmod = modpow(2n, n, P);
+    var numMod;
+    var loopSteps = 0;
+    if (k >= P){
+      numMod = 0n;
+    } else {
+      numMod = 1n;
+      var kk = Number(k);
+      loopSteps = kk;
+      for (var i = 0; i < kk; i++){
+        numMod = numMod * (((Nmod - BigInt(i)) % P + P) % P) % P;
+      }
+    }
+    var inv2V = modpow(modpow(2n, V, P), P - 2n, P);
+    var oddMod = numMod * inv2V % P;
+    var E = n * k - V;
+    var B = modpow(2n, E, P);
+    var A = (B - oddMod + P) % P;
+    return { guaranteed: false, A: A, B: B, V: V, E: E, loopSteps: loopSteps, shortCircuited: k >= P };
+  }
+
+  function run(){
+    var out = document.getElementById('out');
+    var nStr = document.getElementById('inN').value.trim();
+    var kStr = document.getElementById('inK').value.trim();
+
+    var n, k;
+    try {
+      n = BigInt(nStr);
+      k = BigInt(kStr);
+    } catch (e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>n and k need to be whole numbers.</p></div>';
+      return;
+    }
+
+    if (n < 1n || n > 1000000000000000000n || k < 2n || k > 1000000000000000000n){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>n must be between 1 and 10^18, and k must be between 2 and 10^18.</p></div>';
+      return;
+    }
+
+    var r = solve(n, k);
+    var html = '';
+
+    if (r.guaranteed){
+      html += '<div class="callout fact"><div class="ctitle">Guaranteed match (Level 4)</div><p>k exceeds 2<sup>n</sup>, so a shared birthday is certain.</p></div>';
+    } else {
+      html += '<div class="callout fact"><div class="ctitle">Behind the scenes</div><p>V (power of 2 removed) = ' + r.V.toString() + '<br>E (power of 2 left in denominator) = ' + r.E.toString() + '<br>' +
+        (r.shortCircuited ? 'k &ge; 1,000,003, so the product mod p short-circuited to 0 (Level 8) instead of looping.' : 'looped ' + r.loopSteps + ' times to compute the product mod p directly.') +
+        '</p></div>';
+    }
+
+    html += '<div class="answer-line"><b>A = ' + r.A.toString() + '</b></div>';
+    html += '<div class="answer-line"><b>B = ' + r.B.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

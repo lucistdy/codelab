@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>埃博尼和艾沃丽：搭出刚好那么高的积木塔（Codeforces 633A）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Doubling chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 90px;min-width:80px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box .p{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Bit boxes（这里借用来表示"可搭出的高度"格子） ---------- */
+  .bits{display:flex;gap:6px;margin:18px 0;flex-wrap:wrap;}
+  .bit{flex:0 0 auto;width:44px;text-align:center;}
+  .bit .cell{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:15px;font-weight:700;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink-soft);}
+  .bit.on .cell{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .bit .pw{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);margin-top:3px;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 633A &middot; 题目精讲</div>
+      <h1>埃博尼和艾沃丽：<em>搭出刚好那么高的塔</em></h1>
+      <p class="sub">但丁有两把枪，埃博尼（Ebony）和艾沃丽（Ivory）。每一发埃博尼子弹造成 <code>a</code> 点伤害，每一发艾沃丽子弹造成 <code>b</code> 点伤害，他需要打出<em>正好</em> <code>c</code> 点伤害——多一点不行，少一点也不行。这次我们不瞎猜，而是像搭积木一样，一步步把答案搭出来。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">循环与余数</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">但丁站在一面需要击破的护盾前。他用两把枪开火——埃博尼每发子弹造成 <code>a</code> 点伤害，艾沃丽每发子弹造成 <code>b</code> 点伤害——两把枪各自可以开任意数量的子弹，包括 0 发。护盾只有在总伤害<strong>正好</strong>等于 <code>c</code> 时才会破碎。</p>
+      <p>所以真正要问的问题是：能不能找到两个非负整数 <code>x</code>（埃博尼的子弹数）和 <code>y</code>（艾沃丽的子弹数），使得 <code>a &times; x + b &times; y = c</code>？</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>a=4, b=6, c=15</code> &rarr; <b>No</b>——没有任何组合能凑出来。<br>
+        <code>a=3, b=2, c=7</code> &rarr; <b>Yes</b>——1 发埃博尼 + 2 发艾沃丽：1&times;3 + 2&times;2 = 7。<br>
+        <code>a=6, b=11, c=6</code> &rarr; <b>Yes</b>——1 发埃博尼 + 0 发艾沃丽：1&times;6 + 0&times;11 = 6。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么不能瞎猜？</div>
+        <p><code>c</code> 最大可以到 <strong>10,000</strong>，而 <code>a</code> 和 <code>b</code> 最小可能只有 1。随便试子弹组合、指望撞上正好等于 <code>c</code> 的答案，那是在赌运气，不是解法。我们需要一种搜索方式：只要答案存在，就一定能找到；答案不存在，也能确定地说"不行"。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>先把枪放一边——想想搭积木</h2></div>
+      <p class="lead">把恶魔猎人的外壳完全剥掉，剩下的题目是这样的：你有无数块<strong>红色积木</strong>，每块 <code>a</code> 格高；还有无数块<strong>蓝色积木</strong>，每块 <code>b</code> 格高。能不能各拿一些（也可以某种颜色一块都不用），刚好搭出高度为 <code>c</code> 的一座塔？</p>
+      <p>先在脑子里用红色 = 3 格、蓝色 = 2 格试试。能搭出高度 1 吗？没有一块积木这么矮，也不能用负数块，所以 1 永远搭不出来。能搭出高度 4 吗？可以——两块蓝色。高度 5 呢？一块红色加一块蓝色。高度 7 呢？一块红色加两块蓝色，这正是上面的样例二。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">一个值得注意的规律</div>
+        <p>红色 = 3、蓝色 = 2 时，唯一永远搭不出来的高度就是 1。从 2 往上的每一个高度都能想办法搭出来。不过不是每一对积木尺寸都这么"大方"——第六关你会看到一对积木，会留下永远填不上的空洞。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>笨办法：把每一对组合都试一遍</h2></div>
+      <p class="lead">最直接的办法：把红色积木数 <code>x</code> 从 0 试到 <code>c</code>，对每一个 <code>x</code> 再把蓝色积木数 <code>y</code> 从 0 试到 <code>c</code>，检查 <code>a&times;x + b&times;y</code> 是不是正好等于 <code>c</code>。</p>
+      <p>这个办法确实管用，但是很浪费。如果 <code>a = b = 1</code>、<code>c = 10,000</code>，大约要检查 <code>10,001 &times; 10,001</code> 对组合——差不多<strong>一亿次</strong>，而且只是一组测试数据。我们能做得比这好得多。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">100,020,001</div><div class="lbl">对 (x, y) 组合，暴力法把每一种可能都试一遍</div></div>
+        <div class="stat fast"><div class="num">10,001</div><div class="lbl">个 x 值，用第四关更聪明的搜索方式</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>诀窍：只猜红色积木，蓝色积木用算的</h2></div>
+      <p class="lead">其实完全不用去猜 <code>y</code>。一旦选定了要用多少块红色积木（<code>x</code>），方程 <code>a&times;x + b&times;y = c</code> 就已经把需要多少块蓝色积木算得明明白白：</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:17px;">y = (c &minus; a&times;x) / b</p>
+      <p>所以对每一个 <code>x</code>，只需要检查一件事：这个除法能不能除尽（没有余数），而且结果是不是一个 &ge; 0 的整数？如果是，答案就找到了；如果不是，换下一个 x 再试。</p>
+
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">选</div><div class="v">x = 0, 1, 2&hellip;</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span>推算</div>
+        <div class="chain-box"><div class="p">检查</div><div class="v">(c &minus; a&times;x) % b == 0？</div></div>
+      </div>
+      <p style="text-align:center;color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">因为 a &ge; 1，x 的取值范围永远只在 0 到 c &divide; a 之间——不管 b 多大，最多也只用试 c+1 个值。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">全篇最重要的一句话</div>
+        <p>把一个"猜两个数"的游戏，变成"猜一个数、算出另一个数"的游戏，就是整个诀窍。等你多做几道类似的题，就会发现<em>固定一个变量，推出剩下的</em>这一招会反反复复出现。</p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">额外的捷径（不是必须，但很好用）</div>
+        <p>在开始循环之前，还有一件事可以先检查：如果 <code>c</code> 不是 <code>gcd(a, b)</code> 的倍数，答案立刻就是 <b>No</b>——不管怎么组合 a 和 b，都永远凑不出 c。比如 <code>gcd(4, 6) = 2</code>，而 15 不是 2 的倍数，所以样例一在我们检查任何一个 x 之前，就已经注定是 No 了。好奇这条规律为什么总是成立？<a href="max_gcd_zh.html">最大公约数</a>那一页深入讲了 gcd 的这一面。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>用 Python 把它写出来</h2></div>
+      <p class="lead">下面是把第四关的想法用 <code>for</code> 循环写出来的一种干净写法。先看左边的代码，再看右边的大白话注解。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>tower_height.py</div>
+        <pre><code>a, b, c = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+found = <span class="kw">False</span>
+<span class="kw">for</span> x <span class="kw">in</span> <span class="kw">range</span>(c // a + <span class="nu">1</span>):
+    remainder = c - a * x
+    <span class="kw">if</span> remainder % b == <span class="nu">0</span>:
+        found = <span class="kw">True</span>
+        <span class="kw">break</span>
+
+<span class="kw">print</span>(<span class="st">"Yes"</span> <span class="kw">if</span> found <span class="kw">else</span> <span class="st">"No"</span>)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">found = False</div>
+          <div class="annot-note"><span>先假设不行，除非之后被推翻。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for x in range(c // a + 1):</div>
+          <div class="annot-note"><span>把红色积木数从 0 试到 <b>c // a</b>（整数除法）。再往上，光是 a&times;x 就已经超过 c 了。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">remainder = c - a * x
+if remainder % b == 0:</div>
+          <div class="annot-note"><span>这是单靠蓝色积木还需要补上的高度。如果能被 <b>b</b> 整除，就说明找到了一个可行的 y。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">found = True
+break</div>
+          <div class="annot-note"><span>成功了——不用再试更多的 x。</span></div>
+        </div>
+      </div>
+
+      <div class="subhead">加餐：同样的逻辑写成一行</div>
+      <p>等这个想法真正想明白之后，可以用 Python 的 <code>any()</code> 把整个搜索写成一个表达式：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>tower_height_oneline.py</div>
+        <pre><code>a, b, c = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+ok = <span class="kw">any</span>((c - a * x) % b == <span class="nu">0</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="kw">range</span>(c // a + <span class="nu">1</span>))
+<span class="kw">print</span>(<span class="st">"Yes"</span> <span class="kw">if</span> ok <span class="kw">else</span> <span class="st">"No"</span>)</code></pre>
+      </div>
+      <p><code>any(...)</code> 会检查一整串"对/错"的条件，只要有一个是对的，就立刻返回 <code>True</code>——这正好就是上面那个循环"一找到可行的 x 就停下"的行为，只是写得更紧凑。</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>一起手把手推演一遍：a=3, b=2, c=7</h2></div>
+      <p class="lead">用样例二亲手把代码走一遍，这次答案是 <b>Yes</b>。看看它有多快就找到 1 块红色 + 2 块蓝色。</p>
+
+      <table class="trace">
+        <thead><tr><th>x</th><th>a &times; x</th><th>余数 (c &minus; a&times;x)</th><th>余数 % b</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>7</td><td class="even">1</td><td>除不尽，试下一个 x</td></tr>
+          <tr><td>1</td><td>3</td><td>4</td><td class="odd">0</td><td><b>可以！到此为止</b></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">找到了：x = 1，y = 4 &divide; 2 = 2 &rarr; 3&times;1 + 2&times;2 = 7</td></tr></tfoot>
+      </table>
+
+      <p>这次只需要检查 2 个 x 值。再对比一下一对"很难搞"的积木尺寸：红色 = 6、蓝色 = 9，不管怎么组合，都永远搭不出高度 1、2、4、5——这些空洞永远填不上，因为两种积木都是 3 的倍数，搭出来的塔也永远是 3 的倍数。这正是第四关那个 gcd 捷径又出现了。</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>该你上场了：换成你自己的 a、b、c</h2></div>
+      <p class="lead">挑一个 1 到 100 之间的 <code>a</code>、<code>b</code>，再挑一个 1 到 10,000 之间的 <code>c</code>。下面的工具会跑一模一样的搜索，把每一轮都摆出来，还会用格子告诉你在你选的积木尺寸下，0&ndash;19 这些较小的高度到底哪些能搭出来。</p>
+
+      <div class="widget">
+        <h3>积木塔高度检测器</h3>
+        <div class="hint">小提示：试试 a=6, b=9，看看有多少个小高度永远点不亮；或者试 a=1, b=1, c=10000，看看搜索能涨到多大。</div>
+        <div class="field-row">
+          <div class="field"><label for="inA">a（红色积木）</label><input type="number" id="inA" value="3" min="1" max="100"></div>
+          <div class="field"><label for="inB">b（蓝色积木）</label><input type="number" id="inB" value="2" min="1" max="100"></div>
+          <div class="field"><label for="inC">c（目标高度）</label><input type="number" id="inC" value="7" min="1" max="10000"></div>
+          <div class="field"><button class="btn" id="runBtn">检查这个目标高度</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>该你练习了</h2></div>
+      <p class="lead">先自己在纸上把答案算出来，再用上面的工具验证。</p>
+
+      <details>
+        <summary>挑战一：a=5, b=7 能不能刚好搭出高度 c=24 的塔？找出 x 和 y。</summary>
+        <div class="reveal">
+          <p><code>x=0</code>：余数 24，24 % 7 = 3，不行。<code>x=1</code>：余数 19，19 % 7 = 5，不行。<code>x=2</code>：余数 14，14 % 7 = 0，<b>可以！</b>所以 <code>y = 14 / 7 = 2</code>。验证一下：<code>5&times;2 + 7&times;2 = 10 + 14 = 24</code>。答案：<b>Yes</b>，2 块红色积木加 2 块蓝色积木。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：不检查任何一个 x，能不能直接判断 a=4, b=6, c=13 行不行？</summary>
+        <div class="reveal">
+          <p>能，用第四关的 gcd 捷径：<code>gcd(4, 6) = 2</code>。用 4 和 6 搭出来的塔一定是 2 的倍数，因为这两种积木本身都是偶数。但 13 是奇数——不是 2 的倍数——所以答案立刻就是 <b>No</b>，根本不用跑循环。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么只搜索 x 就够了，完全不用单独去搜索 y？</summary>
+        <div class="reveal">
+          <p>因为一旦 <code>a</code>、<code>c</code> 和选定的 <code>x</code> 固定下来，方程 <code>a&times;x + b&times;y = c</code> 就只剩下唯一一个可能的 <code>y</code>：<code>y = (c &minus; a&times;x) / b</code>。已经没什么好猜的了——这个值要么是非负整数，要么不是。单独再去搜索 y，只是在把同一个数字重新算一遍。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：评测系统只要"Yes"/"No"。你能不能把代码改一下，答案是 Yes 时也把找到的 x 和 y 打印出来？</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>tower_height_pair.py</div>
+            <pre><code>a, b, c = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+
+<span class="kw">for</span> x <span class="kw">in</span> <span class="kw">range</span>(c // a + <span class="nu">1</span>):
+    remainder = c - a * x
+    <span class="kw">if</span> remainder % b == <span class="nu">0</span>:
+        y = remainder // b
+        <span class="kw">print</span>(<span class="st">"Yes"</span>, x, y)
+        <span class="kw">break</span>
+<span class="kw">else</span>:
+    <span class="kw">print</span>(<span class="st">"No"</span>)</code></pre>
+          </div>
+          <p style="margin-top:12px;">这里的 <code>for</code> 循环带了一个 <code>else</code>——它只会在循环从头到尾都没有触发 <code>break</code> 时才执行，正好用来回答"到底是找到了，还是找遍了都没找到"这个问题，是 Python 一个很好用的小特性。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战五（较难）：对 a=6, b=9 来说，永远搭不出来的最大高度是多少？</summary>
+        <div class="reveal">
+          <p>这是个陷阱题——根本没有"最大搭不出来的高度"！因为 <code>gcd(6, 9) = 3</code>，用这两种积木搭出来的塔永远是 3 的倍数，任何不是 3 的倍数的高度（比如 1、2、4、5、7、8、10……）不管塔多高，都<em>永远</em>搭不出来。"最大搭不出来的高度"这个说法（也就是炸鸡块问题 / Frobenius 数）只有在 <code>gcd(a, b) = 1</code> 时才成立——否则会有无穷多个高度永远够不到。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 633A &mdash; 埃博尼和艾沃丽。这道题的题面、数据范围和样例，跟 <a href="ebony_and_ivory_zh.html">Codeforces 1036A</a> 一模一样——那一页用"凑钱"的角度讲了一遍，配的练习题也不一样，可以对照着看。上面提到的 gcd 捷径，在<a href="max_gcd_zh.html">最大公约数</a>那一页有更深入的讲解。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function solve(a, b, c){
+    var rows = [];
+    var x = 0;
+    var found = false, fx = 0, fy = 0;
+    while (a * x <= c){
+      var remainder = c - a * x;
+      var mod = remainder % b;
+      var ok = mod === 0;
+      rows.push({ x: x, ax: a * x, remainder: remainder, mod: mod, ok: ok });
+      if (ok){ found = true; fx = x; fy = remainder / b; break; }
+      x++;
+    }
+    return { rows: rows, found: found, fx: fx, fy: fy };
+  }
+
+  function reachableGrid(a, b, limit){
+    var reachable = new Array(limit + 1).fill(false);
+    for (var x = 0; a * x <= limit; x++){
+      for (var y = 0; a * x + b * y <= limit; y++){
+        reachable[a * x + b * y] = true;
+      }
+    }
+    var html = '<div class="bits">';
+    for (var h = 0; h <= limit; h++){
+      html += '<div class="bit' + (reachable[h] ? ' on' : '') + '"><div class="cell">' + h + '</div><div class="pw">' + (reachable[h] ? '可以' : '&mdash;') + '</div></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function run(){
+    var a = parseInt(document.getElementById('inA').value, 10);
+    var b = parseInt(document.getElementById('inB').value, 10);
+    var c = parseInt(document.getElementById('inC').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(a) || isNaN(b) || isNaN(c) || a < 1 || a > 100 || b < 1 || b > 100 || c < 1 || c > 10000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>a 和 b 需要在 1 到 100 之间，c 需要在 1 到 10,000 之间。</p></div>';
+      return;
+    }
+
+    var r = solve(a, b, c);
+    var html = '';
+
+    if (r.rows.length <= 40){
+      html += '<table class="trace"><thead><tr><th>x</th><th>a&times;x</th><th>余数</th><th>余数 % b</th><th>结果</th></tr></thead><tbody>';
+      for (var i = 0; i < r.rows.length; i++){
+        var row = r.rows[i];
+        var modCell = row.ok ? '<td class="odd">' + row.mod + '</td>' : '<td class="even">' + row.mod + '</td>';
+        var verdict = row.ok ? '<b>可以！到此为止</b>' : '除不尽，试下一个 x';
+        html += '<tr><td>' + row.x + '</td><td>' + row.ax + '</td><td>' + row.remainder + '</td>' + modCell + '<td>' + verdict + '</td></tr>';
+      }
+      html += '</tbody>';
+      if (r.found){
+        html += '<tfoot><tr><td colspan="5">找到了：x = ' + r.fx + '，y = ' + r.fy + ' &rarr; ' + a + '&times;' + r.fx + ' + ' + b + '&times;' + r.fy + ' = ' + c + '</td></tr></tfoot>';
+      } else {
+        html += '<tfoot><tr><td colspan="5">范围内没有 x 成立 &rarr; 答案是 No</td></tr></tfoot>';
+      }
+      html += '</table>';
+    }
+
+    if (r.found){
+      html += '<div class="answer-line"><b>Yes</b> &mdash; ' + r.fx + ' 块红色积木 + ' + r.fy + ' 块蓝色积木 = ' + (a * r.fx) + ' + ' + (b * r.fy) + ' = ' + c + '</div>';
+    } else {
+      html += '<div class="answer-line"><b>No</b> &mdash; 没有任何红色和蓝色积木的组合能搭出正好高度 ' + c + '</div>';
+    }
+
+    var fastChecks = r.rows.length;
+    var slowChecks = (Math.floor(c / a) + 1) * (Math.floor(c / b) + 1);
+    html += '<div class="stats">' +
+      '<div class="stat slow"><div class="num">' + slowChecks.toLocaleString() + '</div><div class="lbl">对 (x, y) 组合，暴力法</div></div>' +
+      '<div class="stat fast"><div class="num">' + fastChecks.toLocaleString() + '</div><div class="lbl">个 x 值，实际检查的数量</div></div>' +
+    '</div>';
+
+    html += '<div class="subhead">前 20 个高度（0&ndash;19）：a=' + a + '、b=' + b + ' 时，哪些能搭出来？</div>';
+    html += reachableGrid(a, b, 19);
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

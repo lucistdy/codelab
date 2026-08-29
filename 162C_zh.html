@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>质因数分解：每个数字自己的独家配方（Codeforces 162C）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 162C &middot; 题目精讲</div>
+      <h1>质因数分解：<em>每个数字自己的独家配方</em></h1>
+      <p class="sub">每一个大于 1 的整数，背后都偷偷藏着一份由质数相乘组成的"配方"——而且这份配方是唯一的。你的任务：给定一个数 <code>n</code>，把它的配方原原本本地打印出来，从最小的质数开始。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">循环与质数</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">给你一个整数 <code>n</code>（在 2 到 10,000 之间）。每一个这样的数字都能写成若干个质数相乘的形式——这就是它的<strong>质因数分解</strong>。你的任务是把这个乘积打印出来，因子按从小到大排列，用 <code>*</code> 隔开，重复出现的质数就重复打印。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>n = 245</code> &rarr; <code>5*7*7</code> &nbsp;（因为 <code>245 = 5 &times; 7 &times; 7</code>）<br>
+        <code>n = 19</code> &rarr; <code>19</code> &nbsp;（19 本身就是质数，配方里只有它自己这一种"原料"）</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">值得记住的事实：算术基本定理</div>
+        <p>这里有件很了不起的事：对任何大于 1 的整数来说，把它写成若干质数相乘的形式，<strong>只有唯一一种</strong>方法（不算乘的顺序）。不是两种，也不是零种——正好一种。数学家把这个叫作<em>算术基本定理</em>，正是因为这条定理，"n 的质因数分解"才是一个有明确答案、值得去问的问题。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>再复习一下：什么是质数？</h2></div>
+      <p class="lead"><strong>质数</strong>是大于 1 的整数中，除了 1 和它自己之外没有别的因数的数——没办法把它拆成两个更小整数相乘。2、3、5、7、11、13、17、19……都是质数。而像 12 = 3 &times; 4 这样能被拆开的数，就叫作<strong>合数</strong>。</p>
+
+      <p>可以把质数想象成"数字世界的元素周期表"——所有其他数字都是靠这些"原子"相乘搭出来的。<code>12 = 2 &times; 2 &times; 3</code>，<code>100 = 2 &times; 2 &times; 5 &times; 5</code>，<code>245 = 5 &times; 7 &times; 7</code>。不管怎么拆，只要拆到底，最后剩下的永远是同一组质数"原子"。</p>
+
+      <div class="blocks">
+        <div class="block hi">5</div><div class="block op">&times;</div><div class="block hi">7</div><div class="block op">&times;</div><div class="block hi">7</div><div class="block op">=</div><div class="block">245</div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">之前接触过质数吗？</div>
+        <p>如果你看过<a href="prime_detective_cn.html">质数侦探事务所</a>这份案卷，你已经见过怎么<em>判断</em>一个数字是不是质数。这道题问的是相关但不同的问题：不是"n 是不是质数？"，而是"n 是由哪些质数组成的？"</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>简单的方法：一直用能整除的最小数字去除</h2></div>
+      <p class="lead">这里有一个简单到有点不好意思的办法，但它完全管用：从 2 开始，逐个测试候选除数。只要当前的除数 <code>d</code> 能整除 <code>n</code> 剩下的部分，就把 <code>d</code> 记为一个因子并把它除掉——而且要用<em>同一个</em> <code>d</code> 一直除下去，直到除不动了，才换到下一个候选数字。</p>
+
+      <p>手动推演一下 <code>n = 245</code>：</p>
+      <ul style="color:var(--ink-soft);">
+        <li>试 <code>d=2</code>：245 是奇数，除不尽。换下一个。</li>
+        <li>试 <code>d=3</code>：245 &divide; 3 不是整数。换下一个。</li>
+        <li>试 <code>d=4</code>：不行。换下一个。</li>
+        <li>试 <code>d=5</code>：245 &divide; 5 = 49，正好整除！记下一个 <b>5</b>，现在要分解的变成了 49。</li>
+        <li>再用 <code>d=5</code> 试 49：49 &divide; 5 不是整数。换下一个除数。</li>
+        <li>试 <code>d=6</code>：不行。试 <code>d=7</code>：49 &divide; 7 = 7，正好整除！记下一个 <b>7</b>，现在要分解的变成了 7。</li>
+        <li>再用 <code>d=7</code> 试 7：7 &divide; 7 = 1，正好整除！再记下一个 <b>7</b>。没有剩下的可以分解了。</li>
+      </ul>
+      <p>按找到的顺序记下的因子：<b>5、7、7</b>——已经是从小到大排好的，正好对上题目要求的输出 <code>5*7*7</code>。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">为什么这不会不小心记下一个非质数的因子</div>
+        <p>注意我们总是先试<em>最小的</em>还没试过的除数，而且要把它彻底除干净才换下一个。这就保证了记下的每一个数字都一定是质数：如果剩下的部分还能被 4 或 6 这样的合数整除，那么这个合数更小的质因子（比如 2 或 3）早就应该已经把它除掉了——因为我们从来不跳过任何数字。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>更聪明的捷径：检查到 &radic;n 就能停</h2></div>
+      <p class="lead">这个方法的朴素版本会一直检查除数 <code>d = 2, 3, 4, &hellip;</code> 直到 <code>n</code> 本身。但这里有个捷径：一旦 <code>d &times; d</code> 已经比当前剩下的 <code>n</code> 还大，就可以停下来了——剩下的部分（如果还大于 1）本身一定就是最后一个质因子。</p>
+
+      <p>为什么呢？如果剩下的 <code>n</code> 有<em>两个</em>都比 &radic;n 大的因子，它们的乘积就已经比 <code>n</code> 还大了——这不可能。所以 <code>n</code> 最多只能有一个比 &radic;n 大的因子，而如果这样的因子存在，它就一定是 <code>n</code> 本身（已经被彻底化简过，不会再有更小的质因子了）。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">9,999</div><div class="lbl">n=10,000 时，笨办法要检查的除数个数（从 2 到 n&minus;1）</div></div>
+        <div class="stat fast"><div class="num">100</div><div class="lbl">用 &radic;n 捷径只需要检查的除数个数（从 2 到 100）</div></div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">这个技巧是不是很眼熟？</div>
+        <p>这正是<a href="prime_detective_cn.html">质数侦探事务所</a>案卷里用来判断单个数字是不是质数的那个 &radic;n 捷径——一旦你开始留意，会发现它在各种分解问题里反复出现。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>用 Python 把它写出来</h2></div>
+      <p class="lead">下面把第三关和第四关的整个算法写成代码。先看左边的代码，再看右边的大白话注解。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>prime_factorization.py</div>
+        <pre><code>n = <span class="kw">int</span>(<span class="kw">input</span>())
+
+factors = []
+d = <span class="nu">2</span>
+<span class="kw">while</span> d * d &lt;= n:
+    <span class="kw">while</span> n % d == <span class="nu">0</span>:
+        factors.append(d)
+        n //= d
+    d += <span class="nu">1</span>
+
+<span class="kw">if</span> n &gt; <span class="nu">1</span>:
+    factors.append(n)
+
+<span class="kw">print</span>(<span class="st">"*"</span>.join(<span class="kw">map</span>(<span class="kw">str</span>, factors)))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">d = 2</div>
+          <div class="annot-note"><span>从最小可能的质数开始试。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while d * d <= n:</div>
+          <div class="annot-note"><span>第四关的 &radic;n 捷径——一旦 <b>d</b> 大到不可能再有配对因子，就停下来。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while n % d == 0:
+    factors.append(d)
+    n //= d</div>
+          <div class="annot-note"><span>只要<em>同一个</em> <b>d</b> 还能除得动，就一直除下去，每次都记一个因子（这正是处理重复质数的关键，比如 245 里的两个 7）。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">d += 1</div>
+          <div class="annot-note"><span>这个除数用完了——换下一个候选数字。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if n > 1:
+    factors.append(n)</div>
+          <div class="annot-note"><span>循环结束后剩下的部分，就是最后一个质因子（第四关解释了为什么它一定是质数）。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>一起手把手推演一遍：n = 245</h2></div>
+      <p class="lead">现在一步一步、按候选除数把代码手动跑一遍。</p>
+
+      <table class="trace">
+        <thead><tr><th>d</th><th>d&times;d &le; n？</th><th>此时的 n</th><th>n % d</th><th>做法</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>4 &le; 245</td><td>245</td><td class="even">1</td><td>除不尽，试下一个 d</td></tr>
+          <tr><td>3</td><td>9 &le; 245</td><td>245</td><td class="even">2</td><td>除不尽，试下一个 d</td></tr>
+          <tr><td>4</td><td>16 &le; 245</td><td>245</td><td class="even">1</td><td>除不尽，试下一个 d</td></tr>
+          <tr><td>5</td><td>25 &le; 245</td><td>245</td><td class="odd">0</td><td><b>记下 5</b>，n 变成 49</td></tr>
+          <tr><td>5</td><td>25 &le; 49</td><td>49</td><td class="even">4</td><td>再试一次除不尽，换下一个 d</td></tr>
+          <tr><td>6</td><td>36 &le; 49</td><td>49</td><td class="even">1</td><td>除不尽，试下一个 d</td></tr>
+          <tr><td>7</td><td>49 &le; 49</td><td>49</td><td class="odd">0</td><td><b>记下 7</b>，n 变成 7</td></tr>
+          <tr><td>7</td><td>49 &le; 7？否</td><td>7</td><td class="even">&mdash;</td><td>外层循环停止（7&times;7 &gt; 7）</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">剩下 n = 7，大于 1，所以<b>再记一次 7</b> &rarr; 因子：5、7、7 &rarr; 输出 <code>5*7*7</code></td></tr></tfoot>
+      </table>
+
+      <p style="font-size:13px;color:var(--ink-soft);">（细心的读者会发现：第二次用 <code>d=7</code> 测试的时候，<code>49 &divide; 7 = 7</code> 正好整除，于是记下 7、n 变成 7——接着内层循环再检查一次 <code>7 % 7 == 0</code>，又记下一个 7，n 变成 1。之后外层循环才停止，因为此时 <code>d*d = 49 &gt; n = 1</code>；而 n 已经不再大于 1，所以最后不会再多加一个因子。）</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>该你上场了：换成你自己的 n</h2></div>
+      <p class="lead">挑一个 2 到 10,000 之间的 <code>n</code>。下面的工具会跑一模一样的搜索，把尝试过的每一个除数都摆出来。</p>
+
+      <div class="widget">
+        <h3>质因数分解器</h3>
+        <div class="hint">小提示：试试质数 9973，看看循环一直跑到 &radic;n 捷径都没找到任何因子；或者试试 10000 = 2&times;2&times;2&times;2&times;5&times;5&times;5&times;5，看看大量重复的质因子。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="245" min="2" max="10000"></div>
+          <div class="field"><button class="btn" id="runBtn">分解质因数</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>该你练习了</h2></div>
+      <p class="lead">先自己在纸上算出来，再用上面的工具验证。</p>
+
+      <details>
+        <summary>挑战一：手动求出 n=360 的质因数分解。</summary>
+        <div class="reveal">
+          <p><code>360 &divide; 2 = 180</code>，<code>180 &divide; 2 = 90</code>，<code>90 &divide; 2 = 45</code>（45 是奇数，2 用完了——一共三个 2）。<code>45 &divide; 3 = 15</code>，<code>15 &divide; 3 = 5</code>（5 不能被 3 整除——一共两个 3）。<code>d=4</code> 除不动 5，<code>d=5</code> 时 <code>5&times;5=25 &gt; 5</code>，循环停止，剩下 n=5。最终答案：<code>2*2*2*3*3*5</code>。验证一下：<code>8 &times; 9 &times; 5 = 360</code>。&check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战二：最小可能的输入 n=2，输出会是什么样？</summary>
+        <div class="reveal">
+          <p>循环条件是 <code>d*d &le; n</code>，也就是 <code>4 &le; 2</code>，一开始就不成立——循环体一次都不会执行。因为最后 <code>n=2 &gt; 1</code>，所以直接把它加进去。输出：就是 <code>2</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战三：为什么需要内层循环（<code>while n % d == 0</code>）？为什么不能每个 d 只检查一次就换下一个？</summary>
+        <div class="reveal">
+          <p>因为质数在分解结果里可能不止出现一次——比如 <code>245 = 5 &times; 7 &times; 7</code> 里的两个 7，或者 <code>16 = 2&times;2&times;2&times;2</code> 里的四个 2。如果每个 <code>d</code> 只检查一次就立刻换成 <code>d+1</code>，每个质数就只会被记一次，输出里就会漏掉重复的部分。内层循环会一直用同一个 <code>d</code> 除下去，直到除不动为止，这正是正确统计重复质因子的关键。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战四：修改代码，让它不再打印重复的因子（比如 <code>2*2*2*5*5*5*5</code>），而是用指数的形式打印，比如 <code>2^3 * 5^4</code>。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>prime_factorization_exponents.py</div>
+            <pre><code>n = <span class="kw">int</span>(<span class="kw">input</span>())
+
+parts = []
+d = <span class="nu">2</span>
+<span class="kw">while</span> d * d &lt;= n:
+    <span class="kw">if</span> n % d == <span class="nu">0</span>:
+        count = <span class="nu">0</span>
+        <span class="kw">while</span> n % d == <span class="nu">0</span>:
+            count += <span class="nu">1</span>
+            n //= d
+        parts.append(<span class="kw">f</span><span class="st">"{d}^{count}"</span>)
+    d += <span class="nu">1</span>
+
+<span class="kw">if</span> n &gt; <span class="nu">1</span>:
+    parts.append(<span class="kw">f</span><span class="st">"{n}^1"</span>)
+
+<span class="kw">print</span>(<span class="st">" * "</span>.join(parts))</code></pre>
+          </div>
+          <p style="margin-top:12px;">核心循环跟之前一样，只是现在会数清楚每个 <code>d</code> 到底除了多少次，再换下一个，而不是每除一次就记一次。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>挑战五（较难）：对 n = 9409 = 97 &times; 97 来说，为什么循环里 <code>d</code> 最多只会到 97（正好是 &radic;9409），却还是能把两个 97 都找出来？</summary>
+        <div class="reveal">
+          <p>循环条件是 <code>d*d &le; n</code>。当 <code>d=97</code> 时，<code>97 &times; 97 = 9409 &le; 9409</code>——成立，所以循环体还会再执行一次。里面检查 <code>9409 % 97 == 0</code>，成立，于是记下一个 97，n 变成 <code>9409 // 97 = 97</code>。内层循环再检查一次：<code>97 % 97 == 0</code>，于是又记下一个 97，n 变成 1。这时外层循环才停止（因为 n 已经是 1，<code>d*d</code> 必然会超过它）。两个 97 都被正确找到了，正好卡在 &radic;n 捷径的边界上。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 162C &mdash; Prime factorization。想更深入了解质数本身——它们是什么、怎么判断一个数是不是质数、以及埃拉托斯特尼筛法——可以看看<a href="prime_detective_cn.html">质数侦探事务所</a>那份案卷。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function factorize(n){
+    var steps = [];
+    var factors = [];
+    var d = 2;
+    while (d * d <= n){
+      var dividedAny = false;
+      while (n % d === 0){
+        factors.push(d);
+        n = n / d;
+        dividedAny = true;
+        steps.push({ d: d, n: n, mod: 0, action: '记下 ' + d + '，n 变成 ' + n });
+      }
+      if (!dividedAny){
+        steps.push({ d: d, n: n, mod: n % d, action: '除不尽，试下一个 d' });
+      }
+      d += 1;
+    }
+    if (n > 1){
+      factors.push(n);
+      steps.push({ d: null, n: n, mod: null, action: '剩下 n=' + n + ' > 1，记下它' });
+    }
+    return { factors: factors, steps: steps };
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 2 || n > 10000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>n 需要是 2 到 10,000 之间的整数。</p></div>';
+      return;
+    }
+
+    var r = factorize(n);
+    var html = '';
+
+    if (r.steps.length <= 120){
+      html += '<table class="trace"><thead><tr><th>d</th><th>此时的 n</th><th>做法</th></tr></thead><tbody>';
+      for (var i = 0; i < r.steps.length; i++){
+        var s = r.steps[i];
+        var dCell = s.d === null ? '&mdash;' : s.d;
+        var cls = (s.mod === 0) ? 'odd' : 'even';
+        html += '<tr><td>' + dCell + '</td><td>' + s.n + '</td><td class="' + cls + '">' + s.action + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    html += '<div class="answer-line"><b>' + n + ' = ' + r.factors.join(' &times; ') + '</b></div>';
+    html += '<div class="answer-line">题目要求的输出：<b>' + r.factors.join('*') + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

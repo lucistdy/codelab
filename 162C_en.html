@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prime Factorization: Every Number's Secret Recipe (Codeforces 162C)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:30px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 162C &middot; Problem Walkthrough</div>
+      <h1>Prime Factorization: <em>Every Number's Secret Recipe</em></h1>
+      <p class="sub">Every whole number bigger than 1 is secretly built out of prime numbers multiplied together &mdash; and there's only ever <em>one</em> correct recipe. Your job: given a number <code>n</code>, print out its exact recipe, smallest prime first.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Loops &amp; primes</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">You're given a whole number <code>n</code> (somewhere between 2 and 10,000). Every such number can be written as a product of prime numbers &mdash; its <strong>prime factorization</strong>. Your job is to print that product out, factors listed from smallest to largest, separated by <code>*</code>, with repeated primes printed multiple times.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>n = 245</code> &rarr; <code>5*7*7</code> &nbsp;(because <code>245 = 5 &times; 7 &times; 7</code>)<br>
+        <code>n = 19</code> &rarr; <code>19</code> &nbsp;(19 is already prime, so it's its own one-ingredient recipe)</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">A fact worth knowing: the Fundamental Theorem of Arithmetic</div>
+        <p>Here's something remarkable: for any whole number bigger than 1, there is <strong>exactly one</strong> way to write it as a product of primes (ignoring the order you multiply them in). Not two ways, not zero &mdash; exactly one. Mathematicians call this the <em>Fundamental Theorem of Arithmetic</em>, and it's the whole reason "the prime factorization of n" is a well-defined thing to ask for in the first place.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>What's a prime, again?</h2></div>
+      <p class="lead">A <strong>prime number</strong> is a whole number greater than 1 whose only divisors are 1 and itself &mdash; it can't be split into two smaller whole-number factors. 2, 3, 5, 7, 11, 13, 17, 19&hellip; are all primes. A number that <em>can</em> be split, like 12 = 3 &times; 4, is called <strong>composite</strong>.</p>
+
+      <p>Think of primes as the periodic table of numbers &mdash; the "atoms" that everything else is built from by multiplying. <code>12 = 2 &times; 2 &times; 3</code>, <code>100 = 2 &times; 2 &times; 5 &times; 5</code>, <code>245 = 5 &times; 7 &times; 7</code>. No matter how you slice it, breaking a number down far enough always bottoms out at the same set of prime "atoms."</p>
+
+      <div class="blocks">
+        <div class="block hi">5</div><div class="block op">&times;</div><div class="block hi">7</div><div class="block op">&times;</div><div class="block hi">7</div><div class="block op">=</div><div class="block">245</div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Already met primes before?</div>
+        <p>If you've read the <a href="prime_detective_en.html">Prime Number Detective Agency</a> case file, you've already seen how to <em>check</em> whether a single number is prime. This problem asks something related but different: not "is n prime?", but "what primes is n made of?"</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>The simple method: keep dividing by the smallest thing that works</h2></div>
+      <p class="lead">Here's an approach that's almost embarrassingly simple, and it works perfectly: start testing divisors from 2 upward. Whenever the current divisor <code>d</code> evenly divides what's left of <code>n</code>, record <code>d</code> as a factor and divide it out &mdash; and keep dividing by that <em>same</em> <code>d</code> as many times as it keeps working, before moving on to the next candidate.</p>
+
+      <p>Let's hand-trace <code>n = 245</code>:</p>
+      <ul style="color:var(--ink-soft);">
+        <li>Try <code>d=2</code>: 245 is odd, doesn't divide. Move on.</li>
+        <li>Try <code>d=3</code>: 245 &divide; 3 isn't whole. Move on.</li>
+        <li>Try <code>d=4</code>: nope. Move on.</li>
+        <li>Try <code>d=5</code>: 245 &divide; 5 = 49 exactly! Record a <b>5</b>, and now we're factoring 49 instead.</li>
+        <li>Try <code>d=5</code> again on 49: 49 &divide; 5 isn't whole. Move to the next divisor.</li>
+        <li>Try <code>d=6</code>: nope. Try <code>d=7</code>: 49 &divide; 7 = 7 exactly! Record a <b>7</b>, now factoring 7.</li>
+        <li>Try <code>d=7</code> again on 7: 7 &divide; 7 = 1 exactly! Record another <b>7</b>. Nothing left to factor.</li>
+      </ul>
+      <p>Recorded factors, in the order we found them: <b>5, 7, 7</b> &mdash; already smallest-to-largest, exactly matching the judge's expected output <code>5*7*7</code>.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Why this never records a non-prime divisor by accident</div>
+        <p>Notice we always try the <em>smallest</em> untested divisor first, and we fully divide it out before moving on. That guarantees every number we ever record is prime: if some composite number like 4 or 6 could still divide what's left, then a smaller prime factor of that composite (like 2 or 3) would have already divided it out earlier, since we never skip ahead.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The smart shortcut: stop checking at &radic;n</h2></div>
+      <p class="lead">The plain version of this method checks divisors <code>d = 2, 3, 4, &hellip;</code> all the way up to <code>n</code> itself. But here's a shortcut: once <code>d &times; d</code> is bigger than what's currently left of <code>n</code>, you can stop &mdash; whatever's left over (if anything bigger than 1) must itself be one single leftover prime factor.</p>
+
+      <p>Why? If the remaining number <code>n</code> had <em>two</em> factors both bigger than &radic;n, their product would already be bigger than <code>n</code> &mdash; impossible. So at most one factor of <code>n</code> can be bigger than &radic;n, and if such a factor exists, it has to be <code>n</code> itself (already fully reduced, with no smaller prime factors left to find).</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">9,999</div><div class="lbl">divisors to check for n=10,000 the naive way (2 up to n&minus;1)</div></div>
+        <div class="stat fast"><div class="num">100</div><div class="lbl">divisors to check using the &radic;n shortcut (2 up to 100)</div></div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Seen this trick before?</div>
+        <p>This is the exact same &radic;n shortcut used in the <a href="prime_detective_en.html">Prime Number Detective Agency</a> case file for testing whether a single number is prime &mdash; it shows up constantly once you start looking for it in factoring problems.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Here's the whole algorithm from Levels 3 and 4, written out. Read the code on the left, then the plain-English note on the right.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>prime_factorization.py</div>
+        <pre><code>n = <span class="kw">int</span>(<span class="kw">input</span>())
+
+factors = []
+d = <span class="nu">2</span>
+<span class="kw">while</span> d * d &lt;= n:
+    <span class="kw">while</span> n % d == <span class="nu">0</span>:
+        factors.append(d)
+        n //= d
+    d += <span class="nu">1</span>
+
+<span class="kw">if</span> n &gt; <span class="nu">1</span>:
+    factors.append(n)
+
+<span class="kw">print</span>(<span class="st">"*"</span>.join(<span class="kw">map</span>(<span class="kw">str</span>, factors)))</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">d = 2</div>
+          <div class="annot-note"><span>Start testing from the smallest possible prime.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while d * d <= n:</div>
+          <div class="annot-note"><span>The &radic;n shortcut from Level 4 &mdash; stop once <b>d</b> is too big to still have a partner factor.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">while n % d == 0:
+    factors.append(d)
+    n //= d</div>
+          <div class="annot-note"><span>Keep dividing out the <em>same</em> <b>d</b> for as long as it works, recording one factor each time (this is what handles repeated primes, like the two 7's in 245).</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">d += 1</div>
+          <div class="annot-note"><span>That divisor is used up &mdash; move to the next candidate.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">if n > 1:
+    factors.append(n)</div>
+          <div class="annot-note"><span>Whatever's left over once the loop stops is one final prime factor (Level 4 explains why it must be prime).</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Let's trace it together: n = 245</h2></div>
+      <p class="lead">Time to run the code by hand, one candidate divisor at a time.</p>
+
+      <table class="trace">
+        <thead><tr><th>d</th><th>d&times;d &le; n?</th><th>n at this point</th><th>n % d</th><th>action</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>4 &le; 245</td><td>245</td><td class="even">1</td><td>doesn't divide, try next d</td></tr>
+          <tr><td>3</td><td>9 &le; 245</td><td>245</td><td class="even">2</td><td>doesn't divide, try next d</td></tr>
+          <tr><td>4</td><td>16 &le; 245</td><td>245</td><td class="even">1</td><td>doesn't divide, try next d</td></tr>
+          <tr><td>5</td><td>25 &le; 245</td><td>245</td><td class="odd">0</td><td><b>record 5</b>, n becomes 49</td></tr>
+          <tr><td>5</td><td>25 &le; 49</td><td>49</td><td class="even">4</td><td>doesn't divide again, try next d</td></tr>
+          <tr><td>6</td><td>36 &le; 49</td><td>49</td><td class="even">1</td><td>doesn't divide, try next d</td></tr>
+          <tr><td>7</td><td>49 &le; 49</td><td>49</td><td class="odd">0</td><td><b>record 7</b>, n becomes 7</td></tr>
+          <tr><td>7</td><td>49 &le; 7? no</td><td>7</td><td class="even">&mdash;</td><td>outer loop stops (7&times;7 &gt; 7)</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">n = 7 is left over and &gt; 1, so <b>record 7</b> one more time &rarr; factors: 5, 7, 7 &rarr; output <code>5*7*7</code></td></tr></tfoot>
+      </table>
+
+      <p style="font-size:13px;color:var(--ink-soft);">(Careful readers: the second time <code>d=7</code> is tested inside the inner loop, <code>49 &divide; 7 = 7</code> divides evenly, so 7 gets recorded and n becomes 7 &mdash; then the inner loop checks <code>7 % 7 == 0</code> again, records a second 7, and n becomes 1. The outer loop then stops because <code>d*d = 49 &gt; n = 1</code>, and since n is no longer &gt; 1, nothing extra gets appended at the end.)</p>
+    </section>
+
+    <!-- ============ LEVEL 7 : INTERACTIVE ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Now you drive: try your own n</h2></div>
+      <p class="lead">Pick any <code>n</code> from 2 to 10,000. The tool runs the exact same search and shows every divisor it tried along the way.</p>
+
+      <div class="widget">
+        <h3>Prime factorization finder</h3>
+        <div class="hint">Tip: try a prime like 9973 to see the loop run all the way to the &radic;n shortcut without finding anything, or try 10000 = 2&times;2&times;2&times;2&times;5&times;5&times;5&times;5 to see lots of repeats.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="number" id="inN" value="245" min="2" max="10000"></div>
+          <div class="field"><button class="btn" id="runBtn">Factorize</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out on paper first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Find the prime factorization of n=360 by hand.</summary>
+        <div class="reveal">
+          <p><code>360 &divide; 2 = 180</code>, <code>180 &divide; 2 = 90</code>, <code>90 &divide; 2 = 45</code> (45 is odd, done with 2's &mdash; that's three 2's). <code>45 &divide; 3 = 15</code>, <code>15 &divide; 3 = 5</code> (5 isn't divisible by 3 &mdash; that's two 3's). <code>d=4</code> doesn't divide 5, and <code>d=5</code>: <code>5&times;5=25 &gt; 5</code>, so the loop stops with n=5 left over. Final answer: <code>2*2*2*3*3*5</code>. Check: <code>8 &times; 9 &times; 5 = 360</code>. &check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: What does the output look like for n=2, the smallest possible input?</summary>
+        <div class="reveal">
+          <p>The loop condition is <code>d*d &le; n</code>, i.e. <code>4 &le; 2</code>, which is false right away &mdash; the loop body never runs. Since <code>n=2 &gt; 1</code> at the end, we append it directly. Output: just <code>2</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why does the inner loop (<code>while n % d == 0</code>) need to exist at all &mdash; why not just check each d once and move on?</summary>
+        <div class="reveal">
+          <p>Because primes can appear more than once in a factorization &mdash; like the two 7's in <code>245 = 5 &times; 7 &times; 7</code>, or the four 2's in <code>16 = 2&times;2&times;2&times;2</code>. If we only checked each <code>d</code> once and immediately moved to <code>d+1</code>, we'd only ever record each prime a single time, and the output would be missing repeats. The inner loop keeps dividing out the same <code>d</code> for as long as it keeps working, which is exactly how repeated prime factors get counted correctly.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: Modify the code so that instead of printing repeated factors like <code>2*2*2*5*5*5*5</code>, it prints each prime with an exponent, like <code>2^3 * 5^4</code>.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>prime_factorization_exponents.py</div>
+            <pre><code>n = <span class="kw">int</span>(<span class="kw">input</span>())
+
+parts = []
+d = <span class="nu">2</span>
+<span class="kw">while</span> d * d &lt;= n:
+    <span class="kw">if</span> n % d == <span class="nu">0</span>:
+        count = <span class="nu">0</span>
+        <span class="kw">while</span> n % d == <span class="nu">0</span>:
+            count += <span class="nu">1</span>
+            n //= d
+        parts.append(<span class="kw">f</span><span class="st">"{d}^{count}"</span>)
+    d += <span class="nu">1</span>
+
+<span class="kw">if</span> n &gt; <span class="nu">1</span>:
+    parts.append(<span class="kw">f</span><span class="st">"{n}^1"</span>)
+
+<span class="kw">print</span>(<span class="st">" * "</span>.join(parts))</code></pre>
+          </div>
+          <p style="margin-top:12px;">Same core loop as before, except now we count how many times each <code>d</code> divides before moving on, instead of appending it once per division.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5 (harder): For n = 9409 = 97 &times; 97, explain why the loop still finds both 97's even though <code>d</code> only ever reaches 97, which is exactly &radic;9409.</summary>
+        <div class="reveal">
+          <p>The loop condition is <code>d*d &le; n</code>. When <code>d=97</code>, we have <code>97 &times; 97 = 9409 &le; 9409</code> &mdash; true, so the loop body still runs one more time. Inside, <code>9409 % 97 == 0</code>, so 97 gets recorded and n becomes <code>9409 // 97 = 97</code>. The inner loop checks again: <code>97 % 97 == 0</code>, so a second 97 gets recorded, and n becomes 1. Only then does the outer loop stop (since n is now 1, and <code>d*d</code> would exceed it). Both copies of 97 get found correctly, right at the boundary of the &radic;n shortcut.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 162C &mdash; Prime factorization. For more on primes themselves &mdash; what they are, how to test one, and the Sieve of Eratosthenes &mdash; see the <a href="prime_detective_en.html">Prime Number Detective Agency</a> case file.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function factorize(n){
+    var steps = [];
+    var factors = [];
+    var d = 2;
+    while (d * d <= n){
+      var dividedAny = false;
+      while (n % d === 0){
+        factors.push(d);
+        n = n / d;
+        dividedAny = true;
+        steps.push({ d: d, n: n, mod: 0, action: 'record ' + d + ', n becomes ' + n });
+      }
+      if (!dividedAny){
+        steps.push({ d: d, n: n, mod: n % d, action: "doesn't divide, try next d" });
+      }
+      d += 1;
+    }
+    if (n > 1){
+      factors.push(n);
+      steps.push({ d: null, n: n, mod: null, action: 'leftover n=' + n + ' > 1, record it' });
+    }
+    return { factors: factors, steps: steps };
+  }
+
+  function run(){
+    var n = parseInt(document.getElementById('inN').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(n) || n < 2 || n > 10000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>n needs to be a whole number between 2 and 10,000.</p></div>';
+      return;
+    }
+
+    var r = factorize(n);
+    var html = '';
+
+    if (r.steps.length <= 120){
+      html += '<table class="trace"><thead><tr><th>d</th><th>n at this point</th><th>action</th></tr></thead><tbody>';
+      for (var i = 0; i < r.steps.length; i++){
+        var s = r.steps[i];
+        var dCell = s.d === null ? '&mdash;' : s.d;
+        var cls = (s.mod === 0) ? 'odd' : 'even';
+        html += '<tr><td>' + dCell + '</td><td>' + s.n + '</td><td class="' + cls + '">' + s.action + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    html += '<div class="answer-line"><b>' + n + ' = ' + r.factors.join(' &times; ') + '</b></div>';
+    html += '<div class="answer-line">Judge output: <b>' + r.factors.join('*') + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

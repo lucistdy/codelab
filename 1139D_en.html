@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steps to One: How Many Random Numbers Until You Escape? (Codeforces 1139D)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Machine / chain ---------- */
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .chain-box{flex:1 1 110px;min-width:100px;text-align:center;padding:12px 8px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .chain-box.picked{background:var(--clue-soft);border-color:var(--clue);}
+  .chain-box.stop{background:var(--alert-soft);border-color:var(--alert);}
+  .chain-box .p{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .chain-box .v{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--ink);}
+  .chain-arrow{flex:0 0 auto;font-size:12px;color:var(--ink-soft);text-align:center;font-family:var(--font-stamp);letter-spacing:.03em;padding:0 2px;}
+  .chain-arrow .sym{font-size:18px;display:block;color:var(--accent-strong);}
+
+  /* ---------- Probability bar ---------- */
+  .pbar-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-family:var(--font-mono);font-size:13px;}
+  .pbar-label{flex:0 0 74px;color:var(--ink-soft);}
+  .pbar-track{flex:1 1 auto;height:20px;border-radius:6px;background:var(--paper-raised-2);border:1px solid var(--line);overflow:hidden;}
+  .pbar-fill{height:100%;background:var(--clue);}
+  .pbar-val{flex:0 0 54px;text-align:right;color:var(--ink-soft);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.zero{color:var(--ink-soft);opacity:.55;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1139D &middot; Problem Walkthrough</div>
+      <h1>Steps to One: <em>The GCD Escape Machine</em></h1>
+      <p class="sub">Vivek keeps pulling a lever that spits out a random number from 1 to <code>m</code>, appending it to a list. As soon as the greatest common divisor of everything in the list becomes 1, he escapes. On average, how many numbers does he need to pull before escaping?</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Probability &amp; number theory</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">Vivek starts with an empty list and a fixed number <code>m</code>. He repeats this loop:</p>
+      <div class="chain">
+        <div class="chain-box picked"><div class="p">1. pull lever</div><div class="v">random x in [1, m]</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box"><div class="p">2. append x</div><div class="v">list grows by 1</div></div>
+        <div class="chain-arrow"><span class="sym">&rarr;</span></div>
+        <div class="chain-box stop"><div class="p">3. check gcd</div><div class="v">gcd == 1 ? escape! : repeat</div></div>
+      </div>
+      <p>He wants to know: <strong>on average, how long will the list be when he finally escapes?</strong> This is called the <em>expected length</em>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>m=1</code> &rarr; expected length <b>1</b> (only number ever pulled is 1, gcd is 1 immediately).<br>
+        <code>m=2</code> &rarr; expected length <b>2</b>.<br>
+        <code>m=4</code> &rarr; output <b>333333338</b> (a weird-looking number &mdash; more on that below!).</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Wait, why such a huge, weird answer for m=4?</div>
+        <p>The true expected length for <code>m=4</code> is actually the fraction <code>7/3</code> &mdash; not a whole number at all! Since computers can't print exact fractions with huge denominators in general, the judge asks for the fraction <em>encoded</em> as a single integer using modular arithmetic (we'll fully unlock this trick in Level 8). Keep that fraction, <code>7/3</code>, in mind &mdash; we'll arrive at it by hand later in this page.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Warm-up: what does "expected value" even mean?</h2></div>
+      <p class="lead">Imagine flipping a fair coin over and over until it lands on heads. Sometimes you get heads on flip 1 (lucky!). Sometimes you need 2 flips, or 3, or more. <strong>Expected value</strong> just means: if you played this game thousands of times and averaged the number of flips, what number would you land on?</p>
+
+      <p>The math for this exact "keep going until success" situation is a classic: with a fair coin (50% chance of heads each flip), the expected number of flips is exactly <b>2</b>. That's not a coincidence &mdash; it's precisely mirrored in sample 2 above! When <code>m=2</code>, Vivek is really just flipping a coin: each pull is either 1 (escape immediately) or 2 (keep going), each with 50% chance. The judge's own note spells out the sum:</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">1&times;&frac12; + 2&times;&frac14; + 3&times;&frac18; + &hellip; = 2</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Why this matters</div>
+        <p>This "add up length &times; probability of that exact length" approach works, but it requires knowing the probability of <em>every single possible length</em> (1, 2, 3, 4, &hellip; forever). That's a lot of terms to add up directly. Level 3 shows a shortcut that sidesteps this entirely.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>The shortcut: count how many rounds are "still going"</h2></div>
+      <p class="lead">Here's a neat trick for these "keep going until something happens" games. Instead of asking "what's the exact final length," ask a simpler question over and over: <strong>"is the game still going after k pulls?"</strong> Then add up the answer (as 1 for yes, 0 for no) across every possible k, starting from k=0.</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">expected length = P(still going after 0 pulls) + P(still going after 1 pull) + P(still going after 2 pulls) + &hellip;</p>
+
+      <p>Let's sanity-check this on the coin-flip game from Level 2. "Still going after 0 flips" is always true (probability 1, you haven't even flipped yet). "Still going after 1 flip" means that flip was tails (probability &frac12;). "Still going after 2 flips" means both were tails (probability &frac14;). And so on:</p>
+
+      <div class="pbar-row"><div class="pbar-label">after 0</div><div class="pbar-track"><div class="pbar-fill" style="width:100%"></div></div><div class="pbar-val">1</div></div>
+      <div class="pbar-row"><div class="pbar-label">after 1</div><div class="pbar-track"><div class="pbar-fill" style="width:50%"></div></div><div class="pbar-val">1/2</div></div>
+      <div class="pbar-row"><div class="pbar-label">after 2</div><div class="pbar-track"><div class="pbar-fill" style="width:25%"></div></div><div class="pbar-val">1/4</div></div>
+      <div class="pbar-row"><div class="pbar-label">after 3</div><div class="pbar-track"><div class="pbar-fill" style="width:12.5%"></div></div><div class="pbar-val">1/8</div></div>
+
+      <p><code>1 + &frac12; + &frac14; + &frac18; + &hellip; = 2</code> &mdash; same answer as before, but computed a completely different way! This "still going" trick turns out to be much easier to work with for Vivek's game, because "still going" has a clean description in terms of gcd, which we tackle next.</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>When is Vivek's game "still going"?</h2></div>
+      <p class="lead">After k pulls, Vivek's game is still going exactly when the gcd of those k numbers is <strong>not yet 1</strong>. And a group of numbers has a gcd bigger than 1 exactly when <strong>all of them share some common factor</strong> &mdash; some number <code>d &ge; 2</code> that divides every one of them.</p>
+
+      <p>So: "still going after k pulls" is the same event as "there exists some <code>d &ge; 2</code> that divides all k of the randomly pulled numbers." The next two levels figure out how to compute the probability of that.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">A concrete peek ahead</div>
+        <p>For <code>m=4</code>, if Vivek pulls two 2's and a 4, the gcd is <code>gcd(2,2,4) = 2</code> &mdash; still going, because every number pulled so far is a multiple of 2. The moment a number shows up that <em>isn't</em> a multiple of 2 (like pulling a 1 or a 3), the shared factor is broken and the gcd could drop to 1.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>The chance that every pull is a multiple of d</h2></div>
+      <p class="lead">Out of the numbers 1 to <code>m</code>, how many are multiples of <code>d</code>? Exactly <code>&lfloor;m/d&rfloor;</code> of them (that's integer division &mdash; "how many times does d fit into m"). So the probability that a <em>single</em> random pull is a multiple of <code>d</code> is:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:17px;">p<sub>d</sub> = &lfloor;m/d&rfloor; / m</p>
+
+      <p>For <code>k</code> independent pulls, the probability that <em>every single one</em> is a multiple of <code>d</code> is just <code>p<sub>d</sub></code> multiplied by itself <code>k</code> times: <code>p<sub>d</sub><sup>k</sup></code>. Summing this over all <code>k &ge; 0</code> gives a classic geometric series:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">1 + p<sub>d</sub> + p<sub>d</sub><sup>2</sup> + p<sub>d</sub><sup>3</sup> + &hellip; = 1 / (1 &minus; p<sub>d</sub>)</p>
+
+      <div class="callout tip">
+        <div class="ctitle">If there were only ONE possible shared factor</div>
+        <p>If "still going" simply meant "every pull is a multiple of <em>this one specific</em> <code>d</code>," we'd already be done: the expected length contribution would just be <code>1/(1&minus;p<sub>d</sub>)</code>. The catch is that "still going" means multiples of <em>any</em> <code>d &ge; 2</code>, and different values of <code>d</code> overlap with each other &mdash; which brings us to the trickiest (and most fun) part of this problem.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>The overlap problem, and the Mobius fix</h2></div>
+      <p class="lead">Here's the trap: you might think "probability the gcd isn't 1" equals "sum, over every <code>d &ge; 2</code>, of the probability all pulls are multiples of <code>d</code>." But that <strong>overcounts</strong>. A set of numbers that are all multiples of 6 gets counted once under <code>d=2</code>, once under <code>d=3</code>, <em>and</em> once under <code>d=6</code> &mdash; triple-counted!</p>
+
+      <p>You may have seen this overlap problem before in a simpler form: to count numbers from 1&ndash;30 divisible by 2 or by 3, you can't just add "multiples of 2" (15 of them) and "multiples of 3" (10 of them) &mdash; you'd double-count multiples of 6 (5 of them), so you have to subtract them back out: <code>15 + 10 &minus; 5 = 20</code>. That's the <strong>inclusion&ndash;exclusion principle</strong>.</p>
+
+      <p>When there could be many overlapping factors at once (not just two), mathematicians use a clever set of correction weights called the <strong>Mobius function</strong>, written <code>&mu;(n)</code>:</p>
+
+      <div class="stats">
+        <div class="stat fast"><div class="num">&mu;(1) = 1</div><div class="lbl">the empty case, always +1</div></div>
+        <div class="stat fast"><div class="num">&mu;(n) = (&minus;1)<sup>k</sup></div><div class="lbl">if n is a product of k <em>different</em> primes (like 6=2&times;3, or 30=2&times;3&times;5)</div></div>
+        <div class="stat slow"><div class="num">&mu;(n) = 0</div><div class="lbl">if any prime divides n more than once (like 4=2&times;2, or 12=2&times;2&times;3)</div></div>
+      </div>
+
+      <p>So <code>&mu;(2) = &minus;1</code>, <code>&mu;(3) = &minus;1</code>, <code>&mu;(6) = +1</code> (two different primes), <code>&mu;(4) = 0</code> (2 repeats), <code>&mu;(12) = 0</code> (2 repeats). These signs are exactly the "+1, then subtract the overlap" pattern from inclusion&ndash;exclusion, generalized to work automatically no matter how many factors overlap at once. With <code>&mu;</code> in hand, the exact (no overcounting!) probability that a group of <code>k</code> random numbers has gcd <em>not equal to 1</em> is:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">P(gcd &ne; 1) = &minus; &sum;<sub>d=2</sub><sup>m</sup> &mu;(d) &times; p<sub>d</sub><sup>k</sup></p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Putting it all together: the final formula</h2></div>
+      <p class="lead">Now combine Level 3's "still going" sum with Level 6's overcount-free probability, and sum the geometric series from Level 5 (starting from <code>k=1</code>, since the <code>k=0</code> term was already handled separately as the guaranteed "+1" for the very first pull):</p>
+
+      <p style="text-align:center;font-family:var(--font-mono);font-size:15px;">expected length = 1 + &sum;<sub>d=2</sub><sup>m</sup> (&minus;&mu;(d)) &times; &lfloor;m/d&rfloor; / (m &minus; &lfloor;m/d&rfloor;)</p>
+
+      <p>That's it &mdash; one clean formula covering every case. Let's verify it catches the samples we already know:</p>
+
+      <table class="trace">
+        <thead><tr><th>d</th><th>&mu;(d)</th><th>&lfloor;m/d&rfloor;</th><th>m &minus; &lfloor;m/d&rfloor;</th><th>contribution</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="text-align:left;font-weight:700;background:var(--paper-raised-2);">m = 2</td></tr>
+          <tr><td>2</td><td class="even">&minus;1</td><td>1</td><td>1</td><td class="odd">+1</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">expected length = 1 + 1 = <b>2</b> &mdash; matches the judge!</td></tr></tfoot>
+      </table>
+
+      <table class="trace">
+        <thead><tr><th>d</th><th>&mu;(d)</th><th>&lfloor;m/d&rfloor;</th><th>m &minus; &lfloor;m/d&rfloor;</th><th>contribution</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="text-align:left;font-weight:700;background:var(--paper-raised-2);">m = 4</td></tr>
+          <tr><td>2</td><td class="even">&minus;1</td><td>2</td><td>2</td><td class="odd">+1</td></tr>
+          <tr><td>3</td><td class="even">&minus;1</td><td>1</td><td>3</td><td class="odd">+1/3</td></tr>
+          <tr><td>4</td><td class="zero">0</td><td>1</td><td>3</td><td class="zero">0 (skipped)</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="5">expected length = 1 + 1 + 1/3 = <b>7/3</b> &mdash; exactly the fraction from Level 1!</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Fractions in disguise: why 333333338?</h2></div>
+      <p class="lead">We just found the true answer for <code>m=4</code> is <code>7/3</code>. But the judge wants a single whole number, and computers generally can't store a fraction with an enormous, unpredictable denominator exactly. The fix: do all arithmetic <strong>modulo a large prime</strong>, <code>P = 1,000,000,007</code>, and represent "divide by 3" as "multiply by the number that undoes multiplying by 3", called the <strong>modular inverse</strong> of 3.</p>
+
+      <p>Thanks to a famous shortcut called <strong>Fermat's little theorem</strong>, whenever <code>P</code> is prime, the modular inverse of any number <code>x</code> (not a multiple of P) is just:</p>
+      <p style="text-align:center;font-family:var(--font-mono);font-size:16px;">x<sup>&minus;1</sup> mod P = x<sup>P&minus;2</sup> mod P</p>
+
+      <p>In Python, <code>pow(x, P-2, P)</code> computes this instantly (fast exponentiation makes light work of even a huge exponent like <code>P-2</code>). So <code>7/3 mod P</code> becomes <code>(7 &times; pow(3, P-2, P)) % P</code>:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>python3</div>
+        <pre><code>&gt;&gt;&gt; P = <span class="nu">1_000_000_007</span>
+&gt;&gt;&gt; (<span class="nu">7</span> * <span class="kw">pow</span>(<span class="nu">3</span>, P - <span class="nu">2</span>, P)) % P
+<span class="nu">333333338</span></code></pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">The takeaway</div>
+        <p>Every time you see a strange, huge number as a Codeforces answer for a probability/counting problem, it's almost always an ordinary fraction wearing a disguise: <code>P &times; Q<sup>&minus;1</sup> mod (10<sup>9</sup>+7)</code>. Once you know the trick, the "weirdness" disappears completely.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Two ingredients: a way to compute <code>&mu;(d)</code> for every <code>d</code> up to <code>m</code>, and the final sum from Level 7. Here's the simplest version, using trial division to factor each number and decide its Mobius value:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>steps_to_one.py</div>
+        <pre><code>MOD = <span class="nu">1_000_000_007</span>
+
+<span class="kw">def</span> <span class="kw">mobius</span>(n):
+    result = <span class="nu">1</span>
+    p = <span class="nu">2</span>
+    <span class="kw">while</span> p * p &lt;= n:
+        <span class="kw">if</span> n % p == <span class="nu">0</span>:
+            n //= p
+            <span class="kw">if</span> n % p == <span class="nu">0</span>:
+                <span class="kw">return</span> <span class="nu">0</span>  <span class="cm"># p divides n twice -> mu is 0</span>
+            result = -result
+        p += <span class="nu">1</span>
+    <span class="kw">if</span> n &gt; <span class="nu">1</span>:
+        result = -result  <span class="cm"># one leftover prime factor</span>
+    <span class="kw">return</span> result
+
+m = <span class="kw">int</span>(<span class="kw">input</span>())
+answer = <span class="nu">1</span>
+<span class="kw">for</span> d <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, m + <span class="nu">1</span>):
+    mu = mobius(d)
+    <span class="kw">if</span> mu == <span class="nu">0</span>:
+        <span class="kw">continue</span>
+    fd = m // d
+    term = (-mu * fd) % MOD
+    term = term * <span class="kw">pow</span>(m - fd, MOD - <span class="nu">2</span>, MOD) % MOD
+    answer = (answer + term) % MOD
+
+<span class="kw">print</span>(answer)</code></pre>
+      </div>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">def mobius(n):
+    ...</div>
+          <div class="annot-note"><span>Trial-divides n by every candidate prime up to &radic;n, flipping the sign each time a <em>new</em> prime factor is found, and returning 0 the instant a prime repeats.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for d in range(2, m + 1):
+    mu = mobius(d)
+    if mu == 0: continue</div>
+          <div class="annot-note"><span>Skip d's with &mu;(d)=0 entirely &mdash; Level 7's formula says they contribute nothing.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">fd = m // d
+term = (-mu * fd) % MOD
+term = term * pow(m - fd, MOD - 2, MOD) % MOD</div>
+          <div class="annot-note"><span>Exactly Level 7's per-d contribution: (&minus;&mu;(d)) &times; &lfloor;m/d&rfloor; / (m&minus;&lfloor;m/d&rfloor;), computed with a modular inverse instead of real division.</span></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">A note on going big</div>
+        <p><code>m</code> can be up to 100,000. Trial-dividing every single number up to <code>m</code> works, but it repeats a lot of factoring work. A faster approach precomputes every <code>&mu;(d)</code> for <code>d</code> up to <code>m</code> all at once, using a "linear sieve" &mdash; the same family of technique as the Sieve of Eratosthenes, adapted to track prime factor counts instead of just marking composites.</p>
+      </div>
+
+      <div class="subhead">Bonus: a linear sieve for every Mobius value at once</div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>steps_to_one_sieve.py</div>
+        <pre><code>MOD = <span class="nu">1_000_000_007</span>
+m = <span class="kw">int</span>(<span class="kw">input</span>())
+
+mu = [<span class="nu">1</span>] * (m + <span class="nu">1</span>)
+is_composite = [<span class="kw">False</span>] * (m + <span class="nu">1</span>)
+primes = []
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, m + <span class="nu">1</span>):
+    <span class="kw">if</span> <span class="kw">not</span> is_composite[i]:
+        primes.append(i)
+        mu[i] = -<span class="nu">1</span>
+    <span class="kw">for</span> p <span class="kw">in</span> primes:
+        <span class="kw">if</span> i * p &gt; m:
+            <span class="kw">break</span>
+        is_composite[i * p] = <span class="kw">True</span>
+        <span class="kw">if</span> i % p == <span class="nu">0</span>:
+            mu[i * p] = <span class="nu">0</span>
+            <span class="kw">break</span>
+        mu[i * p] = -mu[i]
+
+answer = <span class="nu">1</span>
+<span class="kw">for</span> d <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, m + <span class="nu">1</span>):
+    <span class="kw">if</span> mu[d] == <span class="nu">0</span>:
+        <span class="kw">continue</span>
+    fd = m // d
+    term = (-mu[d] * fd) % MOD
+    term = term * <span class="kw">pow</span>(m - fd, MOD - <span class="nu">2</span>, MOD) % MOD
+    answer = (answer + term) % MOD
+
+<span class="kw">print</span>(answer)</code></pre>
+      </div>
+      <p>This computes every Mobius value from 2 to <code>m</code> in one single pass, instead of re-factoring each number from scratch &mdash; the difference that makes it comfortably fast even at <code>m = 100,000</code>.</p>
+    </section>
+
+    <!-- ============ LEVEL 10 : INTERACTIVE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">LEVEL 10</span><h2>Now you drive: try your own m</h2></div>
+      <p class="lead">Pick any <code>m</code> from 1 to 100,000. The tool shows the per-divisor breakdown (for small m) and the final answer, both as an exact fraction and as the judge's modular encoding.</p>
+
+      <div class="widget">
+        <h3>Expected length calculator</h3>
+        <div class="hint">Tip: try m=1, 2, or 4 to match the judge's own samples, or try m=6 to see &mu;(6)=+1 in action (6 has two different prime factors).</div>
+        <div class="field-row">
+          <div class="field"><label for="inM">m</label><input type="number" id="inM" value="4" min="1" max="100000"></div>
+          <div class="field"><button class="btn" id="runBtn">Compute expected length</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 11 ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">LEVEL 11</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out by hand first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Compute the expected length for m=3 by hand using Level 7's formula.</summary>
+        <div class="reveal">
+          <p>Divisors to check: d=2 and d=3. &mu;(2)=&minus;1, &lfloor;3/2&rfloor;=1, contribution = 1 &times; 1/(3&minus;1) = 1/2. &mu;(3)=&minus;1, &lfloor;3/3&rfloor;=1, contribution = 1 &times; 1/(3&minus;1) = 1/2. Total: <code>1 + 1/2 + 1/2 = 2</code>. The expected length for m=3 is exactly <b>2</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Why does the formula completely skip every d with &mu;(d)=0, like d=4, 8, 9, 12?</summary>
+        <div class="reveal">
+          <p>&mu;(d)=0 happens exactly when d has a repeated prime factor (like 4=2&times;2 or 12=2&times;2&times;3). In the inclusion&ndash;exclusion process, the "being a multiple of d" event for such a d is already fully accounted for by its squarefree divisors (its prime factors without repetition) &mdash; including it again would double-correct and throw off the total. The Mobius function elegantly sets its own weight to exactly 0 in precisely these cases, so the sum doesn't need any special-casing &mdash; you can just skip it.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: In Level 7, why does the sum start the geometric series contribution from k=1 rather than k=0, even though Level 3's "still going" sum itself starts at k=0?</summary>
+        <div class="reveal">
+          <p>The k=0 term ("still going after 0 pulls") is always true with probability 1 no matter what &mdash; it doesn't depend on gcds or divisors at all, since no numbers have been pulled yet. That's exactly the guaranteed "<code>+1</code>" sitting out in front of the formula. The Mobius sum only needs to describe what happens for k=1, 2, 3, &hellip; (after at least one pull), which is why its geometric series starts at k=1.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4: Compute &mu;(30). (Hint: factor 30 first.)</summary>
+        <div class="reveal">
+          <p><code>30 = 2 &times; 3 &times; 5</code> &mdash; three different prime factors, none repeated. So <code>&mu;(30) = (&minus;1)<sup>3</sup> = &minus;1</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5 (harder): The judge guarantees m &le; 100,000. Roughly how many total "prime factor checks" does the linear sieve from Level 9 perform, and why is that so much faster than trial-dividing every number separately?</summary>
+        <div class="reveal">
+          <p>The linear sieve visits each number from 2 to m exactly once as the outer loop variable, and each composite number gets marked by exactly one prime (its smallest prime factor) in the inner loop &mdash; so the total work is proportional to <code>m</code> itself (technically <code>O(m)</code>), around 100,000 operations for the largest input. Trial division, by contrast, refactors every single number independently from scratch, doing roughly <code>&radic;d</code> work per number <code>d</code> &mdash; about <code>&radic;100,000 &approx; 316</code> per number, or roughly 30 million operations total. Both finish well within the time limit for this problem's constraints, but the sieve scales far better if <code>m</code> were ever pushed much higher.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1139D &mdash; Steps to One. This problem combines expected value (via the "sum of tail probabilities" identity), the Mobius function / inclusion&ndash;exclusion over divisors, geometric series, and modular inverses &mdash; a great problem for seeing how several separate ideas click together into one clean formula.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 1000000007n;
+
+  function modpow(base, exp, mod){
+    base = ((base % mod) + mod) % mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n) result = (result * base) % mod;
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  function modinv(x, mod){
+    return modpow(x, mod - 2n, mod);
+  }
+
+  function mobiusSieve(n){
+    var mu = new Int8Array(n + 1);
+    mu[1] = 1;
+    var isComposite = new Uint8Array(n + 1);
+    var primes = [];
+    for (var i = 2; i <= n; i++){
+      if (!isComposite[i]){
+        primes.push(i);
+        mu[i] = -1;
+      }
+      for (var k = 0; k < primes.length; k++){
+        var p = primes[k];
+        if (i * p > n) break;
+        isComposite[i * p] = 1;
+        if (i % p === 0){
+          mu[i * p] = 0;
+          break;
+        } else {
+          mu[i * p] = -mu[i];
+        }
+      }
+    }
+    return mu;
+  }
+
+  function gcd(a, b){ while (b){ var t = b; b = a % b; a = t; } return a; }
+
+  function solve(m){
+    var mu = mobiusSieve(m);
+    var rows = [];
+    var ansMod = 1n;
+    // exact fraction via BigInt numerator/denominator, kept only for small m (display)
+    var numer = 1n, denom = 1n;
+    var exactOk = m <= 2000;
+
+    for (var d = 2; d <= m; d++){
+      if (mu[d] === 0) continue;
+      var fd = Math.floor(m / d);
+      var denomVal = m - fd;
+      var muD = mu[d];
+      var contribMod = (BigInt(-muD) * BigInt(fd)) % MOD;
+      contribMod = ((contribMod * modinv(BigInt(denomVal), MOD)) % MOD + MOD) % MOD;
+      ansMod = (ansMod + contribMod) % MOD;
+
+      if (rows.length < 60){
+        rows.push({ d: d, mu: muD, fd: fd, denomVal: denomVal });
+      }
+
+      if (exactOk){
+        // numer/denom += (-muD)*fd / denomVal
+        var addN = BigInt(-muD) * BigInt(fd);
+        var addD = BigInt(denomVal);
+        var newN = numer * addD + addN * denom;
+        var newD = denom * addD;
+        var g = gcd(newN < 0n ? -newN : newN, newD);
+        if (g > 0n){ newN /= g; newD /= g; }
+        numer = newN; denom = newD;
+      }
+    }
+
+    return { rows: rows, ansMod: ansMod, numer: numer, denom: denom, exactOk: exactOk };
+  }
+
+  function run(){
+    var m = parseInt(document.getElementById('inM').value, 10);
+    var out = document.getElementById('out');
+
+    if (isNaN(m) || m < 1 || m > 100000){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>m needs to be a whole number between 1 and 100,000.</p></div>';
+      return;
+    }
+
+    var r = solve(m);
+    var html = '';
+
+    if (r.rows.length > 0){
+      html += '<table class="trace"><thead><tr><th>d</th><th>&mu;(d)</th><th>&lfloor;m/d&rfloor;</th><th>m&minus;&lfloor;m/d&rfloor;</th></tr></thead><tbody>';
+      for (var i = 0; i < r.rows.length; i++){
+        var row = r.rows[i];
+        html += '<tr><td>' + row.d + '</td><td class="' + (row.mu > 0 ? 'odd' : 'even') + '">' + row.mu + '</td><td>' + row.fd + '</td><td>' + row.denomVal + '</td></tr>';
+      }
+      html += '</tbody></table>';
+      if (m > 60 || r.rows.length >= 60){
+        html += '<p style="font-size:12.5px;color:var(--ink-soft);">(showing only the divisors with &mu;(d)&ne;0, up to the first 60)</p>';
+      }
+    }
+
+    var fractionText = r.exactOk ? (r.denom === 1n ? r.numer.toString() : (r.numer.toString() + ' / ' + r.denom.toString())) : '(too large to display exactly here)';
+
+    html += '<div class="answer-line"><b>Exact expected length:</b> ' + fractionText + '</div>';
+    html += '<div class="answer-line"><b>Judge-style answer (mod 1,000,000,007):</b> ' + r.ansMod.toString() + '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>
