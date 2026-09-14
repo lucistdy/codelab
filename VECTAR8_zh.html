@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>惊悚质数：从头被一刀刀砍掉却依然活下来的数字（SPOJ VECTAR8）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:150px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  #out2{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+  .chiplist{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:100px;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">SPOJ VECTAR8 &middot; 题目精讲</div>
+      <h1>惊悚质数：<em>从头被一刀刀砍掉却依然活下来的数字</em></h1>
+      <p class="sub">找一个质数。把它最左边那一位数字砍掉。剩下的还是质数吗？再砍一次。还是质数吗？一直砍下去，直到只剩最后一位数字。一个质数如果能扛过这整个"凌迟"过程——而且自始至终没有出现过一个数字 0——就能获得"惊悚质数"的称号。你的任务：数出不超过某个数字 N 的惊悚质数一共有多少个，而且要不慌不忙地回答多达 10 万次这样的问题。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">埃拉托斯特尼筛法与预处理</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">题目会问你最多 <code>T = 100,000</code> 个问题，每个问题就是一个数字 <code>N</code>（<code>1 &le; N &lt; 1,000,000</code>）。对每一个问题，你要回答：不超过 <code>N</code> 的<strong>惊悚质数</strong>一共有多少个？</p>
+
+      <p>一个数字要成为<strong>惊悚质数</strong>，必须同时满足下面所有条件：</p>
+      <ul style="color:var(--ink-soft);">
+        <li>它本身是质数。</li>
+        <li>它的每一位数字里都没有 <code>0</code>。</li>
+        <li>如果把它最左边的一位数字删掉，剩下的数字<em>依然</em>是惊悚质数——而且你可以不断重复"删掉新的最左边一位"这个动作，一路删到只剩下最后一位数字为止，每一个中间阶段都必须始终保持是质数。</li>
+      </ul>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p>输入：<code>3</code>（三个问题），然后是 <code>2</code>、<code>3</code>、<code>4</code>——每行一个。<br>
+        输出：<code>1</code>、<code>2</code>、<code>2</code>。<br>
+        为什么？不超过 2 的惊悚质数只有 <code>2</code> 自己——那就是 <code>1</code> 个。不超过 3 时，又多了一个 <code>3</code>——变成 <code>2</code> 个。3 到 4 之间没有新的惊悚质数出现（4 甚至都不是质数），所以还是 <code>2</code>。</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">再看一个更大的例子，把整个过程看清楚</div>
+        <p>七位数 <code>4632647</code> 就是一个惊悚质数。看看从左边一位一位往下砍时，都留下了什么：<code>4632647</code> &rarr; <code>632647</code> &rarr; <code>32647</code> &rarr; <code>2647</code> &rarr; <code>647</code> &rarr; <code>47</code> &rarr; <code>7</code>。这七个数字全都是质数，而且原来那七位数字里，没有一个是 <code>0</code>。要拿到"惊悚"这个头衔，就得做到这个地步。</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么砍着砍着就不灵了？</div>
+        <p>随便拿一个质数试试，比如 <code>29</code>：把最前面的 <code>2</code> 砍掉，剩下 <code>9</code>——而 <code>9</code> 不是质数（<code>9 = 3 &times; 3</code>）。所以 <code>29</code> 立刻就不合格了，尽管 <code>29</code> 本身是一个完全合格的质数。绝大多数质数几乎一上来就会在这个测试里败下阵来——惊悚质数很稀少，而这正是"数清它们一共有多少个"变成一道有趣谜题的原因。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>复习一下：质数与埃拉托斯特尼筛法</h2></div>
+      <p class="lead"><strong>质数</strong>是大于 1 的整数中，除了 1 和它自己之外没有别的因数的数。要快速找出某个范围内的所有质数，我们用<strong>埃拉托斯特尼筛法</strong>：一开始假设每个数字都是质数，然后每找到一个质数，就把它所有的倍数全部划掉（2 划掉 4、6、8……；3 划掉 6、9、12……；以此类推）。每一轮划掉之后，还活着的那些数字，就是质数。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sieve.py</div>
+        <pre><code>LIMIT = <span class="nu">1_000_000</span>
+is_composite = <span class="kw">bytearray</span>(LIMIT + <span class="nu">1</span>)
+is_composite[<span class="nu">0</span>] = is_composite[<span class="nu">1</span>] = <span class="nu">1</span>
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, <span class="kw">int</span>(LIMIT**<span class="nu">0.5</span>) + <span class="nu">1</span>):
+    <span class="kw">if</span> <span class="kw">not</span> is_composite[i]:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(i * i, LIMIT + <span class="nu">1</span>, i):
+            is_composite[j] = <span class="nu">1</span></code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">已经见过筛法了吗？</div>
+        <p>如果你看过<a href="prime_detective_cn.html">质数侦探事务所</a>那份案卷，这段代码应该很眼熟——这正是同一个筛法。不过在这里，找出质数只是第一步，真正的谜题在后面。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>为什么一个一个数字单独检查会慢得离谱</h2></div>
+      <p class="lead">最直接的想法是：对每一个问题里的 <code>N</code>，从 2 循环到 <code>N</code>，每个数字都检查一遍"它是不是质数、有没有数字 0、反复砍掉最左边一位之后是不是始终保持质数？"这个想法完全正确——但慢得让人绝望。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">100,000</div><div class="lbl">你可能会被问到的问题数量（T 最大可以有这么多）</div></div>
+        <div class="stat slow"><div class="num">最大 999,999</div><div class="lbl"><em>每一个</em>问题里 N 在最坏情况下的大小</div></div>
+        <div class="stat slow"><div class="num">~10<sup>11</sup></div><div class="lbl">如果每次都从头检查，总共要重复检查的数字个数</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">解决办法，一句话说清</div>
+        <p>把所有费脑子的活儿<em>提前做一次</em>，赶在任何问题到来之前——把 999,999 以内的每一个数字都先算清楚是不是惊悚质数，再建一份累计统计表，这样任何问题都能靠查一次数组瞬间答出来。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>核心技巧：先把小答案算好</h2></div>
+      <p class="lead">这里是让整道题豁然开朗的关键洞察。要知道一个数字 <code>n</code> 是不是惊悚质数，我们需要知道砍掉它最左边一位之后剩下的那个数字——姑且叫它<strong>后缀</strong>——是不是<em>也</em>是惊悚质数。但这个后缀永远<strong>比 <code>n</code> 小</strong>（它的位数更少，就算 <code>n</code> 只有一位数，最坏情况也不过是数值相同）。这意味着：只要我们按从小到大的顺序，从 2 一路处理到 999,999，等我们需要用到某个后缀的答案时，它<em>早就已经算好、等在那里了</em>。</p>
+
+      <div class="blocks">
+        <div class="block hi">4632647</div><div class="block op">&rarr; 后缀</div><div class="block hi">632647</div><div class="block op">&larr; 已经算过了！</div>
+      </div>
+
+      <p>这正是"先解决小块，再把小块的答案拿来拼出大块的答案"这套动态规划思想在各处的应用——你可能在计算斐波那契数列或者数路径条数时见过类似的想法。在这里，一个数字的"小块"就是它自己的后缀，而我们恰好会因为按顺序从小数到大数，提前访问到它。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">"后缀"到底是什么？</div>
+        <p>如果 <code>n</code> 有 <code>k</code> 位，那么它砍掉最左边一位之后的后缀，就是 <code>n % 10<sup>k-1</sup></code>——也就是除以合适的 10 的幂之后的余数。对于 <code>4632647</code>（7 位数）来说，后缀就是 <code>4632647 % 1000000 = 632647</code>。不断用越来越小的 10 的幂去取余（<code>% 100000</code>、<code>% 10000</code>、……、<code>% 10</code>），你就走过了"每次砍剩" 的每一个阶段，从"只砍掉最前面一位"一路走到"只剩最后一位数字"。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>唯一的陷阱：算术运算根本不知道"前导零"这回事</h2></div>
+      <p class="lead">这里有一个几乎每个人第一次都会踩的坑。假设一个数字中间某个位置藏着一个 <code>0</code>，比如 <code>907</code>。如果我们用 <code>907 % 100</code> 来砍掉最前面一位，得到的是 <code>7</code>——而不是 <code>"07"</code>。算术运算会悄无声息地把前导零吞掉。可是 <code>907</code> 本来就应该因为含有数字 <code>0</code> 而被淘汰——而如果我们只检查"这个余数是不是质数"，我们根本不会发现问题，因为 <code>7</code> 确确实实是质数！</p>
+
+      <div class="callout warn">
+        <div class="ctitle">修补办法：提前单独检查有没有 0</div>
+        <p>在做任何砍数字的逻辑之前，先直接看这个数字的每一位（可以把它转成字符串，或者反复用 <code>n % 10</code> 检查），只要哪一位出现了 <code>0</code>，就立刻淘汰它。只有通过了这道关卡的数字，才有资格进入"砍数字"测试。</p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">一个有趣的数学事实</div>
+        <p>像这样"从左边一位一位砍下去依然保持质数"的数字，在数学上叫做<strong>左可截断质数</strong>。事实证明，在整个无穷无尽的数字世界里，这样的数字<strong>总共只有 4,260 个</strong>——最大的那一个有 24 位。一旦数字大到一定程度，想要扛过每一次砍削，基本上就变得不可能了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>把"是不是惊悚"变成秒答</h2></div>
+      <p class="lead">一旦我们知道了 999,999 以内每一个数字是不是惊悚质数，回答查询还差最后一小步。查询问的是"不超过 N 的惊悚质数有多少个？"——而不是"N 本身是不是惊悚质数？"所以我们再建一个数组：<strong>累计计数</strong>，其中第 <code>i</code> 项记录的是从 0 到 <code>i</code> 之间一共有多少个惊悚质数。</p>
+
+      <div class="blocks">
+        <div class="block hi">count[i]</div><div class="block op">=</div><div class="block hi">count[i-1]</div><div class="block op">+</div><div class="block hi">如果 i 是惊悚质数就是 1，否则是 0</div>
+      </div>
+
+      <p>建这份累计计数表只需要把所有数字扫一遍，之后<em>每一个</em>查询——哪怕全部 10 万个——都只需要查一次数组就能答出来。不管问题来多少个，费功夫的那部分工作永远只做一次。</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>用 Python 写出来</h2></div>
+      <p class="lead">把第二、四、五、六关拼在一起。先是筛法（第二关），然后判断哪些质数是惊悚的（第四、五关），最后是累计计数（第六关）：</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">scary = bytearray(LIMIT + 1)
+for n in range(2, LIMIT + 1):
+    if is_composite[n]:
+        continue
+    if '0' in str(n):
+        continue</div>
+          <div class="annot-note"><span>第五关的零位陷阱：在考虑"砍数字"之前，先淘汰含有 0 的数字。非质数也在这里被立刻跳过。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">    ten = 10
+    ok = True
+    while ten <= n:
+        suffix = n % ten
+        if suffix < 2 or not scary[suffix]:
+            ok = False
+            break
+        ten *= 10
+    scary[n] = ok</div>
+          <div class="annot-note"><span>第四关的砍数字检查：依次走过每一个后缀（最后 1 位、最后 2 位……），确认每一个都<em>已经</em>被标记为惊悚——因为每个后缀都是我们更早之前访问过的更小的数字，这一点是有保证的。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">count_upto = [0] * (LIMIT + 1)
+running = 0
+for n in range(LIMIT + 1):
+    if scary[n]:
+        running += 1
+    count_upto[n] = running</div>
+          <div class="annot-note"><span>第六关的累计计数：扫一遍，之后每一次查询都变成瞬间完成的数组查找。</span></div>
+        </div>
+      </div>
+
+      <p>完整程序如下：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>vectar8.py</div>
+        <pre><code><span class="kw">import</span> sys
+
+LIMIT = <span class="nu">1_000_000</span>
+
+<span class="cm"># 第一步：埃拉托斯特尼筛法</span>
+is_composite = <span class="kw">bytearray</span>(LIMIT + <span class="nu">1</span>)
+is_composite[<span class="nu">0</span>] = is_composite[<span class="nu">1</span>] = <span class="nu">1</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, <span class="kw">int</span>(LIMIT**<span class="nu">0.5</span>) + <span class="nu">1</span>):
+    <span class="kw">if</span> <span class="kw">not</span> is_composite[i]:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(i * i, LIMIT + <span class="nu">1</span>, i):
+            is_composite[j] = <span class="nu">1</span>
+
+<span class="cm"># 第二步：判断哪些质数是"惊悚"的</span>
+scary = <span class="kw">bytearray</span>(LIMIT + <span class="nu">1</span>)
+<span class="kw">for</span> n <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, LIMIT + <span class="nu">1</span>):
+    <span class="kw">if</span> is_composite[n]:
+        <span class="kw">continue</span>
+    <span class="kw">if</span> <span class="st">'0'</span> <span class="kw">in</span> <span class="kw">str</span>(n):
+        <span class="kw">continue</span>
+    ten = <span class="nu">10</span>
+    ok = <span class="kw">True</span>
+    <span class="kw">while</span> ten &lt;= n:
+        suffix = n % ten
+        <span class="kw">if</span> suffix &lt; <span class="nu">2</span> <span class="kw">or</span> <span class="kw">not</span> scary[suffix]:
+            ok = <span class="kw">False</span>
+            <span class="kw">break</span>
+        ten *= <span class="nu">10</span>
+    scary[n] = ok
+
+<span class="cm"># 第三步：前缀累计计数，让每次查询都是 O(1)</span>
+count_upto = [<span class="nu">0</span>] * (LIMIT + <span class="nu">1</span>)
+running = <span class="nu">0</span>
+<span class="kw">for</span> n <span class="kw">in</span> <span class="kw">range</span>(LIMIT + <span class="nu">1</span>):
+    <span class="kw">if</span> scary[n]:
+        running += <span class="nu">1</span>
+    count_upto[n] = running
+
+<span class="cm"># 第四步：瞬间回答每一次查询</span>
+data = sys.stdin.read().split()
+t = <span class="kw">int</span>(data[<span class="nu">0</span>])
+out = []
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, t + <span class="nu">1</span>):
+    n = <span class="kw">int</span>(data[i])
+    out.append(<span class="kw">str</span>(count_upto[n]))
+<span class="kw">print</span>(<span class="st">"\\n"</span>.join(out))</code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">为什么要一次性读完全部输入？</div>
+        <p>最多有 10 万次查询，如果每次查询都单独调用一次 Python 的 <code>input()</code>，累积起来的开销就会变得很可观。用一次 <code>sys.stdin.read()</code> 把所有输入读进来、提前拆成一个列表，最后把所有答案拼在一起一次性打印出来，就能完全避开这份开销——这是面对"大量查询"这类题目时的标准技巧。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>一起手动推演一遍：找出最早的几个惊悚质数</h2></div>
+      <p class="lead">按顺序从 2 开始往上处理数字，看看最早的几个惊悚质数是怎么被发现的——注意每一个数字需要检查的后缀，都早就已经算好了。</p>
+
+      <table class="trace">
+        <thead><tr><th>n</th><th>是质数吗？有没有 0？</th><th>后缀检查</th><th>惊悚吗？</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td class="odd">是，没有</td><td>单个数字——没有后缀要检查</td><td class="odd">是</td></tr>
+          <tr><td>3</td><td class="odd">是，没有</td><td>单个数字</td><td class="odd">是</td></tr>
+          <tr><td>4</td><td class="even">不是质数</td><td>&mdash;</td><td class="even">否</td></tr>
+          <tr><td>7</td><td class="odd">是，没有</td><td>单个数字</td><td class="odd">是</td></tr>
+          <tr><td>13</td><td class="odd">是，没有</td><td>后缀 3 &rarr; 早就知道是惊悚的</td><td class="odd">是</td></tr>
+          <tr><td>17</td><td class="odd">是，没有</td><td>后缀 7 &rarr; 早就知道是惊悚的</td><td class="odd">是</td></tr>
+          <tr><td>19</td><td class="odd">是，没有</td><td>后缀 9 &rarr; 9 根本不是质数</td><td class="even">否</td></tr>
+          <tr><td>29</td><td class="odd">是，没有</td><td>后缀 9 &rarr; 不是质数</td><td class="even">否</td></tr>
+          <tr><td>37</td><td class="odd">是，没有</td><td>后缀 7 &rarr; 早就知道是惊悚的</td><td class="odd">是</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">检查 <code>37</code> 的时候，我们早就已经判断过 <code>7</code> 是不是惊悚的了——完全不需要重新算一遍。这正是"按从小到大的顺序处理"能奏效的原因。</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 9 : INTERACTIVE ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>轮到你了：两个可以玩一玩的工具</h2></div>
+      <p class="lead">第一个工具直接回答题目本身的问题。第二个工具让你输入<em>任意</em>一个数字，亲眼看着它被从左边一位一位砍下去，就像第一关里 <code>4632647</code> 那个例子一样。</p>
+
+      <div class="widget">
+        <h3>惊悚质数计数器</h3>
+        <div class="hint">输入一个 1 到 999,999 之间的 N，看看不超过 N 的惊悚质数有多少个。先试试 2、3、4，核对一下官方样例。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">N</label><input type="number" id="inN" value="4" min="1" max="999999"></div>
+          <div class="field"><button class="btn" id="runBtn">数一数！</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+
+      <div class="widget">
+        <h3>砍数字检测器：这个数是惊悚质数吗？</h3>
+        <div class="hint">试试第一关里的 4632647，或者试试 907 来亲眼看看第五关那个"零位陷阱"是怎么回事，也可以试试你喜欢的任意质数。</div>
+        <div class="field-row">
+          <div class="field"><label for="inCheck">数字</label><input type="number" id="inCheck" value="4632647" min="1" max="99999999"></div>
+          <div class="field"><button class="btn" id="checkBtn">开始砍！</button></div>
+        </div>
+        <div id="out2"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">第十关</span><h2>轮到你练习了</h2></div>
+      <p class="lead">先用纸笔自己算一遍，再用上面的工具检查答案。</p>
+
+      <details>
+        <summary>练习 1：373 是惊悚质数吗？把砍数字的过程写出来。</summary>
+        <div class="reveal">
+          <p><code>373</code> 没有数字 0。它是质数吗？是的。砍成 <code>73</code>：是质数吗？是的。砍成 <code>3</code>：是质数吗？是的。全部检查通过——<b>373 是惊悚质数</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：103 是惊悚质数吗？用第五关的陷阱来解释。</summary>
+        <div class="reveal">
+          <p><code>103</code> 含有数字 <code>0</code>，所以立刻被淘汰——<b>不是惊悚质数</b>——不管砍数字的结果本来会怎样。（事实上 <code>103</code> 确实是质数，<code>103 % 10 = 3</code> 也确实是质数，这正是那个陷阱：单靠算术运算根本发现不了那个零，这正是第五关坚持要直接检查每一位数字的原因。）</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：为什么算法要严格按从小到大的顺序（2、3、4、5……）处理数字，而不是反过来从大到小？</summary>
+        <div class="reveal">
+          <p>因为判断 <code>n</code> 是不是惊悚质数，需要事先知道 <code>n</code> 的后缀是不是惊悚质数——而后缀永远是一个更小的数字。如果按从大到小的顺序处理，我们就会在还没算出某个更小数字的答案之前，就需要用到它——这是一个鸡生蛋蛋生鸡的死循环。从小到大处理，就能保证我们需要查的每一个后缀，都早已经算好了。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（较难）：为什么惊悚质数不可能以数字 5 结尾（5 本身除外）？</summary>
+        <div class="reveal">
+          <p>任何比 5 大、又以 5 结尾的数字，都能被 5 整除（因为 5 本身就能整除它），所以除非它<em>就是</em> 5，否则它不可能是质数。因为最后剩下的那一位数字，本身就是必须独立成为质数的"后缀"之一，所以任何位数超过一位的惊悚质数都不可能以 5 结尾——那最后一步的单位数检查会立刻失败。同样的道理，也排除了以偶数结尾的惊悚质数（2 本身除外）。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5：修改 Python 代码，让它把最先找到的 N 个惊悚质数打印成一个用逗号隔开的列表——方便用肉眼核对筛法和砍数字逻辑对不对。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>vectar8_debug.py</div>
+            <pre><code>found = []
+<span class="kw">for</span> n <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, LIMIT + <span class="nu">1</span>):
+    <span class="kw">if</span> scary[n]:
+        found.append(n)
+        <span class="kw">if</span> <span class="kw">len</span>(found) == <span class="nu">20</span>:
+            <span class="kw">break</span>
+
+<span class="kw">print</span>(<span class="st">", "</span>.join(<span class="kw">map</span>(<span class="kw">str</span>, found)))</code></pre>
+          </div>
+          <p style="margin-top:12px;">还是第七关那个 <code>scary</code> 数组，只是把它收集成一份看得见的列表，而不只是用来计数。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>SPOJ VECTAR8 —— Primal Fear。这里用到的筛法基础，可以参考<a href="prime_detective_cn.html">质数侦探事务所</a>案卷以及<a href="162C_zh.html">质因数分解</a>讲解。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var LIMIT = 1000000;
+  var scaryData = null;
+
+  function buildScaryData(){
+    var isComposite = new Uint8Array(LIMIT + 1);
+    isComposite[0] = isComposite[1] = 1;
+    for (var i = 2; i * i <= LIMIT; i++){
+      if (!isComposite[i]){
+        for (var j = i * i; j <= LIMIT; j += i) isComposite[j] = 1;
+      }
+    }
+
+    var scary = new Uint8Array(LIMIT + 1);
+    for (var n = 2; n <= LIMIT; n++){
+      if (isComposite[n]) continue;
+      if (String(n).indexOf('0') !== -1) continue;
+      var ten = 10;
+      var ok = 1;
+      while (ten <= n){
+        var suffix = n % ten;
+        if (suffix < 2 || !scary[suffix]){ ok = 0; break; }
+        ten *= 10;
+      }
+      scary[n] = ok;
+    }
+
+    var countUpto = new Int32Array(LIMIT + 1);
+    var running = 0;
+    for (var m = 0; m <= LIMIT; m++){
+      if (scary[m]) running++;
+      countUpto[m] = running;
+    }
+
+    return { scary: scary, countUpto: countUpto };
+  }
+
+  function getScaryData(){
+    if (!scaryData) scaryData = buildScaryData();
+    return scaryData;
+  }
+
+  function isPrimeSimple(n){
+    if (n < 2) return false;
+    for (var i = 2; i * i <= n; i++) if (n % i === 0) return false;
+    return true;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function runCount(){
+    var out = document.getElementById('out');
+    var nRaw = document.getElementById('inN').value;
+    var n = parseInt(nRaw, 10);
+    if (isNaN(n) || n < 1 || n > 999999){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>N 必须是 1 到 999,999 之间的整数。</p></div>';
+      return;
+    }
+    var data = getScaryData();
+    var answer = data.countUpto[n];
+
+    var html = '<div class="answer-line">不超过 ' + n + ' 的惊悚质数：<b>' + answer + '</b> 个</div>';
+
+    if (n <= 5000){
+      var list = [];
+      for (var i = 2; i <= n; i++) if (data.scary[i]) list.push(i);
+      html += '<div class="chiplist">';
+      for (var k = 0; k < list.length; k++) html += '<span class="chip">' + list[k] + '</span>';
+      html += '</div>';
+    } else {
+      html += '<div class="callout fact"><div class="ctitle">提示</div><p>N 有点大，这里就不把每一个惊悚质数都列出来了，但上面的计数是精确的。</p></div>';
+    }
+
+    out.innerHTML = html;
+  }
+
+  function runCheck(){
+    var out = document.getElementById('out2');
+    var raw = document.getElementById('inCheck').value;
+    var n = parseInt(raw, 10);
+    if (isNaN(n) || n < 1 || n > 99999999){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请输入一个 1 到 99,999,999 之间的整数。</p></div>';
+      return;
+    }
+
+    var s = String(n);
+    var hasZero = s.indexOf('0') !== -1;
+    var steps = [];
+    var ok = !hasZero;
+    for (var i = 0; i < s.length; i++){
+      var suf = s.slice(i);
+      var val = parseInt(suf, 10);
+      var p = isPrimeSimple(val);
+      steps.push({ suffix: suf, value: val, prime: p });
+      if (!p) ok = false;
+    }
+
+    var html = '';
+    if (hasZero){
+      html += '<div class="callout warn"><div class="ctitle">发现了数字 0</div><p>' + n + ' 里含有数字 0，所以不管砍数字的结果如何，都会立刻被淘汰。</p></div>';
+    }
+    html += '<table class="trace"><thead><tr><th>步骤</th><th>剩下的数字</th><th>是质数吗？</th></tr></thead><tbody>';
+    for (var j = 0; j < steps.length; j++){
+      var st = steps[j];
+      var cls = st.prime ? 'odd' : 'even';
+      html += '<tr><td>' + (j+1) + '</td><td>' + esc(st.value) + '</td><td class="' + cls + '">' + (st.prime ? '是' : '否') + '</td></tr>';
+    }
+    html += '</tbody></table>';
+    html += '<div class="answer-line">' + n + ' ' + (ok ? '<b>是一个惊悚质数！</b>' : '<b>不是</b>惊悚质数。') + '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', runCount);
+  document.getElementById('checkBtn').addEventListener('click', runCheck);
+  runCount();
+  runCheck();
+})();
+</script>
+</body>
+</html>

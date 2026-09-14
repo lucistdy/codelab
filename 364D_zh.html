@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghd：只需要一半数字认账的那个约数（Codeforces 364D）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1 1 100%;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:14.5px;resize:vertical;min-height:52px;}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field textarea:focus, .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12px;font-weight:700;padding:2px 8px;border-radius:100px;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 364D &middot; 题目精讲</div>
+      <h1>Ghd：<em>只需要一半数字认账的那个约数</em></h1>
+      <p class="sub">你已经认识 GCD 了——那个能整除列表里<em>每一个</em>数字的最大公约数。Ghd 把规则放宽了一点：它只需要整除列表里<em>至少一半</em>的数字就够了。就是这么一个小小的改动，把一道简单题变成了真正的难题——最多一百万个数字，每个都可能大到一万亿，而你只有 4 秒钟。破解它的关键，是一次掷硬币。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">随机化算法与 GCD</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">给你 <code>n</code> 个数字（<code>1 &le; n &le; 10<sup>6</sup></code>），每个都在 1 到 <code>10<sup>12</sup></code> 之间。你需要找到最大的数字 <code>g</code>，使得列表里<strong>至少一半</strong>的数字都能被 <code>g</code> 整除。这个特殊的值叫做 <strong>Ghd</strong>（"greatest half-divisor"，"最大半数公约数"）。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>6 2 3 4 5 6</code> &rarr; <code>3</code>（3 能整除 6、3、6——6 个数字里有 3 个，正好一半）<br>
+        <code>5 5 6 10 15</code> &rarr; <code>5</code>（5 能整除 5、5、10、15——5 个数字里有 4 个，超过一半）</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">还不熟悉 GCD？</div>
+        <p>这篇文章默认你已经知道<strong>最大公约数（GCD）</strong>是什么——能整除一组数字里<em>每一个</em>数的最大数字。如果这对你来说还是新概念，<a href="modified_gcd_zh.html">Modified GCD</a> 和 <a href="max_gcd_zh.html">Maximum GCD</a> 这两篇是很好的热身。Ghd 这个名字故意起得跟 GCD很像，因为它本质上是同一个想法，只是把规则放宽了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>Ghd 和 GCD：为什么"一半"会改变一切</h2></div>
+      <p class="lead"><code>6, 2, 3, 4, 5, 6</code> 这组数字的普通 GCD 只有 <code>1</code>——没有比 1 更大的数能同时整除这<em>全部六个</em>数字（光是 5 这一个数，就会把任何比 1 大的候选值全部否决，因为没有别的数跟它共享因数）。但 Ghd 不需要所有人都同意——它只需要多数票。这正是为什么答案能一下子跳到 <code>3</code>：六个数字里有三个（6、3、6）都愿意被 3 整除，而六选三正好够格。</p>
+
+      <p>先看看暴力做法，把我们到底要算什么明确下来：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ghd_brute_force.py</div>
+        <pre><code>n = <span class="kw">int</span>(<span class="kw">input</span>())
+a = <span class="kw">list</span>(<span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split()))
+need = (n + <span class="nu">1</span>) // <span class="nu">2</span>  <span class="cm"># "至少一半"，向上取整</span>
+
+best = <span class="nu">1</span>
+<span class="kw">for</span> g <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, <span class="kw">max</span>(a) + <span class="nu">1</span>):
+    count = <span class="kw">sum</span>(<span class="nu">1</span> <span class="kw">for</span> v <span class="kw">in</span> a <span class="kw">if</span> v % g == <span class="nu">0</span>)
+    <span class="kw">if</span> count &gt;= need:
+        best = g
+
+<span class="kw">print</span>(best)</code></pre>
+      </div>
+
+      <p>这段代码百分之百正确——但面对真实的数据规模，也百分之百没有希望跑完。<code>max(a)</code> 可以达到 <code>10<sup>12</sup></code>，而每测试一个候选 <code>g</code>，都要扫一遍多达一百万个数字。总共大约是 <code>10<sup>12</sup> &times; 10<sup>6</sup> = 10<sup>18</sup></code> 次操作。就算一台电脑每秒能做十亿次操作，也得算上几十年。</p>
+
+      <div class="callout warn">
+        <div class="ctitle">真正的挑战</div>
+        <p>我们需要在不测试"每一个可能的 g"的前提下找到答案。既要聪明地缩小候选范围，<em>又</em>要有办法飞快地检验每一个候选。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>技巧一：随便一猜，命中率高得惊人</h2></div>
+      <p class="lead">这是让整道题变得可解的火花。假设 <code>g</code> 就是真正的 Ghd。根据定义，数组里<strong>至少一半</strong>的数字都是 <code>g</code> 的倍数。现在闭上眼睛，随便指向数组里的一个数字。你指中 <code>g</code> 的倍数的概率是多少？</p>
+
+      <div class="blocks">
+        <div class="block hi">&ge; 50%</div>
+      </div>
+
+      <p>至少五五开——跟抛一枚均匀硬币出正面的概率一样！而如果你随手挑中的数字 <code>x</code> <em>正好</em>是 <code>g</code> 的倍数，那么 <code>g</code> 自动就是 <code>x</code> 的一个约数（能整除某个 <code>g</code> 的倍数、并且恰好等于 <code>g</code> 本身的数字，当然就是那个倍数的约数）。所以：随便挑一个数字，看看它有哪些约数，真正的答案有一半的概率就藏在这份约数清单里。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">为什么反复"掷硬币"基本能保证成功</div>
+        <p>抛一次硬币只有 50% 的概率抛中想要的那面，这还不够保险。但如果你抛 20 枚<em>独立的</em>硬币，只要<em>其中一枚</em>抛对了就行呢？全部 20 枚都抛错的概率是 <code>(1/2)<sup>20</sup></code>——大约百万分之一。所以：从数组里随机挑出 20 个不同的数字（而不是只挑 1 个），把它们各自的约数都收集起来，逐一检验这些候选值。真正的 Ghd 一个都没出现在这些候选里的概率，小到几乎可以忽略不计。</p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">之前见过类似的随机化技巧吗？</div>
+        <p>这种"反复随机猜测，直到失败的概率小到可以忽略"的策略，在竞赛编程里随处可见——<a href="1139D_zh.html">GCD 逃脱机</a> 和 <a href="711E_zh.html">生日悖论</a> 这两篇用的是相关的概率推理，如果你想多练习一下这种思维方式，可以去看看。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>技巧二：列出一个数字的约数很便宜</h2></div>
+      <p class="lead">第三关把我们的搜索范围，从"一万亿以内的每一个整数"缩小到了"一个特定数字的约数"。一个不超过 <code>10<sup>12</sup></code> 的数字，最多能有多少个约数呢？就算是最极端的情况，也不过几千个——相对于一万亿来说，简直微不足道。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>divisors_of.py</div>
+        <pre><code><span class="kw">def</span> divisors_of(x):
+    result = []
+    d = <span class="nu">1</span>
+    <span class="kw">while</span> d * d &lt;= x:
+        <span class="kw">if</span> x % d == <span class="nu">0</span>:
+            result.append(d)
+            <span class="kw">if</span> d != x // d:
+                result.append(x // d)
+        d += <span class="nu">1</span>
+    <span class="kw">return</span> result</code></pre>
+      </div>
+
+      <p>这就是 <a href="162C_zh.html">质因数分解</a> 那篇里用过的 &radic;x 捷径：约数总是成对出现的，形如 <code>(d, x/d)</code>，所以只需要测试到 &radic;x 为止。当 <code>x = 10<sup>12</sup></code> 时，&radic;x 只有 <code>10<sup>6</sup></code>——这样一个循环，一瞬间就能跑完。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>12</sup></div><div class="lbl">如果直接测试每一个可能的 g（第二关的做法），需要检查的候选数量</div></div>
+        <div class="stat fast"><div class="num">&le; 10<sup>6</sup> 步</div><div class="lbl">用 &radic;x 捷径，列出<em>一个</em>抽样数字的全部约数所需的步数</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>技巧三：用 GCD 指纹快速计数</h2></div>
+      <p class="lead">现在我们从一个抽样数字 <code>x</code> 那里，得到了大概几千个候选约数。对每一个候选 <code>d</code>，我们都需要知道：整个数组里有多少个数字能被 <code>d</code> 整除？最直接的办法——<em>每个候选</em>都把整个数组扫一遍——总花费是 <code>(x 的约数个数) &times; n</code>，一旦对 20 个不同的抽样数字都这么做，还是会太慢。</p>
+
+      <p>这里有个修正办法：对每个抽样数字，只扫描数组<strong>一次</strong>，让 GCD 身兼两职。对数组里的每一个数字 <code>v</code>，计算 <code>gcd(x, v)</code>。这个值永远满足两件事：</p>
+
+      <div class="blocks">
+        <div class="block hi">gcd(x, v)</div><div class="block op">永远是 x 的一个约数</div>
+      </div>
+
+      <p>这正是 GCD 的定义——它同时整除 <code>x</code> 和 <code>v</code>。所以在扫描数组的同时，我们可以把每个 <code>v</code> 直接丢进一个"格子"里，这个格子的标签就是它落在的那个 <code>x</code> 的约数，用一个字典记录每个格子里落了多少个数字。扫一遍整个数组，每个数字就都被分类进了 <code>x</code> 的某个约数格子里。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">把格子变成"有多少个数能被 d 整除"</div>
+        <p>光落在恰好等于 <code>d</code> 的格子里，还不是全部故事——如果 <code>v</code> 落在标签为 <code>10</code> 的格子里，那么 <code>v</code> 也同时能被 <code>5、2、1</code>（10 的每一个约数）整除。所以要算出数组里有多少个数能被某个候选 <code>d</code> 整除，只需要把 <code>d</code> <em>以及所有同时是 x 约数的 d 的倍数</em>对应的格子数量加起来。因为我们只是在 <code>x</code> 自己那份（不大的）约数清单里求和，这一步依然很快。</p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">为什么这样做完全正确</div>
+        <p>取 <code>x</code> 的任意一个约数 <code>d</code>，以及数组里任意一个数字 <code>v</code>，它的格子标签是 <code>d2 = gcd(x, v)</code>。如果 <code>d</code> 整除 <code>d2</code>，那么由于 <code>d2</code> 整除 <code>v</code>（根据 gcd 的定义），<code>d</code> 也就整除 <code>v</code>。反过来也成立：如果 <code>d</code> 同时整除 <code>x</code> 和 <code>v</code>，那么 <code>d</code> 必定整除 <code>gcd(x,v) = d2</code>，因为 gcd 是<em>最大的</em>公约数，任何一个公约数都能整除它。所以"<code>d</code> 整除 <code>v</code>"和"<code>d</code> 整除 <code>v</code> 的格子标签"其实是同一件事——不会漏掉，也不会错误地重复计数。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>把三个技巧拼在一起</h2></div>
+      <p class="lead">综合第三到第五关，完整的方案是这样的：</p>
+
+      <ul style="color:var(--ink-soft);">
+        <li>重复大约 20 次：从数组里随机挑一个数字 <code>x</code>（第三关）。</li>
+        <li>用 &radic;x 捷径列出 <code>x</code> 的所有约数（第四关）。</li>
+        <li>扫一遍数组，按 <code>gcd(x, v)</code> 把每个数字分进格子（第五关）。</li>
+        <li>从大到小检查 <code>x</code> 的约数，对每一个都累加它的倍数们的格子数量。第一个达到"至少一半数组"的，就是藏在这个特定 <code>x</code> 里的最佳候选。</li>
+        <li>在全部 20 次随机抽样里找到的候选中，保留最大的那个——它就是答案。</li>
+      </ul>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么这样能赶在时限内完成</div>
+        <p>大约 20 次尝试，每一次都对数组做一遍 O(n) 的扫描（给每个元素算一次 gcd——即便面对 12 位数字，gcd 也只需要几步就能算完），再加上一次只针对 <code>x</code> 自己那份约数清单的小小整理。对一百万个数字扫 20 遍，每次的算术都很便宜，4 秒钟绰绰有余——和第二关那 10<sup>18</sup> 次操作的暴力法完全不是一个量级。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>用 Python 写出来</h2></div>
+      <p class="lead">用第四关的 <code>divisors_of</code> 工具函数，把完整解法拼起来。</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">n = len(a)
+need = (n + 1) // 2
+best = 1</div>
+          <div class="annot-note"><span><code>need</code> 就是"至少一半"、向上取整——和第二关暴力解法里的定义完全一致。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">sample_size = min(trials, n)
+for x in random.sample(a, sample_size):</div>
+          <div class="annot-note"><span>第三关：尝试大约 20 个随机数字（如果总共不到 20 个，就全部尝试）。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">divs = divisors_of(x)
+count = {d: 0 for d in divs}
+for v in a:
+    g = math.gcd(x, v)
+    count[g] += 1</div>
+          <div class="annot-note"><span>第四、五关：列出 <code>x</code> 的约数，然后一次遍历就把数组里每个数字按它与 <code>x</code> 的 gcd 分进格子。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for d in sorted(divs, reverse=True):
+    if d <= best:
+        break
+    total = sum(count[d2] for d2 in divs if d2 % d == 0)
+    if total >= need:
+        best = d
+        break</div>
+          <div class="annot-note"><span>从大到小检查 <code>x</code> 的约数；把 <code>d</code> 的倍数对应的格子数量加起来（第五关的正确性论证）；一旦达到"至少一半"就立刻停下，因为这个 <code>x</code> 里不会再有更好的答案了。</span></div>
+        </div>
+      </div>
+
+      <p>下面是可以直接运行的完整程序：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ghd.py</div>
+        <pre><code><span class="kw">import</span> math
+<span class="kw">import</span> random
+
+<span class="kw">def</span> divisors_of(x):
+    result = []
+    d = <span class="nu">1</span>
+    <span class="kw">while</span> d * d &lt;= x:
+        <span class="kw">if</span> x % d == <span class="nu">0</span>:
+            result.append(d)
+            <span class="kw">if</span> d != x // d:
+                result.append(x // d)
+        d += <span class="nu">1</span>
+    <span class="kw">return</span> result
+
+<span class="kw">def</span> ghd(a, trials=<span class="nu">20</span>):
+    n = <span class="kw">len</span>(a)
+    need = (n + <span class="nu">1</span>) // <span class="nu">2</span>
+    best = <span class="nu">1</span>
+
+    sample_size = <span class="kw">min</span>(trials, n)
+    <span class="kw">for</span> x <span class="kw">in</span> random.sample(a, sample_size):
+        divs = divisors_of(x)
+        count = {d: <span class="nu">0</span> <span class="kw">for</span> d <span class="kw">in</span> divs}
+        <span class="kw">for</span> v <span class="kw">in</span> a:
+            g = math.gcd(x, v)
+            count[g] += <span class="nu">1</span>
+
+        <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">sorted</span>(divs, reverse=<span class="kw">True</span>):
+            <span class="kw">if</span> d &lt;= best:
+                <span class="kw">break</span>
+            total = <span class="kw">sum</span>(count[d2] <span class="kw">for</span> d2 <span class="kw">in</span> divs <span class="kw">if</span> d2 % d == <span class="nu">0</span>)
+            <span class="kw">if</span> total &gt;= need:
+                best = d
+                <span class="kw">break</span>
+
+    <span class="kw">return</span> best
+
+n = <span class="kw">int</span>(<span class="kw">input</span>())
+a = <span class="kw">list</span>(<span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split()))
+<span class="kw">print</span>(ghd(a))</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>一起手动推演一遍：6, 2, 3, 4, 5, 6</h2></div>
+      <p class="lead">假设我们唯一一次随机抽样正好抽到了 <code>x = 6</code>（下标 0）。看看算法接下来会怎么做。</p>
+
+      <table class="trace">
+        <thead><tr><th>6 的约数</th><th>1</th><th>2</th><th>3</th><th>6</th></tr></thead>
+        <tbody>
+          <tr><td>每个 v 的 gcd(6, v) 落入的格子</td><td class="even">v=5 &rarr; gcd=1</td><td class="even">v=2,4 &rarr; gcd=2</td><td class="even">v=3 &rarr; gcd=3</td><td class="odd">v=6,6 &rarr; gcd=6</td></tr>
+          <tr><td>格子计数</td><td>1</td><td>2</td><td>1</td><td>2</td></tr>
+        </tbody>
+      </table>
+
+      <p>现在从大到小检查 6 的约数，需要 &ge; 3（也就是 <code>(6+1)//2</code>）：</p>
+
+      <table class="trace">
+        <thead><tr><th>候选 d</th><th>{1,2,3,6} 中 d 的倍数</th><th>总计（对应格子相加）</th><th>&ge; 3 吗?</th></tr></thead>
+        <tbody>
+          <tr><td>6</td><td>6</td><td>2</td><td class="even">否</td></tr>
+          <tr><td>3</td><td>3, 6</td><td>1 + 2 = 3</td><td class="odd">是！&rarr; 候选 = 3</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">一找到就立刻停止——<b>3</b> 就是藏在 x=6 里的最佳候选。如果随机抽到的是别的数字（2、3、4、5，或另一个 6），要么会重新发现 3，要么找到的不会比它更大，所以只要试的次数够多，最终答案始终是 <b>3</b>——和题目给出的答案完全一致。</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 9 : INTERACTIVE ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>轮到你了：试试自己的一组数字</h2></div>
+      <p class="lead">输入一串数字，选择要跑多少次随机试验，看看工具怎么抽样数字、搭建 gcd 格子、寻找最佳候选——和上面的 Python 代码完全一样。</p>
+
+      <div class="widget">
+        <h3>Ghd 探测器</h3>
+        <div class="hint">试试默认的样例，或者输入你自己的数字（用逗号或空格分隔，最多 20 个）。把试验次数调到 1，多跑几次——你有时会看到一个偏小（错误）的答案，这正好说明了为什么第三关强调"重复大约 20 次"很重要！</div>
+        <div class="field-row">
+          <div class="field"><label for="inNums">数字列表</label><textarea id="inNums">6, 2, 3, 4, 5, 6</textarea></div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="flex:0 0 auto;"><label for="inTrials">随机试验次数</label><input type="number" id="inTrials" value="20" min="1" max="20"></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn" id="runBtn">寻找 Ghd！</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">第十关</span><h2>轮到你练习了</h2></div>
+      <p class="lead">先用纸笔自己算一遍，再用上面的工具检查答案。</p>
+
+      <details>
+        <summary>练习 1：手动算出 <code>8, 12, 18, 25</code> 的 Ghd。</summary>
+        <div class="reveal">
+          <p><code>n=4</code>，所以需要至少 <code>2</code> 个数字共享某个约数。试试 <code>g=6</code>：能整除 12 和 18（2 个数字）——成立！再试更大的：<code>g=8</code> 只能整除 8（1 个，不够）。<code>g=9</code> 只能整除 18。<code>g=12</code> 只能整除 12。所以没有比 6 更大的候选能达到 2 个数字。答案：<b>6</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：为什么算法需要检查<em>抽样数字的约数</em>，而不是直接检查抽样数字 <code>x</code> 本身？</summary>
+        <div class="reveal">
+          <p>因为 <code>x</code> 本身很可能不是答案——真正的 Ghd 可能是一个更小的数，而 <code>x</code> 碰巧是它的倍数。举例来说，如果 <code>x = 12</code>，而真正的 Ghd 是 6，那么 6 是 12 的一个约数，但 12 本身可能整除不了"至少一半"的数组。我们必须搜遍 <code>x</code> 的<em>全部</em>约数，才能找到真正满足"至少一半"规则的那个最大值。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：在上面的工具里把试验次数设成 1，对数组 <code>9, 9, 9, 2, 3</code> 多跑几次。你有时会得到一个错误（偏小）的答案，而不是真正的 Ghd。解释一下为什么，并说出真正的 Ghd 是多少。</summary>
+        <div class="reveal">
+          <p><code>n=5</code>，需要 &ge; 3。五个数字里有三个（三个 9）能被 9 整除，所以真正的 Ghd 是 <b>9</b>。但如果只做 1 次随机试验，有 <code>2/5</code>（40%）的概率会抽到 2 或 3 而不是 9——如果抽到 <code>x=2</code>，它的约数只有 1 和 2，而 2 只能整除一个数字（它自己），算法就会错误地报告 <b>1</b>。这正是第三关坚持要做大约 20 次试验的原因：一次不走运的抽样就可能完全错过答案，但连续 20 次都不走运的概率，小到几乎不可能发生。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（较难）：只用 GCD 的定义——不借助任何公式——解释为什么 <code>gcd(x, v)</code> 一定能整除 <code>x</code>。</summary>
+        <div class="reveal">
+          <p>根据定义，<code>gcd(x, v)</code> 是同时整除 <code>x</code> 和 <code>v</code> 的最大数字。"同时整除 x 和 v"这个要求本身就已经包含了"整除 x"——所以不管 <code>gcd(x,v)</code> 最终算出来是多少，它都必须整除 <code>x</code>，因为这本来就是它一开始就必须满足的条件之一。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5：修改 Python 代码，让它不再只找到第一个满足"至少一半"的 <code>x</code> 的约数就停下，而是把 <code>x</code> 的<em>每一个</em>约数、以及它能整除数组里多少个数字都打印出来——方便手动检查格子逻辑是否正确。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ghd_debug.py</div>
+            <pre><code><span class="kw">def</span> show_all_counts(a, x):
+    divs = divisors_of(x)
+    count = {d: <span class="nu">0</span> <span class="kw">for</span> d <span class="kw">in</span> divs}
+    <span class="kw">for</span> v <span class="kw">in</span> a:
+        count[math.gcd(x, v)] += <span class="nu">1</span>
+
+    <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">sorted</span>(divs, reverse=<span class="kw">True</span>):
+        total = <span class="kw">sum</span>(count[d2] <span class="kw">for</span> d2 <span class="kw">in</span> divs <span class="kw">if</span> d2 % d == <span class="nu">0</span>)
+        <span class="kw">print</span>(<span class="kw">f</span><span class="st">"d={d}: {total} numbers divisible by it"</span>)</code></pre>
+          </div>
+          <p style="margin-top:12px;">和之前一样的格子搭建过程，只是去掉了提前退出——把 <code>x</code> 每一个约数当前的累计总数都打印出来，而不是一找到就停。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 364D —— Ghd。这里用到的基础知识，可以参考 <a href="modified_gcd_zh.html">Modified GCD</a> 与 <a href="max_gcd_zh.html">Maximum GCD</a>（欧几里得算法）、<a href="162C_zh.html">质因数分解</a>（&radic;x 约数捷径），以及 <a href="1139D_zh.html">GCD 逃脱机</a>（更多随机化算法的直觉）。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function gcdNum(a, b){ while (b){ var t = a % b; a = b; b = t; } return a; }
+
+  function divisorsOf(x){
+    var ds = [];
+    for (var i = 1; i * i <= x; i++){
+      if (x % i === 0){
+        ds.push(i);
+        if (i !== x / i) ds.push(x / i);
+      }
+    }
+    return ds;
+  }
+
+  function shuffleIndices(n){
+    var idx = [];
+    for (var i = 0; i < n; i++) idx.push(i);
+    for (var j = idx.length - 1; j > 0; j--){
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = idx[j]; idx[j] = idx[k]; idx[k] = tmp;
+    }
+    return idx;
+  }
+
+  function ghd(a, trialCount){
+    var n = a.length;
+    var need = Math.ceil(n / 2);
+    var best = 1;
+    var log = [];
+
+    var picks = shuffleIndices(n).slice(0, Math.min(trialCount, n));
+
+    for (var p = 0; p < picks.length; p++){
+      var idx = picks[p];
+      var x = a[idx];
+      var ds = divisorsOf(x);
+      var cnt = new Map();
+      for (var i = 0; i < ds.length; i++) cnt.set(ds[i], 0);
+      for (var v = 0; v < n; v++){
+        var g = gcdNum(x, a[v]);
+        cnt.set(g, cnt.get(g) + 1);
+      }
+      var dsSorted = ds.slice().sort(function(p1, q1){ return q1 - p1; });
+      var trialBest = 1;
+      var trialSteps = [];
+      for (var s = 0; s < dsSorted.length; s++){
+        var d = dsSorted[s];
+        if (d <= best) break;
+        var total = 0;
+        for (var t = 0; t < ds.length; t++){
+          if (ds[t] % d === 0) total += cnt.get(ds[t]);
+        }
+        trialSteps.push({ d: d, total: total, ok: total >= need });
+        if (total >= need){ trialBest = d; break; }
+      }
+      log.push({ idx: idx, x: x, divisorCount: ds.length, trialBest: trialBest, steps: trialSteps });
+      if (trialBest > best) best = trialBest;
+    }
+    return { answer: best, need: need, log: log };
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function run(){
+    var raw = document.getElementById('inNums').value;
+    var trialCount = parseInt(document.getElementById('inTrials').value, 10);
+    var out = document.getElementById('out');
+
+    var parts = raw.split(/[,\s]+/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+
+    if (parts.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请至少输入一个数字。</p></div>';
+      return;
+    }
+    if (parts.length > 20){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请使用 20 个或更少的数字，方便工具流畅运行。</p></div>';
+      return;
+    }
+    if (isNaN(trialCount) || trialCount < 1){
+      trialCount = 1;
+    }
+
+    var a;
+    try {
+      a = parts.map(function(s){
+        if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+        var v = parseInt(s, 10);
+        if (!Number.isSafeInteger(v) || v < 1) throw new Error('bad');
+        return v;
+      });
+    } catch (e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>每一项都必须是一个正整数。</p></div>';
+      return;
+    }
+
+    var r = ghd(a, trialCount);
+    var html = '';
+
+    html += '<table class="trace"><thead><tr><th>试验</th><th>抽到的 x</th><th>x 的约数个数</th><th>此 x 找到的最佳候选</th></tr></thead><tbody>';
+    for (var i = 0; i < r.log.length; i++){
+      var e = r.log[i];
+      html += '<tr><td>'+(i+1)+'</td><td>'+esc(e.x)+' <span class="chip">下标 '+e.idx+'</span></td><td>'+e.divisorCount+'</td><td class="odd">'+e.trialBest+'</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="answer-line">需要至少 <b>'+r.need+'</b> 个（共 '+a.length+' 个）数字认账。找到的 Ghd：<b>' + r.answer + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

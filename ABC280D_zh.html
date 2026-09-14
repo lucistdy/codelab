@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阶乘与倍数：把 Legendre 公式反过来用（AtCoder ABC280 D）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:22px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:220px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:100px;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">AtCoder Beginner Contest 280，D 题 &middot; 题目精讲</div>
+      <h1>阶乘与倍数：<em>把 Legendre 公式反过来用</em></h1>
+      <p class="sub">你已经会检查 <code>N!</code> 能不能被某个数 <code>K</code> 整除了。这道题把问题反过来问：给定 <code>K</code>，找出让这件事成立的<em>最小</em> <code>N</code>。听起来好像要做一场巨大的搜索——但用来数阶乘末尾有多少个零的那个工具，反过来用、再配上一点二分查找，眨眼间就能把它解决。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">质因数分解与二分查找</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">给你一个整数 <code>K</code>（<code>2 &le; K &le; 10<sup>12</sup></code>）。找出最小的正整数 <code>N</code>，使得 <code>N!</code>（<code>N</code> 的阶乘，也就是 <code>1 &times; 2 &times; 3 &times; \cdots &times; N</code>）是 <code>K</code> 的倍数。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>K = 30</code> &rarr; <code>N = 5</code>（因为 <code>5! = 120 = 30 &times; 4</code>，而更小的阶乘都不行：<code>1!, 2!, 3!, 4!</code> 分别是 <code>1, 2, 6, 24</code>，没有一个能被 30 整除）<br>
+        <code>K = 280</code> &rarr; <code>N = 7</code>（<code>7! = 5040 = 280 &times; 18</code>）<br>
+        <code>K = 123456789011</code> &rarr; <code>N = 123456789011</code>（答案正好等于 K 本身！）</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么不能就从 N = 1, 2, 3, &hellip; 一个个试</div>
+        <p>看看第三个样例：答案可以大到 <code>K</code> 本身那么大，最多 <code>10<sup>12</sup></code>。真要去算这么大的 <code>N</code> 的阶乘——哪怕只是一步一步乘上去——完全没有希望。一万亿次乘法，每次都是几百位数字的运算，无论如何也来不及算完。我们需要一种能直接跳到答案的办法。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>把"能被 K 整除"变成一个关于质数的问题</h2></div>
+      <p class="lead">这里是打开整道题的关键想法。任何数字 <code>K</code> 都能唯一地分解成质数：<code>K = p&#8321;<sup>e&#8321;</sup> &times; p&#8322;<sup>e&#8322;</sup> &times; \cdots &times; p&#8342;<sup>e&#8342;</sup></code>。而 <code>N!</code> 是 <code>K</code> 的倍数，恰好当且仅当 <code>N!</code> 里含有<em>至少</em> <code>e&#8305;</code> 份每一个质数 <code>p&#8305;</code>。</p>
+
+      <p>于是这道题就拆成了两个小得多的问题：</p>
+      <ul style="color:var(--ink-soft);">
+        <li>把 <code>K</code> 分解成质数的幂。</li>
+        <li>对分解结果里的每一个质数幂 <code>p<sup>e</sup></code>，算出让它的阶乘含有至少 <code>e</code> 份 <code>p</code> 的<em>最小</em> <code>N</code>。</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="ctitle">为什么最后要取最大值，而不是求和</div>
+        <p>一旦我们知道了满足<em>每一个单独质数</em>需求所需的最小 <code>N</code>，那么<em>同时</em>满足所有质数需求的最小 <code>N</code>，就是这些单独答案中<strong>最大</strong>的那一个。这是因为 <code>N!</code> 里每一个质数的供应量只会随着 <code>N</code> 增大而增多——所以一旦 <code>N</code> 大到足够满足"最难伺候"的那个质数，其他所有质数的需求自然也早就已经满足了。</p>
+      </div>
+
+      <p>用样例 1 验证一下：<code>K = 30 = 2 &times; 3 &times; 5</code>。让阶乘含有一个 2 所需的最小 <code>N</code> 是 <code>N=2</code>；含有一个 3 是 <code>N=3</code>；含有一个 5 是 <code>N=5</code>。答案是 <code>max(2, 3, 5) = 5</code>——和题目答案完全一致。</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>数清 N! 里含有多少份质数 p —— Legendre 公式</h2></div>
+      <p class="lead">我们需要一个快速的办法来回答："质数 <code>p</code> 在 <code>N!</code> 里一共出现了多少次？"不能只数 <code>N</code> 以内 <code>p</code> 的倍数个数——像 <code>p&sup2;</code> 这样的数字会贡献<em>两份</em> <code>p</code>，而不是一份。把它们全部干净利落地数清楚（每一份额外贡献都不漏）的方法，就是 <strong>Legendre 公式</strong>：</p>
+
+      <div class="blocks">
+        <div class="block hi">&lfloor;N/p&rfloor;</div><div class="block op">+</div><div class="block hi">&lfloor;N/p&sup2;&rfloor;</div><div class="block op">+</div><div class="block hi">&lfloor;N/p&sup3;&rfloor;</div><div class="block op">+ &hellip;</div>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>exponent_in_factorial.py</div>
+        <pre><code><span class="kw">def</span> exponent_in_factorial(n, p):
+    total = <span class="nu">0</span>
+    power = p
+    <span class="kw">while</span> power &lt;= n:
+        total += n // power
+        power *= p
+    <span class="kw">return</span> total</code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">这个公式之前见过吗？</div>
+        <p>这正是 <a href="1114C_zh.html">阶乘末尾的爱</a> 那篇里完整搭建（并讲解过）的工具，那里用它来数清 <code>N!</code> 在任意进制下末尾有多少个零。那一次，是给你 <code>N</code>，问某个质数在它的阶乘里出现了多少次。这一次，我们要用<em>同一个</em>函数，去回答一个方向完全相反的问题。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>用二分查找把公式反过来用</h2></div>
+      <p class="lead">Legendre 公式回答的是"给定 <code>N</code>，有多少份 <code>p</code>？"我们需要反过来："如果需要<em>至少</em> <code>e</code> 份 <code>p</code>，最小的 <code>N</code> 是多少？"这里有一个关键事实，让这一切变得简单：<strong>随着 <code>N</code> 增大，Legendre 公式算出来的数量永远不会减少</strong>。更大的阶乘只会拥有更多份 <code>p</code>，绝不会更少。</p>
+
+      <div class="blocks">
+        <div class="block">N=1</div><div class="block op">&le;</div><div class="block">N=2</div><div class="block op">&le;</div><div class="block">N=3</div><div class="block op">&hellip;</div><div class="block op">&rarr;</div><div class="block hi">份数只增不减</div>
+      </div>
+
+      <p>每当一个量随着候选值增大而只增不减（或者保持不变），<strong>二分查找</strong>就是找出那个精确临界点——也就是份数第一次达到目标 <code>e</code> 时最小的 <code>N</code>——的完美工具。不需要把 <code>N = 1, 2, 3, \ldots</code> 一个个试过去，二分查找只需要大约 <code>log&#8322;(N)</code> 次猜测就能找到它。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">到底要从哪里开始搜索？</div>
+        <p>我们需要一个确定够大的上界。这里有一个简单的办法：Legendre 公式的第一项本身，<code>&lfloor;N/p&rfloor;</code>，一旦 <code>N = p &times; e</code> 就已经达到了 <code>e</code>（因为 <code>&lfloor;(p&times;e)/p&rfloor; = e</code> 正好整除）。所以 <code>N = p &times; e</code> 保证足够大，可以作为搜索的上界——我们永远不需要猜比这更大的数字。</p>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>min_n_for_prime_power.py</div>
+        <pre><code><span class="kw">def</span> min_n_for_prime_power(p, e):
+    lo, hi = <span class="nu">1</span>, p * e  <span class="cm"># floor((p*e)/p) = e 恰好成立，所以 hi 永远足够大</span>
+    <span class="kw">while</span> lo &lt; hi:
+        mid = (lo + hi) // <span class="nu">2</span>
+        <span class="kw">if</span> exponent_in_factorial(mid, p) &gt;= e:
+            hi = mid
+        <span class="kw">else</span>:
+            lo = mid + <span class="nu">1</span>
+    <span class="kw">return</span> lo</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>足够快地分解 K</h2></div>
+      <p class="lead">最后一个要用到的工具：先把 <code>K</code> 分解成质数的幂。因为 <code>K &le; 10<sup>12</sup></code>，<a href="162C_zh.html">质因数分解</a> 那篇里同样的 &radic;K 试除法捷径就能胜任——把候选除数一路测试到 &radic;K（大约一百万，因为 &radic;(10<sup>12</sup>) = 10<sup>6</sup>），每个候选彻底除干净再往下走。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>factorize.py</div>
+        <pre><code><span class="kw">def</span> factorize(k):
+    factors = {}
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= k:
+        <span class="kw">while</span> k % d == <span class="nu">0</span>:
+            factors[d] = factors.get(d, <span class="nu">0</span>) + <span class="nu">1</span>
+            k //= d
+        d += <span class="nu">1</span>
+    <span class="kw">if</span> k &gt; <span class="nu">1</span>:
+        factors[k] = factors.get(k, <span class="nu">0</span>) + <span class="nu">1</span>
+    <span class="kw">return</span> factors</code></pre>
+      </div>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>12</sup></div><div class="lbl">K（以及可能的答案 N）最大能有多大</div></div>
+        <div class="stat fast"><div class="num">&le; 10<sup>6</sup> 步</div><div class="lbl">用 &radic;K 捷径分解 K 所需的步数</div></div>
+        <div class="stat fast"><div class="num">&le; 约 40 次猜测</div><div class="lbl">每个质数，二分查找锁定精确答案所需的次数</div></div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">为什么样例 2 的答案正好等于 K 本身</div>
+        <p><code>123456789011</code> 碰巧是一个<strong>质数</strong>——所以它自己的分解就是它本身的一次方。让阶乘含有<em>哪怕一份</em>这个庞大质数的最小 <code>N</code>，就是这个质数本身（比质数 <code>p</code> 小的数字，乘出来的阶乘绝不可能被 <code>p</code> 整除，所以 <code>p</code> 不可能在 <code>N</code> 到达 <code>p</code> 之前出现在任何阶乘里）。这正是答案能大到 <code>K</code> 那么大的原因——也正是暴力计算阶乘从一开始就注定行不通的原因。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>用 Python 写出来</h2></div>
+      <p class="lead">把第二到第五关拼在一起：分解 <code>K</code>，对每个质数幂二分查找最小 <code>N</code>，取最大值。</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">factors = factorize(k)</div>
+          <div class="annot-note"><span>第五关：把 <code>K</code> 拆解成 <code>{质数: 指数}</code> 的字典。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">return max(
+    min_n_for_prime_power(p, e)
+    for p, e in factors.items()
+)</div>
+          <div class="annot-note"><span>第二关的洞察：先单独找出满足每个质数需求的最小 N，再取其中最大的那个——这一个值自动就能同时满足所有质数的需求。</span></div>
+        </div>
+      </div>
+
+      <p>完整程序如下：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>abc280d.py</div>
+        <pre><code><span class="kw">def</span> factorize(k):
+    factors = {}
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= k:
+        <span class="kw">while</span> k % d == <span class="nu">0</span>:
+            factors[d] = factors.get(d, <span class="nu">0</span>) + <span class="nu">1</span>
+            k //= d
+        d += <span class="nu">1</span>
+    <span class="kw">if</span> k &gt; <span class="nu">1</span>:
+        factors[k] = factors.get(k, <span class="nu">0</span>) + <span class="nu">1</span>
+    <span class="kw">return</span> factors
+
+<span class="kw">def</span> exponent_in_factorial(n, p):
+    total = <span class="nu">0</span>
+    power = p
+    <span class="kw">while</span> power &lt;= n:
+        total += n // power
+        power *= p
+    <span class="kw">return</span> total
+
+<span class="kw">def</span> min_n_for_prime_power(p, e):
+    lo, hi = <span class="nu">1</span>, p * e
+    <span class="kw">while</span> lo &lt; hi:
+        mid = (lo + hi) // <span class="nu">2</span>
+        <span class="kw">if</span> exponent_in_factorial(mid, p) &gt;= e:
+            hi = mid
+        <span class="kw">else</span>:
+            lo = mid + <span class="nu">1</span>
+    <span class="kw">return</span> lo
+
+<span class="kw">def</span> solve(k):
+    factors = factorize(k)
+    <span class="kw">return</span> <span class="kw">max</span>(
+        min_n_for_prime_power(p, e)
+        <span class="kw">for</span> p, e <span class="kw">in</span> factors.items()
+    )
+
+k = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">print</span>(solve(k))</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>一起手动推演一遍：K = 280</h2></div>
+      <p class="lead"><code>280 = 2&sup3; &times; 5&sup1; &times; 7&sup1;</code>。对每一个质数，我们二分查找能提供足够份数的最小 <code>N</code>。</p>
+
+      <table class="trace">
+        <thead><tr><th>质数 p</th><th>需要的指数 e</th><th>最小 N（二分查找）</th><th>验证</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>3</td><td class="odd">4</td><td>&lfloor;4/2&rfloor;+&lfloor;4/4&rfloor; = 2+1 = 3 &ge; 3 &check;（N=3 只给出 &lfloor;3/2&rfloor;=1，不够）</td></tr>
+          <tr><td>5</td><td>1</td><td class="odd">5</td><td>&lfloor;5/5&rfloor; = 1 &ge; 1 &check;（N=4 给出 0，不够）</td></tr>
+          <tr><td>7</td><td>1</td><td class="odd">7</td><td>&lfloor;7/7&rfloor; = 1 &ge; 1 &check;（N=6 给出 0，不够）</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">答案：<code>max(4, 5, 7) = <b>7</b></code>——和题目答案完全一致。注意 N=7 顺带也自动提供了足够多的 2（7! 里 2 的份数绰绰有余），这正是第二关"最大需求获胜"逻辑的实际体现。</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>轮到你了：试试自己的 K</h2></div>
+      <p class="lead">输入任意一个从 2 到 10<sup>12</sup> 的 <code>K</code>。工具会分解它，对每个质数幂二分查找最小 <code>N</code>，并明确标出到底是哪个质数成了瓶颈——全程使用 JavaScript 的 <code>BigInt</code>，即便是 12 位数字也能保持精确。</p>
+
+      <div class="widget">
+        <h3>最小 N 探测器</h3>
+        <div class="hint">试试三个官方样例（30、280、123456789011），或者输一个很大的质数，看看答案怎么一下子跳到 K 本身那么大。</div>
+        <div class="field-row">
+          <div class="field"><label for="inK">K</label><input type="text" id="inK" value="280"></div>
+          <div class="field"><button class="btn" id="runBtn">找出最小的 N！</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>轮到你练习了</h2></div>
+      <p class="lead">先用纸笔自己算一遍，再用上面的工具检查答案。</p>
+
+      <details>
+        <summary>练习 1：手动算出让 N! 是 K = 100 的倍数的最小 N。</summary>
+        <div class="reveal">
+          <p><code>100 = 2&sup2; &times; 5&sup2;</code>。含有两份 2 的最小 N：N=4 给出 &lfloor;4/2&rfloor;+&lfloor;4/4&rfloor;=3，已经够了（N=3 只给出 1 份，所以需要 N=4，因为我们需要至少 2 份，而 N=4 恰好给出 3 份，N=3 只给出 1 份——所以最小的就是 N=4）。含有两份 5 的最小 N：需要 &lfloor;N/5&rfloor;+&lfloor;N/25&rfloor; &ge; 2，第一次达到是在 N=10（&lfloor;10/5&rfloor;=2）。答案：<code>max(4, 10) = <b>10</b></code>。验证：<code>10! = 3628800 = 100 &times; 36288</code>。&check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：为什么质数幂 p&sup2; 所需的最小 N，有时会比 2p 大不少？</summary>
+        <div class="reveal">
+          <p>因为第一个 p 的倍数（贡献一份）出现之后，<em>下一份</em>并不一定紧跟着来自下一个数字——它来自 p 的第二个倍数，也就是 <code>2p</code>。所以要凑够两份 p，通常需要 N 达到 <code>2p</code>，而不只是比 p 多一点点。指数更大时，这种"摊开"的效应会累积起来，这正是为什么需要用 Legendre 公式（对 p 的每一个幂求和），而不能靠简单猜测。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：为什么二分查找可以放心地用 hi = p &times; e 作为初始上界，不管 e 有多大？</summary>
+        <div class="reveal">
+          <p>Legendre 公式的第一项本身就是 <code>&lfloor;N/p&rfloor;</code>，其他每一项只会往上加。当 <code>N = p &times; e</code> 时，这第一项恰好等于 <code>e</code>（因为 <code>p &times; e</code> 能被 <code>p</code> 整除）。所以在 <code>N = p &times; e</code> 处，<em>总</em>份数自动至少是 <code>e</code>，不管 <code>e</code> 变得多大——这就保证了真正的答案永远不会比这个初始上界更大。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（较难）：如果 K 是某个质数的平方，比如 K = p&sup2;，答案是不是永远恰好是 2p？</summary>
+        <div class="reveal">
+          <p>不一定——这取决于 p。对小一点的 p 来说，在 N 到达 2p 之前，额外的 p 份数就可能"免费"提前出现。以 p=2 为例：对 K=4=2&sup2;，我们需要 N! 里至少有 2 份 2。在 N=4 时，Legendre 公式给出 &lfloor;4/2&rfloor;+&lfloor;4/4&rfloor;=2+1=3——已经满足，而 N=3（&lfloor;3/2&rfloor;=1）还不够，所以真正的最小 N 是 4，这里恰好等于 2p。但再试试 p=2, e=3（K=8）：N=4 恰好给出 3 份（正如上面算过的），这已经是最小的 N 了——比某些"2×p×(e/2)"式的猜测公式给出的结果要小。真正的答案总是需要跑一遍 Legendre 公式（或二分查找）才能确定；不存在一个能跳过这一步的通用捷径公式，这正是第四关的二分查找方法之所以可靠的原因。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5：修改 Python 代码，让它不只返回最终答案，还打印出 K 的每一个质因数各自单独需要的最小 N——方便看清到底是哪个质数成了瓶颈。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>abc280d_debug.py</div>
+            <pre><code><span class="kw">def</span> solve_debug(k):
+    factors = factorize(k)
+    best = <span class="nu">0</span>
+    <span class="kw">for</span> p, e <span class="kw">in</span> factors.items():
+        n = min_n_for_prime_power(p, e)
+        <span class="kw">print</span>(<span class="kw">f</span><span class="st">"prime {p}^{e} needs N >= {n}"</span>)
+        <span class="kw">if</span> n &gt; best:
+            best = n
+    <span class="kw">return</span> best</code></pre>
+          </div>
+          <p style="margin-top:12px;">和第六关一样的核心逻辑，只是把每个质数的中间结果都打印出来，而不是悄悄只保留最大值。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>AtCoder ABC280 D —— Factorial and Multiple。这里用到的基础知识，可以参考 <a href="1114C_zh.html">阶乘末尾的爱</a>（Legendre 公式）与 <a href="162C_zh.html">质因数分解</a>（&radic;K 约数捷径）。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function factorize(k){
+    var factors = new Map();
+    var d = 2n;
+    while (d * d <= k){
+      while (k % d === 0n){
+        factors.set(d, (factors.get(d) || 0n) + 1n);
+        k /= d;
+      }
+      d += 1n;
+    }
+    if (k > 1n) factors.set(k, (factors.get(k) || 0n) + 1n);
+    return factors;
+  }
+
+  function exponentInFactorial(n, p){
+    var total = 0n;
+    var power = p;
+    while (power <= n){
+      total += n / power;
+      power *= p;
+    }
+    return total;
+  }
+
+  function minNForPrimePower(p, e){
+    var lo = 1n, hi = p * e;
+    while (lo < hi){
+      var mid = (lo + hi) / 2n;
+      if (exponentInFactorial(mid, p) >= e) hi = mid;
+      else lo = mid + 1n;
+    }
+    return lo;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function parseBig(s){
+    s = s.trim();
+    if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+    return BigInt(s);
+  }
+
+  function run(){
+    var out = document.getElementById('out');
+    var k;
+    try {
+      k = parseBig(document.getElementById('inK').value);
+    } catch(e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>K 必须是一个正整数。</p></div>';
+      return;
+    }
+    if (k < 2n || k > 1000000000000n){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>K 必须在 2 到 10^12 之间。</p></div>';
+      return;
+    }
+
+    var factors = factorize(k);
+    var rows = [];
+    var best = 0n;
+    for (var entry of factors){
+      var p = entry[0], e = entry[1];
+      var n = minNForPrimePower(p, e);
+      rows.push({p:p, e:e, n:n});
+      if (n > best) best = n;
+    }
+
+    var html = '';
+    html += '<table class="trace"><thead><tr><th>质因数</th><th>需要的指数</th><th>这个质数所需的最小 N</th></tr></thead><tbody>';
+    for (var i=0;i<rows.length;i++){
+      var r = rows[i];
+      var isBottleneck = r.n === best;
+      html += '<tr><td>'+esc(r.p.toString())+'</td><td>'+esc(r.e.toString())+'</td><td class="'+(isBottleneck?'odd':'even')+'">'+esc(r.n.toString())+(isBottleneck?' &larr; 瓶颈':'')+'</td></tr>';
+    }
+    html += '</tbody></table>';
+    html += '<div class="answer-line">使 N! 是 K 的倍数的最小 N：<b>' + best.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Factorial and Multiple: Working Legendre's Formula Backwards (AtCoder ABC280 D)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:22px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:220px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:100px;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">AtCoder Beginner Contest 280, Problem D &middot; Problem Walkthrough</div>
+      <h1>Factorial and Multiple: <em>Working Legendre's Formula Backwards</em></h1>
+      <p class="sub">You already know how to check whether <code>N!</code> is divisible by some number <code>K</code>. This problem flips the question around: given <code>K</code>, find the <em>smallest</em> <code>N</code> for which that's true. It sounds like it needs a giant search &mdash; but the exact same tool that counts trailing zeros of a factorial, run backwards with a bit of binary search, cracks it in a heartbeat.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Prime Factorization &amp; Binary Search</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">You're given an integer <code>K</code> (<code>2 &le; K &le; 10<sup>12</sup></code>). Find the smallest positive integer <code>N</code> such that <code>N!</code> (the factorial of <code>N</code>, meaning <code>1 &times; 2 &times; 3 &times; \cdots &times; N</code>) is a multiple of <code>K</code>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>K = 30</code> &rarr; <code>N = 5</code> &nbsp;(because <code>5! = 120 = 30 &times; 4</code>, and no smaller factorial works: <code>1!, 2!, 3!, 4!</code> are <code>1, 2, 6, 24</code>, none divisible by 30)<br>
+        <code>K = 280</code> &rarr; <code>N = 7</code> &nbsp;(<code>7! = 5040 = 280 &times; 18</code>)<br>
+        <code>K = 123456789011</code> &rarr; <code>N = 123456789011</code> &nbsp;(the answer equals K itself!)</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why you can't just try N = 1, 2, 3, &hellip; one at a time</div>
+        <p>Look at that third sample: the answer can be as large as <code>K</code> itself, up to <code>10<sup>12</sup></code>. Actually computing <code>N!</code> for <code>N</code> that big &mdash; or even just multiplying up to it step by step &mdash; is completely hopeless. A trillion multiplications, each on a number with hundreds of digits, would never finish in time. We need a way to jump straight to the answer.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Turning "divisible by K" into a question about primes</h2></div>
+      <p class="lead">Here's the idea that unlocks everything. Any number <code>K</code> breaks down uniquely into primes: <code>K = p&#8321;<sup>e&#8321;</sup> &times; p&#8322;<sup>e&#8322;</sup> &times; \cdots &times; p&#8342;<sup>e&#8342;</sup></code>. And <code>N!</code> is a multiple of <code>K</code> exactly when <code>N!</code> contains <em>at least</em> <code>e&#8305;</code> copies of every one of those primes <code>p&#8305;</code>.</p>
+
+      <p>So the problem splits into two much smaller problems:</p>
+      <ul style="color:var(--ink-soft);">
+        <li>Factor <code>K</code> into its prime powers.</li>
+        <li>For each prime power <code>p<sup>e</sup></code> in that factorization, work out the <em>smallest</em> <code>N</code> whose factorial contains at least <code>e</code> copies of <code>p</code>.</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="ctitle">Why we then take the maximum, not the sum</div>
+        <p>Once we know the smallest <code>N</code> needed to satisfy <em>each individual prime</em> in <code>K</code>'s recipe, the smallest <code>N</code> that satisfies <em>all of them at once</em> is simply the <strong>largest</strong> of those individual answers. That's because <code>N!</code>'s supply of every prime only ever grows as <code>N</code> grows &mdash; so once <code>N</code> is big enough for the "neediest" prime, every other prime's requirement is automatically already satisfied too.</p>
+      </div>
+
+      <p>Check it against sample 1: <code>K = 30 = 2 &times; 3 &times; 5</code>. The smallest <code>N</code> whose factorial contains a 2 is <code>N=2</code>. For a 3, it's <code>N=3</code>. For a 5, it's <code>N=5</code>. The answer is <code>max(2, 3, 5) = 5</code> &mdash; matching the judge exactly.</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Counting copies of a prime inside N! &mdash; Legendre's formula</h2></div>
+      <p class="lead">We need a fast way to answer: "how many times does prime <code>p</code> divide into <code>N!</code>?" You can't just count multiples of <code>p</code> up to <code>N</code> &mdash; a number like <code>p&sup2;</code> contributes <em>two</em> copies of <code>p</code>, not one. The clean way to count all of them, counting every extra copy correctly, is <strong>Legendre's formula</strong>:</p>
+
+      <div class="blocks">
+        <div class="block hi">&lfloor;N/p&rfloor;</div><div class="block op">+</div><div class="block hi">&lfloor;N/p&sup2;&rfloor;</div><div class="block op">+</div><div class="block hi">&lfloor;N/p&sup3;&rfloor;</div><div class="block op">+ &hellip;</div>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>exponent_in_factorial.py</div>
+        <pre><code><span class="kw">def</span> exponent_in_factorial(n, p):
+    total = <span class="nu">0</span>
+    power = p
+    <span class="kw">while</span> power &lt;= n:
+        total += n // power
+        power *= p
+    <span class="kw">return</span> total</code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Seen this formula before?</div>
+        <p>This is exactly the tool built (and explained in full) on the <a href="1114C_en.html">Trailing Loves</a> page, where it's used to count trailing zeros of <code>N!</code> in any base. There, you're given <code>N</code> and asked how many times a prime divides its factorial. Here, we're about to use the <em>same</em> function, but ask a very different question of it.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Running the formula backwards with binary search</h2></div>
+      <p class="lead">Legendre's formula answers "given <code>N</code>, how many copies of <code>p</code>?" We need the opposite: "given that we need <em>at least</em> <code>e</code> copies of <code>p</code>, what's the smallest <code>N</code>?" Here's the key fact that makes this easy: <strong>as <code>N</code> grows, the count from Legendre's formula never decreases</strong>. Bigger factorials only ever pick up more copies of <code>p</code>, never fewer.</p>
+
+      <div class="blocks">
+        <div class="block">N=1</div><div class="block op">&le;</div><div class="block">N=2</div><div class="block op">&le;</div><div class="block">N=3</div><div class="block op">&hellip;</div><div class="block op">&rarr;</div><div class="block hi">count never goes down</div>
+      </div>
+
+      <p>Whenever a quantity only ever increases (or stays the same) as you move a candidate value up, <strong>binary search</strong> becomes the perfect tool for finding the exact crossover point &mdash; the smallest <code>N</code> where the count first reaches the target <code>e</code>. Instead of checking <code>N = 1, 2, 3, \ldots</code> one at a time, binary search finds it in only about <code>log&#8322;(N)</code> guesses.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Where do we even start searching?</div>
+        <p>We need an upper bound we're sure is big enough. Here's a simple one: Legendre's formula's very first term alone, <code>&lfloor;N/p&rfloor;</code>, already reaches <code>e</code> once <code>N = p &times; e</code> (since <code>&lfloor;(p&times;e)/p&rfloor; = e</code> exactly). So <code>N = p &times; e</code> is guaranteed to be large enough to search up to &mdash; we never need to guess higher than that.</p>
+      </div>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>min_n_for_prime_power.py</div>
+        <pre><code><span class="kw">def</span> min_n_for_prime_power(p, e):
+    lo, hi = <span class="nu">1</span>, p * e  <span class="cm"># floor((p*e)/p) = e already, so hi is always large enough</span>
+    <span class="kw">while</span> lo &lt; hi:
+        mid = (lo + hi) // <span class="nu">2</span>
+        <span class="kw">if</span> exponent_in_factorial(mid, p) &gt;= e:
+            hi = mid
+        <span class="kw">else</span>:
+            lo = mid + <span class="nu">1</span>
+    <span class="kw">return</span> lo</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Factoring K fast enough</h2></div>
+      <p class="lead">The last ingredient: breaking <code>K</code> into its prime powers in the first place. Since <code>K &le; 10<sup>12</sup></code>, the same &radic;K trial-division shortcut from the <a href="162C_en.html">Prime Factorization</a> page does the job &mdash; test candidate divisors up to &radic;K (about a million, since &radic;(10<sup>12</sup>) = 10<sup>6</sup>), dividing each one out fully before moving on.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>factorize.py</div>
+        <pre><code><span class="kw">def</span> factorize(k):
+    factors = {}
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= k:
+        <span class="kw">while</span> k % d == <span class="nu">0</span>:
+            factors[d] = factors.get(d, <span class="nu">0</span>) + <span class="nu">1</span>
+            k //= d
+        d += <span class="nu">1</span>
+    <span class="kw">if</span> k &gt; <span class="nu">1</span>:
+        factors[k] = factors.get(k, <span class="nu">0</span>) + <span class="nu">1</span>
+    <span class="kw">return</span> factors</code></pre>
+      </div>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>12</sup></div><div class="lbl">how large K (and possibly the answer N) can be</div></div>
+        <div class="stat fast"><div class="num">&le; 10<sup>6</sup> steps</div><div class="lbl">to factorize K, using the &radic;K shortcut</div></div>
+        <div class="stat fast"><div class="num">&le; ~40 guesses</div><div class="lbl">per prime, for binary search to zero in on the exact answer</div></div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Why sample 2's answer equals K itself</div>
+        <p><code>123456789011</code> happens to be a <strong>prime number</strong> &mdash; so its own factorization is just itself, to the power 1. The smallest <code>N</code> whose factorial contains even <em>one</em> copy of that giant prime is <code>N</code> equal to the prime itself (nothing smaller than a prime <code>p</code> is ever divisible by <code>p</code>, so <code>p</code> can't show up in any factorial before <code>N</code> reaches <code>p</code>). This is exactly why the answer can be as large as <code>K</code> &mdash; and exactly why brute-force computing factorials was never going to work.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Combining Levels 2&ndash;5: factorize <code>K</code>, binary-search the minimal <code>N</code> for each prime power, take the maximum.</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">factors = factorize(k)</div>
+          <div class="annot-note"><span>Level 5: break <code>K</code> down into <code>{prime: exponent}</code> pairs.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">return max(
+    min_n_for_prime_power(p, e)
+    for p, e in factors.items()
+)</div>
+          <div class="annot-note"><span>Level 2's insight: find the smallest N that satisfies each prime's requirement on its own, then take the largest of those &mdash; that single value automatically satisfies every prime at once.</span></div>
+        </div>
+      </div>
+
+      <p>The complete program:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>abc280d.py</div>
+        <pre><code><span class="kw">def</span> factorize(k):
+    factors = {}
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= k:
+        <span class="kw">while</span> k % d == <span class="nu">0</span>:
+            factors[d] = factors.get(d, <span class="nu">0</span>) + <span class="nu">1</span>
+            k //= d
+        d += <span class="nu">1</span>
+    <span class="kw">if</span> k &gt; <span class="nu">1</span>:
+        factors[k] = factors.get(k, <span class="nu">0</span>) + <span class="nu">1</span>
+    <span class="kw">return</span> factors
+
+<span class="kw">def</span> exponent_in_factorial(n, p):
+    total = <span class="nu">0</span>
+    power = p
+    <span class="kw">while</span> power &lt;= n:
+        total += n // power
+        power *= p
+    <span class="kw">return</span> total
+
+<span class="kw">def</span> min_n_for_prime_power(p, e):
+    lo, hi = <span class="nu">1</span>, p * e
+    <span class="kw">while</span> lo &lt; hi:
+        mid = (lo + hi) // <span class="nu">2</span>
+        <span class="kw">if</span> exponent_in_factorial(mid, p) &gt;= e:
+            hi = mid
+        <span class="kw">else</span>:
+            lo = mid + <span class="nu">1</span>
+    <span class="kw">return</span> lo
+
+<span class="kw">def</span> solve(k):
+    factors = factorize(k)
+    <span class="kw">return</span> <span class="kw">max</span>(
+        min_n_for_prime_power(p, e)
+        <span class="kw">for</span> p, e <span class="kw">in</span> factors.items()
+    )
+
+k = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">print</span>(solve(k))</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Let's trace it together: K = 280</h2></div>
+      <p class="lead"><code>280 = 2&sup3; &times; 5&sup1; &times; 7&sup1;</code>. For each prime, we binary-search for the smallest <code>N</code> supplying enough copies.</p>
+
+      <table class="trace">
+        <thead><tr><th>prime p</th><th>needed exponent e</th><th>smallest N (binary search)</th><th>check</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>3</td><td class="odd">4</td><td>&lfloor;4/2&rfloor;+&lfloor;4/4&rfloor; = 2+1 = 3 &ge; 3 &check; (and N=3 gives only &lfloor;3/2&rfloor;=1, too few)</td></tr>
+          <tr><td>5</td><td>1</td><td class="odd">5</td><td>&lfloor;5/5&rfloor; = 1 &ge; 1 &check; (N=4 gives 0, too few)</td></tr>
+          <tr><td>7</td><td>1</td><td class="odd">7</td><td>&lfloor;7/7&rfloor; = 1 &ge; 1 &check; (N=6 gives 0, too few)</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">Answer: <code>max(4, 5, 7) = <b>7</b></code> &mdash; matching the judge exactly. Notice that N=7 automatically supplies enough 2's too (7! has plenty), which is exactly Level 2's "the largest requirement wins" logic in action.</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Now you drive: try your own K</h2></div>
+      <p class="lead">Enter any <code>K</code> from 2 up to 10<sup>12</sup>. The tool factorizes it, binary-searches the minimal <code>N</code> for every prime power, and shows you which prime ends up being the bottleneck &mdash; using JavaScript's <code>BigInt</code> so even 12-digit numbers stay exact.</p>
+
+      <div class="widget">
+        <h3>Minimal N finder</h3>
+        <div class="hint">Try the three official samples (30, 280, 123456789011), or a big prime to see the answer jump all the way up to K itself.</div>
+        <div class="field-row">
+          <div class="field"><label for="inK">K</label><input type="text" id="inK" value="280"></div>
+          <div class="field"><button class="btn" id="runBtn">Find the smallest N!</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out with pencil and paper first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Find the smallest N such that N! is a multiple of K = 100 by hand.</summary>
+        <div class="reveal">
+          <p><code>100 = 2&sup2; &times; 5&sup2;</code>. Smallest N with two copies of 2: N=4 gives &lfloor;4/2&rfloor;+&lfloor;4/4&rfloor;=3, already enough (N=3 gives only 1, so N=4 is needed... let's check N=4 vs smaller: actually we need &ge;2 copies of 2, and N=4 gives 3 copies, N=3 gives 1 copy &mdash; so smallest is N=4). Smallest N with two copies of 5: need &lfloor;N/5&rfloor;+&lfloor;N/25&rfloor; &ge; 2, which first happens at N=10 (&lfloor;10/5&rfloor;=2). Answer: <code>max(4, 10) = <b>10</b></code>. Check: <code>10! = 3628800 = 100 &times; 36288</code>. &check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Why does the smallest N for a prime power p&sup2; sometimes need N to be much bigger than 2p?</summary>
+        <div class="reveal">
+          <p>Because after the first multiple of p (contributing one copy), the <em>next</em> copy doesn't necessarily come from the very next multiple of p &mdash; it comes from the second multiple of p, which is <code>2p</code>. So two copies of p typically need N to reach <code>2p</code>, not just a little past p. For larger exponents, this "spread out" effect compounds, which is exactly why Legendre's formula (summing over all powers of p) is needed instead of simple guesswork.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why is it safe for the binary search to use hi = p &times; e as a starting upper bound, no matter how large e is?</summary>
+        <div class="reveal">
+          <p>Legendre's formula's very first term alone is <code>&lfloor;N/p&rfloor;</code>, and every other term only adds more. When <code>N = p &times; e</code>, that first term equals exactly <code>e</code> (since <code>p &times; e</code> divides evenly by <code>p</code>). So the <em>total</em> count at <code>N = p &times; e</code> is automatically at least <code>e</code>, regardless of how big <code>e</code> gets &mdash; guaranteeing the true answer is never bigger than this starting upper bound.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4 (harder): If K is a perfect square of a prime, like K = p&sup2;, is the answer always exactly 2p?</summary>
+        <div class="reveal">
+          <p>Not necessarily &mdash; it depends on p. For small p, extra copies of p can appear "for free" before N reaches 2p. Take p=2: for K=4=2&sup2;, we need &ge;2 copies of 2 in N!. At N=4, Legendre gives &lfloor;4/2&rfloor;+&lfloor;4/4&rfloor;=2+1=3 &mdash; already satisfied, and even N=3 (&lfloor;3/2&rfloor;=1) isn't enough, so the true minimal N is 4, which does equal 2p here. But try p=2, e=3 (K=8): N=4 gives 3 copies exactly (as computed above), and that's already the minimal N &mdash; smaller than 2&times;p&times;(e/2) type guesses might suggest. The exact answer always requires running Legendre's formula (or the binary search); there's no universal shortcut formula that skips it, which is exactly why Level 4's binary search approach is the reliable way to go.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5: Modify the Python code so that instead of just returning the final answer, it also prints, for each prime factor of K, the minimal N that prime alone would require &mdash; useful for seeing which prime is the bottleneck.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>abc280d_debug.py</div>
+            <pre><code><span class="kw">def</span> solve_debug(k):
+    factors = factorize(k)
+    best = <span class="nu">0</span>
+    <span class="kw">for</span> p, e <span class="kw">in</span> factors.items():
+        n = min_n_for_prime_power(p, e)
+        <span class="kw">print</span>(<span class="kw">f</span><span class="st">"prime {p}^{e} needs N >= {n}"</span>)
+        <span class="kw">if</span> n &gt; best:
+            best = n
+    <span class="kw">return</span> best</code></pre>
+          </div>
+          <p style="margin-top:12px;">Same core logic as Level 6, just printing the intermediate result for every prime instead of only keeping the maximum silently.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>AtCoder ABC280 D &mdash; Factorial and Multiple. For the building blocks used here, see <a href="1114C_en.html">Trailing Loves</a> (Legendre's formula) and <a href="162C_en.html">Prime Factorization</a> (the &radic;K divisor shortcut).</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function factorize(k){
+    var factors = new Map();
+    var d = 2n;
+    while (d * d <= k){
+      while (k % d === 0n){
+        factors.set(d, (factors.get(d) || 0n) + 1n);
+        k /= d;
+      }
+      d += 1n;
+    }
+    if (k > 1n) factors.set(k, (factors.get(k) || 0n) + 1n);
+    return factors;
+  }
+
+  function exponentInFactorial(n, p){
+    var total = 0n;
+    var power = p;
+    while (power <= n){
+      total += n / power;
+      power *= p;
+    }
+    return total;
+  }
+
+  function minNForPrimePower(p, e){
+    var lo = 1n, hi = p * e;
+    while (lo < hi){
+      var mid = (lo + hi) / 2n;
+      if (exponentInFactorial(mid, p) >= e) hi = mid;
+      else lo = mid + 1n;
+    }
+    return lo;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function parseBig(s){
+    s = s.trim();
+    if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+    return BigInt(s);
+  }
+
+  function run(){
+    var out = document.getElementById('out');
+    var k;
+    try {
+      k = parseBig(document.getElementById('inK').value);
+    } catch(e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>K needs to be a positive whole number.</p></div>';
+      return;
+    }
+    if (k < 2n || k > 1000000000000n){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>K must be between 2 and 10^12.</p></div>';
+      return;
+    }
+
+    var factors = factorize(k);
+    var rows = [];
+    var best = 0n;
+    for (var entry of factors){
+      var p = entry[0], e = entry[1];
+      var n = minNForPrimePower(p, e);
+      rows.push({p:p, e:e, n:n});
+      if (n > best) best = n;
+    }
+
+    var html = '';
+    html += '<table class="trace"><thead><tr><th>prime factor</th><th>exponent needed</th><th>minimal N for this prime</th></tr></thead><tbody>';
+    for (var i=0;i<rows.length;i++){
+      var r = rows[i];
+      var isBottleneck = r.n === best;
+      html += '<tr><td>'+esc(r.p.toString())+'</td><td>'+esc(r.e.toString())+'</td><td class="'+(isBottleneck?'odd':'even')+'">'+esc(r.n.toString())+(isBottleneck?' &larr; bottleneck':'')+'</td></tr>';
+    }
+    html += '</tbody></table>';
+    html += '<div class="answer-line">Smallest N such that N! is a multiple of K: <b>' + best.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

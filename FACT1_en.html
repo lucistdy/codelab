@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pollard's Rho: Cracking 20-Digit Numbers by Chasing Your Own Tail (SPOJ FACT1)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:22px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1 1 100%;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:14.5px;resize:vertical;min-height:80px;}
+  .field textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">SPOJ FACT1 &middot; Problem Walkthrough</div>
+      <h1>Pollard's Rho: <em>Cracking 20-Digit Numbers by Chasing Your Own Tail</em></h1>
+      <p class="sub">Same mission as before &mdash; print every number's prime recipe as <code>p^e</code> &mdash; except now a number can have <strong>20 digits</strong>. The &radic;n trial-division trick that saved us last time finally runs out of road. The fix borrows two ideas you may already know from elsewhere on this site: the birthday paradox, and a tortoise chasing a hare.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Randomized Algorithms &amp; Number Theory</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">Same input/output shape as its sibling problem: the input contains several positive whole numbers, one per line, ending with a line containing just <code>0</code> (don't factorize that one). For every number before it, print its prime factorization as <code>p&#8321;^e&#8321; p&#8322;^e&#8322; \ldots</code>, primes smallest to largest. The only thing that changed: numbers can now have up to <strong>20 digits</strong> &mdash; a hundred thousand times bigger than before.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p>Input: <code>3111989</code>, <code>13091989</code>, <code>77145199750673</code>, then <code>0</code> to stop.<br>
+        Output:<br>
+        <code>317^1 9817^1</code><br>
+        <code>17^2 89^1 509^1</code><br>
+        <code>328439^1 234884407^1</code></p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">This page builds on three earlier ones</div>
+        <p>We'll lean hard on things this site already covers: the <a href="FACT0_en.html">Prime Factory</a> page (trial division and its &radic;n shortcut, plus this exact input/output format), the <a href="miller_rabin_en.html">Miller&ndash;Rabin</a> and <a href="fermat_lie_en.html">Fermat Lie Detector</a> pages (fast primality testing), and the <a href="floyd_cycle_detection_en.html">Tortoise and Hare</a> page (cycle detection). If any of those feel unfamiliar, this is a great excuse to read them first &mdash; we'll link back to the exact parts we're reusing.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Quick refresher: what already worked at 15 digits</h2></div>
+      <p class="lead">The <a href="FACT0_en.html">Prime Factory</a> page solved the 15-digit version of this problem with trial division: test candidate divisors up to &radic;n, dividing each one out fully before moving on, skipping even numbers after handling 2 separately. That algorithm is completely correct here too &mdash; it's just about to become far too slow to finish in time.</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Where trial division finally breaks</h2></div>
+      <p class="lead">A 20-digit number can be as large as <code>10<sup>20</sup></code>. Its square root is <code>10<sup>10</sup></code> &mdash; ten billion. Worse: the nastiest possible input is a number that's the product of <em>two</em> 10-digit primes, both sitting right around &radic;n. There's no shortcut around checking divisors all the way up to that square root; the smaller factor genuinely could be that big.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>10</sup></div><div class="lbl">candidate divisors to check for a worst-case 20-digit semiprime, even with the &radic;n shortcut</div></div>
+        <div class="stat slow"><div class="num">seconds, not milliseconds</div><div class="lbl">how long ten billion divisions take &mdash; per number, and there can be about 10 of them</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">The takeaway</div>
+        <p>Trial division isn't <em>wrong</em> here &mdash; it's just too slow when both prime factors are large. We need a method whose speed doesn't depend on how big the factors are relative to &radic;n. That's exactly what Pollard's rho algorithm delivers.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The big idea: collisions happen way sooner than you'd think</h2></div>
+      <p class="lead">Suppose <code>n = p &times; q</code>, and imagine building a sequence of numbers using a simple rule: start with some <code>x&#8320;</code>, then repeatedly compute <code>x&#8305;&#8330;&#8321; = (x&#8305;&sup2; + c) mod n</code> for some fixed constant <code>c</code>. This sequence bounces around unpredictably &mdash; it "looks" random, even though it's completely deterministic.</p>
+
+      <p>Here's the trick: instead of watching this sequence modulo <code>n</code> (where it can take up to <code>n</code> different values before repeating), watch it <strong>modulo the hidden factor <code>p</code></strong> instead. Since <code>p</code> is much smaller than <code>n</code>, the sequence <code>x&#8305; mod p</code> is forced to repeat a value <em>much</em> sooner &mdash; and once two terms collide mod <code>p</code>, the sequence cycles forever after.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">This is the birthday paradox again</div>
+        <p>If you've read the <a href="711E_en.html">Birthday Paradox</a> page, this should feel familiar: with values bouncing around among only <code>p</code> possibilities, a repeat becomes likely after roughly &radic;p draws, not p draws &mdash; the same surprising "way sooner than you'd expect" logic behind 23 people in a room being enough for a shared birthday. If <code>p</code> is around &radic;n (the worst case from Level 3), a collision mod <code>p</code> tends to show up after only about <code>n<sup>1/4</sup></code> steps of the sequence &mdash; a dramatically smaller number than &radic;n itself.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Detecting a collision you can't actually see</h2></div>
+      <p class="lead">There's an obvious problem: we don't know <code>p</code> yet &mdash; that's the whole thing we're trying to find! So how can we notice when two terms of the sequence collide modulo a number we don't know?</p>
+
+      <p>With GCD, exactly like the <a href="1033D_en.html">GCD Handshake</a> and <a href="364D_en.html">Ghd</a> pages: if <code>x&#8305; &equiv; x&#8580; (mod p)</code>, that means <code>p</code> divides the difference <code>x&#8305; - x&#8580;</code>. And since <code>p</code> also divides <code>n</code> (it's one of <code>n</code>'s prime factors), <code>p</code> divides <code>gcd(x&#8305; - x&#8580;, n)</code> too. So: whenever we compute <code>gcd(x&#8305; - x&#8580;, n)</code> and get something bigger than 1, we've very likely found a real factor of <code>n</code> &mdash; without ever having to know <code>p</code> in advance.</p>
+
+      <div class="blocks">
+        <div class="block hi">x&#8305; &equiv; x&#8580; (mod p)</div><div class="block op">&rArr;</div><div class="block hi">gcd(x&#8305; &minus; x&#8580;, n) &gt; 1</div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">One rare hiccup</div>
+        <p>Occasionally the gcd comes back equal to <code>n</code> itself, rather than a proper factor &mdash; that happens if the collision occurred modulo <code>n</code> as a whole, not just modulo <code>p</code>. When that happens, the fix is simple: pick a new random constant <code>c</code> (and starting point) and try the whole process again with a differently-shaped sequence.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Finding the collision: bring in the tortoise and the hare</h2></div>
+      <p class="lead">We still need an efficient way to actually find two colliding terms <code>x&#8305;</code> and <code>x&#8580;</code>, without storing every term we've ever seen. Since our sequence is generated by repeatedly applying the same function, it's guaranteed to eventually loop back on itself &mdash; exactly the setup from the <a href="floyd_cycle_detection_en.html">Tortoise and Hare</a> page.</p>
+
+      <p>We reuse that exact idea here: keep two pointers walking through the sequence, one (the "tortoise") advancing one step at a time, the other (the "hare") advancing two steps at a time. If there's a cycle &mdash; and modulo <code>p</code>, there always is &mdash; the hare will eventually lap the tortoise and they'll land on the same value modulo <code>p</code>, even though we're only ever computing things modulo <code>n</code>.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Already met the tortoise and the hare?</div>
+        <p>If you've done the <a href="floyd_cycle_detection_en.html">Tortoise and Hare</a> page, Pollard's rho is literally that same cycle-detection algorithm, applied to this specific "squares mod n" sequence, with a gcd check bolted on after every step to notice the hidden collision as early as possible.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Assembling Pollard's rho</h2></div>
+      <p class="lead">Putting Levels 4&ndash;6 together, here's the whole algorithm for finding <em>one</em> non-trivial factor of a composite <code>n</code>:</p>
+
+      <ul style="color:var(--ink-soft);">
+        <li>Pick a random starting value <code>x&#8320;</code> and a random constant <code>c</code>. Define <code>f(x) = (x&sup2; + c) mod n</code>.</li>
+        <li>Walk the tortoise one step (<code>x = f(x)</code>) and the hare two steps (<code>y = f(f(y))</code>) per round.</li>
+        <li>After each round, compute <code>d = gcd(|x - y|, n)</code>.</li>
+        <li>If <code>1 &lt; d &lt; n</code>: success! <code>d</code> is a genuine factor of <code>n</code>.</li>
+        <li>If <code>d == n</code>: bad luck &mdash; restart with a new random <code>x&#8320;</code> and <code>c</code>.</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="ctitle">Why it's called "rho"</div>
+        <p>If you plot the sequence <code>x&#8305; mod p</code>, it wanders around for a while and then enters a loop &mdash; the whole shape looks like the Greek letter &rho; (rho): a tail leading into a circle. That picture is where the algorithm gets its name.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>The full plan: escalate only when you need to</h2></div>
+      <p class="lead">Pollard's rho is powerful, but it's overkill for small factors, and it needs a primality check to know when to stop. The strongest approach combines everything we have, cheapest tool first:</p>
+
+      <ul style="color:var(--ink-soft);">
+        <li><strong>Trial-divide small primes first</strong> (say, up to 100,000) &mdash; cheap insurance that instantly handles the common case of small factors, exactly like the <a href="FACT0_en.html">Prime Factory</a> page.</li>
+        <li><strong>Check what's left with Miller&ndash;Rabin.</strong> If it's already prime, we're done with this branch &mdash; no need to factor a prime any further. (See <a href="miller_rabin_en.html">Miller&ndash;Rabin</a>.)</li>
+        <li><strong>Otherwise, run Pollard's rho</strong> to split what's left into two smaller pieces, and recursively repeat this whole process on each piece.</li>
+      </ul>
+
+      <div class="callout fact">
+        <div class="ctitle">A nice bonus of using Python (or JavaScript)</div>
+        <p>The classic implementation needs to be careful multiplying two numbers up to 10<sup>20</sup> together without overflowing a fixed-size integer type &mdash; C++ solutions often reach for a special 128-bit integer trick just for this. Python's integers (and JavaScript's <code>BigInt</code>) grow automatically, so <code>x * x</code> just works, no matter how large <code>x</code> gets. One of the rare times "slower language, fewer headaches" is a great trade.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Writing it in Python</h2></div>
+      <p class="lead">First, one round of Pollard's rho &mdash; find a single factor, retrying with new random parameters if unlucky:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>pollard_rho.py</div>
+        <pre><code><span class="kw">import</span> random
+<span class="kw">import</span> math
+
+<span class="kw">def</span> pollard_rho(n):
+    <span class="kw">if</span> n % <span class="nu">2</span> == <span class="nu">0</span>:
+        <span class="kw">return</span> <span class="nu">2</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        c = random.randint(<span class="nu">1</span>, n - <span class="nu">1</span>)
+        f = <span class="kw">lambda</span> x: (x * x + c) % n
+
+        x = y = random.randint(<span class="nu">2</span>, n - <span class="nu">1</span>)
+        d = <span class="nu">1</span>
+        <span class="kw">while</span> d == <span class="nu">1</span>:
+            x = f(x)
+            y = f(f(y))
+            d = math.gcd(<span class="kw">abs</span>(x - y), n)
+
+        <span class="kw">if</span> d != n:
+            <span class="kw">return</span> d
+        <span class="cm"># d == n was an unlucky choice of c -- loop and try again</span></code></pre>
+      </div>
+
+      <p>Now the full plan from Level 8: small trial division first, then Miller&ndash;Rabin (borrowed straight from the <a href="miller_rabin_en.html">Miller&ndash;Rabin</a> page) to decide when to stop, and Pollard's rho plus recursion for everything else.</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">d = 2
+while d * d <= n and d <= 100000:
+    while n % d == 0:
+        add(d)
+        n //= d
+    d = 3 if d == 2 else d + 2</div>
+          <div class="annot-note"><span>Level 8's cheap first pass: the exact trial-division loop from the <a href="FACT0_en.html">Prime Factory</a> page, capped at 100,000 so it never runs for long.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">def recurse(m):
+    if m == 1:
+        return
+    if is_prime(m):
+        add(m)
+        return
+    d = pollard_rho(m)
+    recurse(d)
+    recurse(m // d)</div>
+          <div class="annot-note"><span>The escalation plan: stop at primes (Level 8), otherwise split with Pollard's rho and factor each half the same way.</span></div>
+        </div>
+      </div>
+
+      <p>The complete program:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fact1.py</div>
+        <pre><code><span class="kw">import</span> random
+<span class="kw">import</span> math
+
+<span class="kw">def</span> is_prime(n):
+    <span class="kw">if</span> n &lt; <span class="nu">2</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> p <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>, <span class="nu">17</span>, <span class="nu">19</span>, <span class="nu">23</span>, <span class="nu">29</span>, <span class="nu">31</span>, <span class="nu">37</span>]:
+        <span class="kw">if</span> n % p == <span class="nu">0</span>:
+            <span class="kw">return</span> n == p
+    d, r = n - <span class="nu">1</span>, <span class="nu">0</span>
+    <span class="kw">while</span> d % <span class="nu">2</span> == <span class="nu">0</span>:
+        d //= <span class="nu">2</span>
+        r += <span class="nu">1</span>
+    <span class="kw">for</span> a <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>, <span class="nu">17</span>, <span class="nu">19</span>, <span class="nu">23</span>, <span class="nu">29</span>, <span class="nu">31</span>, <span class="nu">37</span>]:
+        x = <span class="kw">pow</span>(a, d, n)
+        <span class="kw">if</span> x == <span class="nu">1</span> <span class="kw">or</span> x == n - <span class="nu">1</span>:
+            <span class="kw">continue</span>
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(r - <span class="nu">1</span>):
+            x = x * x % n
+            <span class="kw">if</span> x == n - <span class="nu">1</span>:
+                <span class="kw">break</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="kw">def</span> pollard_rho(n):
+    <span class="kw">if</span> n % <span class="nu">2</span> == <span class="nu">0</span>:
+        <span class="kw">return</span> <span class="nu">2</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        c = random.randint(<span class="nu">1</span>, n - <span class="nu">1</span>)
+        f = <span class="kw">lambda</span> x: (x * x + c) % n
+        x = y = random.randint(<span class="nu">2</span>, n - <span class="nu">1</span>)
+        d = <span class="nu">1</span>
+        <span class="kw">while</span> d == <span class="nu">1</span>:
+            x = f(x)
+            y = f(f(y))
+            d = math.gcd(<span class="kw">abs</span>(x - y), n)
+        <span class="kw">if</span> d != n:
+            <span class="kw">return</span> d
+
+<span class="kw">def</span> factorize(n):
+    factors = {}
+
+    <span class="kw">def</span> add(p, e=<span class="nu">1</span>):
+        factors[p] = factors.get(p, <span class="nu">0</span>) + e
+
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= n <span class="kw">and</span> d &lt;= <span class="nu">100000</span>:
+        <span class="kw">while</span> n % d == <span class="nu">0</span>:
+            add(d)
+            n //= d
+        d = <span class="nu">3</span> <span class="kw">if</span> d == <span class="nu">2</span> <span class="kw">else</span> d + <span class="nu">2</span>
+
+    <span class="kw">def</span> recurse(m):
+        <span class="kw">if</span> m == <span class="nu">1</span>:
+            <span class="kw">return</span>
+        <span class="kw">if</span> is_prime(m):
+            add(m)
+            <span class="kw">return</span>
+        d = pollard_rho(m)
+        recurse(d)
+        recurse(m // d)
+
+    recurse(n)
+    <span class="kw">return</span> factors
+
+n = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">while</span> n != <span class="nu">0</span>:
+    factors = factorize(n)
+    <span class="kw">print</span>(<span class="st">" "</span>.join(<span class="kw">f</span><span class="st">"{p}^{e}"</span> <span class="kw">for</span> p, e <span class="kw">in</span> <span class="kw">sorted</span>(factors.items())))
+    n = <span class="kw">int</span>(<span class="kw">input</span>())</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">LEVEL 10</span><h2>Let's trace it together: catching a hidden factor of 317</h2></div>
+      <p class="lead">Take <code>n = 2206637</code> (which happens to equal <code>317 &times; 6961</code>), with <code>x&#8320;=2</code> and <code>c=1</code>, so <code>f(x) = (x&sup2;+1) mod n</code>. Watch the gcd column &mdash; and notice how the values mod 317 sneak toward a collision well before the full values (mod n) do anything special.</p>
+
+      <table class="trace">
+        <thead><tr><th>i</th><th>tortoise mod n</th><th>hare mod n</th><th>tortoise mod 317</th><th>hare mod 317</th><th>gcd</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>5</td><td>26</td><td>5</td><td>26</td><td class="even">1</td></tr>
+          <tr><td>2</td><td>26</td><td>458330</td><td>26</td><td>265</td><td class="even">1</td></tr>
+          <tr><td>3</td><td>677</td><td>1671573</td><td>43</td><td>32</td><td class="even">1</td></tr>
+          <tr><td>4</td><td>458330</td><td>641379</td><td>265</td><td>88</td><td class="even">1</td></tr>
+          <tr><td>5</td><td>1166412</td><td>351937</td><td>169</td><td>67</td><td class="even">1</td></tr>
+          <tr><td>6</td><td>1671573</td><td>1264682</td><td>32</td><td>169</td><td class="even">1</td></tr>
+          <tr><td>7</td><td>2193080</td><td>2088470</td><td>74</td><td>74</td><td class="odd">317</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="6">At step 7, tortoise and hare finally agree modulo 317 (both land on 74) &mdash; and sure enough, <code>gcd(2193080 &minus; 2088470, 2206637) = 317</code>, a genuine factor, found in just 7 rounds instead of testing up to &radic;2206637 &approx; 1485 candidate divisors.</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 11 : INTERACTIVE ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">LEVEL 11</span><h2>Now you drive: factorize your own numbers</h2></div>
+      <p class="lead">Type in a list of numbers (comma or newline separated). The tool factors each one using the exact plan from Level 8 &mdash; small trial division, then Miller&ndash;Rabin, then Pollard's rho as needed &mdash; using JavaScript's <code>BigInt</code> so even 20-digit numbers stay exact.</p>
+
+      <div class="widget">
+        <h3>Rho machine</h3>
+        <div class="hint">Try the default sample, or multiply two large primes together (like 6924716023 &times; 9639245201) to see Pollard's rho handle a 20-digit semiprime in a fraction of a second.</div>
+        <div class="field-row">
+          <div class="field"><label for="inNums">numbers</label><textarea id="inNums">3111989
+13091989
+77145199750673
+66749035692990555623</textarea></div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="flex:0 0 auto;"><button class="btn" id="runBtn">Factorize them all!</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 12 ============ -->
+    <section class="level" id="level12">
+      <div class="level-head"><span class="level-num">LEVEL 12</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out with pencil and paper (and a calculator) first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Why does Pollard's rho fail (get stuck returning d=n) far more often on n = p&sup2; than on n = p&times;q for two different primes?</summary>
+        <div class="reveal">
+          <p>When <code>n = p&sup2;</code>, there is only <em>one</em> distinct prime factor, so the sequence colliding mod <code>p</code> and the sequence colliding mod <code>n</code> tend to happen at nearly the same time &mdash; there's no smaller modulus for the sequence to "trip up" on first. That means <code>gcd(x-y, n)</code> is much more likely to jump straight to <code>n</code> itself rather than landing on the proper factor <code>p</code> first. This is exactly why the algorithm needs to retry with a new random <code>c</code> when that happens.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Why check with Miller&ndash;Rabin before running Pollard's rho, instead of just always running Pollard's rho and seeing what happens?</summary>
+        <div class="reveal">
+          <p>Pollard's rho is a method for <em>splitting</em> a composite number &mdash; it assumes a smaller factor exists to be found. If you feed it an actual prime, there's no factor to discover, so the tortoise-and-hare race would (usually) only ever collide modulo n itself, wasting huge amounts of time before eventually giving up. Checking primality first with the fast Miller&ndash;Rabin test avoids ever pointing this expensive tool at a number that has no factor to find.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: In the Level 10 trace, why do we compare the tortoise and hare's values <em>mod 317</em> even though the algorithm itself never actually computes anything mod 317?</summary>
+        <div class="reveal">
+          <p>The mod-317 column is there purely to help <em>us</em> understand why the algorithm works &mdash; it's the hidden signal the algorithm is implicitly chasing. The real program only ever computes things mod <code>n</code> (2206637) and takes a gcd with <code>n</code>; it never learns that 317 is relevant until the gcd computation reveals it. We added the mod-317 column ourselves, after the fact, to see the invisible collision that made <code>gcd &gt; 1</code> happen.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4 (harder): The small-trial-division step in Level 8/9 is capped at 100,000. What would go wrong (in terms of speed, not correctness) if that cap were removed and it tried dividing all the way up to &radic;n instead?</summary>
+        <div class="reveal">
+          <p>Nothing would go wrong for correctness &mdash; but for a worst-case 20-digit number, &radic;n can be 10 billion, and trial division would try to grind through all of it before ever reaching Pollard's rho, defeating the entire point of having Pollard's rho at all. The cap exists so that trial division only ever handles the <em>cheap</em> cases (small factors), handing off to Pollard's rho quickly whenever the remaining number turns out to be a product of large primes.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5: Modify pollard_rho so it also returns how many rounds (tortoise-and-hare steps) it took to find the factor, so you can compare that count to &radic;n by hand.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>pollard_rho_debug.py</div>
+            <pre><code><span class="kw">def</span> pollard_rho_debug(n):
+    <span class="kw">if</span> n % <span class="nu">2</span> == <span class="nu">0</span>:
+        <span class="kw">return</span> <span class="nu">2</span>, <span class="nu">0</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        c = random.randint(<span class="nu">1</span>, n - <span class="nu">1</span>)
+        f = <span class="kw">lambda</span> x: (x * x + c) % n
+        x = y = random.randint(<span class="nu">2</span>, n - <span class="nu">1</span>)
+        d = <span class="nu">1</span>
+        rounds = <span class="nu">0</span>
+        <span class="kw">while</span> d == <span class="nu">1</span>:
+            x = f(x)
+            y = f(f(y))
+            d = math.gcd(<span class="kw">abs</span>(x - y), n)
+            rounds += <span class="nu">1</span>
+        <span class="kw">if</span> d != n:
+            <span class="kw">return</span> d, rounds</code></pre>
+          </div>
+          <p style="margin-top:12px;">Same algorithm as Level 9, with one added counter &mdash; for most inputs, <code>rounds</code> will land somewhere near <code>n<sup>1/4</sup></code>, dramatically fewer than &radic;n.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>SPOJ FACT1 &mdash; Integer Factorization (20 digits). Builds on <a href="FACT0_en.html">The Prime Factory</a> (trial division), <a href="miller_rabin_en.html">Miller&ndash;Rabin</a> and <a href="fermat_lie_en.html">Fermat Lie Detector</a> (primality testing), <a href="floyd_cycle_detection_en.html">Tortoise and Hare</a> (cycle detection), and <a href="711E_en.html">The Birthday Paradox</a> (why collisions happen sooner than expected).</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function bgcd(a, b){
+    a = a < 0n ? -a : a; b = b < 0n ? -b : b;
+    while (b){ var t = a % b; a = b; b = t; }
+    return a;
+  }
+
+  function bpow(base, exp, mod){
+    base %= mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n) result = (result * base) % mod;
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  var SMALL_PRIMES = [2n,3n,5n,7n,11n,13n,17n,19n,23n,29n,31n,37n];
+
+  function isPrime(n){
+    if (n < 2n) return false;
+    for (var i=0;i<SMALL_PRIMES.length;i++){
+      var p = SMALL_PRIMES[i];
+      if (n % p === 0n) return n === p;
+    }
+    var d = n - 1n, r = 0n;
+    while (d % 2n === 0n){ d /= 2n; r += 1n; }
+    for (var k=0;k<SMALL_PRIMES.length;k++){
+      var a = SMALL_PRIMES[k];
+      var x = bpow(a, d, n);
+      if (x === 1n || x === n - 1n) continue;
+      var composite = true;
+      for (var i2 = 0n; i2 < r - 1n; i2++){
+        x = (x * x) % n;
+        if (x === n - 1n){ composite = false; break; }
+      }
+      if (composite) return false;
+    }
+    return true;
+  }
+
+  function randBigInt(max){
+    var s = max.toString().length;
+    var r;
+    do {
+      r = 0n;
+      for (var i = 0; i < s; i++) r = r * 10n + BigInt(Math.floor(Math.random() * 10));
+      r = r % max;
+    } while (r < 2n);
+    return r;
+  }
+
+  function pollardRho(n){
+    if (n % 2n === 0n) return 2n;
+    while (true){
+      var c = randBigInt(n);
+      var f = function(x){ return (x * x + c) % n; };
+      var x = randBigInt(n);
+      var y = x;
+      var d = 1n;
+      while (d === 1n){
+        x = f(x);
+        y = f(f(y));
+        d = bgcd(x > y ? x - y : y - x, n);
+      }
+      if (d !== n) return d;
+    }
+  }
+
+  function smallFactor(n, limit){
+    limit = limit || 100000n;
+    var factors = new Map();
+    var d = 2n;
+    while (d <= limit && d * d <= n){
+      while (n % d === 0n){
+        factors.set(d, (factors.get(d) || 0n) + 1n);
+        n /= d;
+      }
+      d = d === 2n ? 3n : d + 2n;
+    }
+    return [factors, n];
+  }
+
+  function factorize(n){
+    var result = new Map();
+    var pair = smallFactor(n);
+    var small = pair[0], rest = pair[1];
+    for (var entry of small) result.set(entry[0], (result.get(entry[0]) || 0n) + entry[1]);
+
+    function recurse(m){
+      if (m === 1n) return;
+      if (isPrime(m)){
+        result.set(m, (result.get(m) || 0n) + 1n);
+        return;
+      }
+      var d = pollardRho(m);
+      recurse(d);
+      recurse(m / d);
+    }
+    recurse(rest);
+    return result;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function run(){
+    var raw = document.getElementById('inNums').value;
+    var out = document.getElementById('out');
+    var parts = raw.split(/[,\s]+/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+
+    if (parts.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Type in at least one number.</p></div>';
+      return;
+    }
+    if (parts.length > 8){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Please use 8 numbers or fewer, just to keep this snappy in the browser.</p></div>';
+      return;
+    }
+
+    var nums;
+    try {
+      nums = parts.map(function(s){
+        if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+        var v = BigInt(s);
+        if (v < 0n || v > 99999999999999999999n) throw new Error('range');
+        return v;
+      });
+    } catch (e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Every entry needs to be a whole number with at most 20 digits.</p></div>';
+      return;
+    }
+
+    var html = '<table class="trace"><thead><tr><th>n</th><th>factorization</th></tr></thead><tbody>';
+    for (var i = 0; i < nums.length; i++){
+      var n = nums[i];
+      if (n === 0n){
+        html += '<tr><td>0</td><td class="even">(the stop signal &mdash; not factorized)</td></tr>';
+        continue;
+      }
+      var f = factorize(n);
+      var sorted = Array.from(f.entries()).sort(function(a,b){ return a[0] < b[0] ? -1 : (a[0] > b[0] ? 1 : 0); });
+      var str = sorted.length === 0 ? '(no prime factors &mdash; n=1)' : sorted.map(function(pe){ return pe[0].toString() + '^' + pe[1].toString(); }).join(' ');
+      html += '<tr><td>' + esc(n.toString()) + '</td><td class="odd">' + esc(str) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

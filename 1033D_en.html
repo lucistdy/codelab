@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The GCD Handshake: Counting Divisors of Numbers Too Big to Factor (Codeforces 1033D)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1 1 100%;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:14.5px;resize:vertical;min-height:52px;}
+  .field textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12px;font-weight:700;padding:2px 8px;border-radius:100px;background:var(--accent-soft);color:var(--accent-strong);}
+  .chip.duo{background:var(--clue-soft);color:var(--clue);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1033D &middot; Problem Walkthrough</div>
+      <h1>The GCD Handshake: <em>Counting Divisors of Numbers Too Big to Factor</em></h1>
+      <p class="sub">You're handed a pile of enormous numbers &mdash; some with 16, 17, even 19 digits &mdash; and told only that each one happens to have somewhere between 3 and 5 divisors. Multiply them all together. How many divisors does that giant product have? You get one second. Factoring even a <em>single</em> one of these numbers the slow way could take years. There's a trick.</p>
+      <div class="stampbar">
+        <span class="stamp hot">One of the hardest in this collection</span>
+        <span class="stamp">GCD &amp; Union-Find</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">You're given <code>n</code> numbers <code>a&#8321;, a&#8322;, &hellip;, a&#8345;</code> (<code>1 &le; n &le; 500</code>), each one somewhere between 1 and 2&times;10<sup>18</sup>. You're told a strange but very useful fact about every single one of them: <strong>each <code>a&#8305;</code> has between 3 and 5 divisors</strong> &mdash; no more, no fewer. Multiply all <code>n</code> numbers together to get one gigantic number <code>a = a&#8321; &times; a&#8322; &times; &hellip; &times; a&#8345;</code>, and print how many divisors <em>that</em> has, modulo the prime <code>998244353</code> (because the real count would be an astronomically large number).</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p>Input: <code>3</code> then <code>9</code>, <code>15</code>, <code>143</code> on their own lines.<br>
+        Output: <code>32</code> &mdash; because <code>9 &times; 15 &times; 143 = 19305</code>, and 19305 turns out to have exactly 32 divisors.</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">New to divisors and primes?</div>
+        <p>This page assumes you already know what a divisor and a prime number are. If those feel shaky, the <a href="prime_detective_en.html">Prime Number Detective Agency</a> case file and the <a href="162C_en.html">Prime Factorization</a> walkthrough are quick warm-ups worth doing first. Everything from here on builds directly on top of them.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Refresher: the divisor-counting formula</h2></div>
+      <p class="lead">Here's the one formula this entire problem is built on. If a number <code>N</code> breaks down into primes as <code>N = p&#8321;<sup>e&#8321;</sup> &times; p&#8322;<sup>e&#8322;</sup> &times; &hellip; &times; p&#8342;<sup>e&#8342;</sup></code>, then the number of divisors of <code>N</code> is:</p>
+
+      <div class="blocks">
+        <div class="block hi">e&#8321;+1</div><div class="block op">&times;</div><div class="block hi">e&#8322;+1</div><div class="block op">&times;</div><div class="block op">&hellip;</div><div class="block op">&times;</div><div class="block hi">e&#8342;+1</div>
+      </div>
+
+      <p>Why? Every divisor of <code>N</code> is built by independently picking, for each prime <code>p&#8305;</code>, how many copies of it to include &mdash; anywhere from 0 up to <code>e&#8305;</code>, which is <code>e&#8305;+1</code> choices. Multiply the choice-counts together and you get every possible divisor exactly once.</p>
+
+      <p>Take <code>N = 60 = 2&sup2; &times; 3&sup1; &times; 5&sup1;</code>: that's <code>(2+1)(1+1)(1+1) = 3 &times; 2 &times; 2 = 12</code>. Listing them out confirms it: <code>1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60</code> &mdash; twelve divisors, exactly as predicted.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>count_divisors_small.py</div>
+        <pre><code>n = <span class="kw">int</span>(<span class="kw">input</span>())
+
+count = <span class="nu">0</span>
+d = <span class="nu">1</span>
+<span class="kw">while</span> d * d &lt;= n:
+    <span class="kw">if</span> n % d == <span class="nu">0</span>:
+        count += <span class="nu">2</span> <span class="kw">if</span> d * d != n <span class="kw">else</span> <span class="nu">1</span>
+    d += <span class="nu">1</span>
+
+<span class="kw">print</span>(count)</code></pre>
+      </div>
+
+      <p>That little loop counts divisors correctly for any <code>n</code> you can fit on a computer in a reasonable amount of time. But now look back at Level 1: our numbers go up to <code>2&times;10<sup>18</sup></code>. This loop needs roughly <code>&radic;n</code> steps, which here means <code>&radic;(2&times;10<sup>18</sup>) &approx; 1.4</code> <em>billion</em> steps &mdash; for a <em>single</em> number. We have up to 500 of them. That's the whole challenge of this problem in one sentence: the formula from this level is exactly right, we just can't afford to compute it the direct way.</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>The 3-4-5 club: working backwards from the divisor count</h2></div>
+      <p class="lead">Here's the detective move that cracks this whole problem open. We're <em>told</em> each <code>a&#8305;</code> has 3, 4, or 5 divisors. Level 2's formula runs in reverse too &mdash; if we know the <em>count</em>, we can figure out the only possible <em>shapes</em> a number's prime factorization could have.</p>
+
+      <table class="trace">
+        <thead><tr><th>divisor count</th><th>only ways to factor the count</th><th>only possible shape of a&#8305;</th><th>example</th></tr></thead>
+        <tbody>
+          <tr><td>3</td><td>3 = 3</td><td><code>p&sup2;</code> (one prime, exponent 2)</td><td>9 = 3&sup2;</td></tr>
+          <tr><td>4</td><td>4 = 4, or 4 = 2&times;2</td><td><code>p&sup3;</code> &nbsp;<b>or</b>&nbsp; <code>p &times; q</code> (two <em>distinct</em> primes)</td><td>8 = 2&sup3;, or 15 = 3&times;5</td></tr>
+          <tr><td>5</td><td>5 = 5</td><td><code>p&#8308;</code> (one prime, exponent 4)</td><td>16 = 2&#8308;</td></tr>
+        </tbody>
+      </table>
+
+      <p>So every single <code>a&#8305;</code> in the input is secretly one of exactly four shapes: <code>p&sup2;</code>, <code>p&sup3;</code>, <code>p&#8308;</code>, or <code>p&times;q</code>. That's a huge amount of structure to exploit &mdash; each number has <strong>at most two distinct prime factors, total</strong>. Compare that to a totally random 19-digit number, which could be built from a dozen different primes in any pattern. This guarantee is the reason the problem is solvable at all.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Why can't 4 divisors mean p&times;q&times;r or something else?</div>
+        <p>Because <code>4</code> only factors as <code>4&times;1</code> or <code>2&times;2</code> (as a product of integers bigger than 1) &mdash; there's no way to write 4 as a product of three or more factors each &ge; 2. So a number with exactly 4 divisors can only ever be a single prime cubed, or two distinct primes each to the first power. Nothing else is possible.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Why we still can't just factor each one</h2></div>
+      <p class="lead">Knowing the shape is one thing &mdash; but for the <code>p&times;q</code> shape, we still don't know what <code>p</code> and <code>q</code> actually <em>are</em>. And for numbers this size, finding out the honest way (trial division) is hopeless.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">&approx;1.4 billion</div><div class="lbl">trial divisions to fully factor <em>one</em> number near 2&times;10<sup>18</sup> by checking every candidate up to &radic;n</div></div>
+        <div class="stat slow"><div class="num">&approx;700 billion</div><div class="lbl">total divisions if we tried this for all 500 numbers in the worst case</div></div>
+        <div class="stat fast"><div class="num">1 second</div><div class="lbl">the time limit &mdash; a modern computer manages maybe a few hundred million simple operations per second</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">The takeaway</div>
+        <p>Full trial-division factoring of even one worst-case number here is already too slow, let alone 500 of them. Whatever solution we build must almost never need to fully factor a number on its own. We need a shortcut that uses the numbers <em>together</em>, not one at a time.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>The trick: a GCD handshake reveals shared secrets</h2></div>
+      <p class="lead">Here's the idea that unlocks everything. Even though we can't crack open a single giant number by ourselves, watch what happens when <em>two</em> numbers from our list secretly share the same prime factor.</p>
+
+      <p>Take <code>9 = 3&sup2;</code> and <code>15 = 3 &times; 5</code> from the sample. Neither number tells you its secret ingredients just by looking at it. But compute their <strong>greatest common divisor</strong>: <code>gcd(9, 15) = 3</code>. That's not a coincidence &mdash; a gcd greater than 1 between two numbers can <em>only</em> happen if they share a prime factor, and the Euclidean algorithm finds it almost instantly, no factoring required on either side.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Already know the Euclidean algorithm?</div>
+        <p>If gcd is new to you, the <a href="modified_gcd_en.html">Modified GCD</a> and <a href="max_gcd_en.html">Maximum GCD</a> pages cover it from scratch. The short version: <code>gcd(a, b) = gcd(b, a % b)</code>, repeated until the remainder hits 0 &mdash; and it converges shockingly fast, even for 19-digit numbers.</p>
+      </div>
+
+      <p>So here's the plan: compare <strong>every pair</strong> of numbers in the list with gcd. With up to 500 numbers, that's <code>500 &times; 499 / 2 &approx; 124,750</code> pairs &mdash; and each individual gcd computation is essentially free (a few dozen steps, even for gigantic numbers). Total work: comfortably inside our one-second budget, even though factoring a single number alone was not.</p>
+
+      <p>Every time <code>gcd(a&#8305;, a&#8580;) &gt; 1</code>, we've caught two numbers red-handed sharing a prime &mdash; a <strong>GCD handshake</strong>. We don't need to know the prime's exact numeric identity most of the time; we just need to know <em>that</em> these two numbers are secretly connected, so we can add their exponents together later.</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>The mystery-duo problem: cards with two secret slots</h2></div>
+      <p class="lead">The <code>p&sup2;</code>, <code>p&sup3;</code>, and <code>p&#8308;</code> shapes only carry <em>one</em> prime each, so a GCD handshake involving them is simple: it's their one and only secret, found. The <code>p&times;q</code> shape ("mystery duo") is trickier &mdash; it's hiding <em>two</em> secrets, and we need to know which one a handshake just revealed.</p>
+
+      <p>Picture a mystery duo as a card with two blank slots, initially both unknown. The moment a GCD handshake reveals a value <code>g</code>, something wonderful happens: since the duo only holds that prime to the power <strong>1</strong>, <code>g</code> must be <em>exactly</em> one of its two primes &mdash; not a higher power, not a mix of both. And once we know one slot, the other is free: it's just <code>a&#8305; &divide; g</code>, no primality test, no searching, nothing.</p>
+
+      <div class="blocks">
+        <div class="block hi">g</div><div class="block op">and</div><div class="block hi">a&#8305; &divide; g</div>
+      </div>
+
+      <p>Using the sample: <code>15 = 3 &times; 5</code> is a mystery duo. When it shakes hands with <code>9 = 3&sup2;</code>, <code>gcd(9, 15) = 3</code> fills slot 0 with <code>3</code>, and slot 1 gets filled instantly with <code>15 &divide; 3 = 5</code>. We now know both of 15's secrets, purely from one gcd &mdash; no factoring of 15 ever happened.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">What if a duo gets a <em>second</em>, different handshake later?</div>
+        <p>Suppose slot 0 already holds <code>3</code> from an earlier handshake, and a brand-new handshake with some other number in the list comes back with <code>g = 5</code>. We compare: does <code>5</code> match what's already in slot 0? No. So it must belong to slot 1 &mdash; confirming, rather than overwriting, what we already worked out. This comparison is exactly how we avoid ever mixing up a duo's two different primes.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Union-Find: merging teams and adding up exponents</h2></div>
+      <p class="lead">We now have a pile of <strong>prime slots</strong>: one for every <code>p&sup2;</code>/<code>p&sup3;</code>/<code>p&#8308;</code> number, and two for every mystery duo. Each slot starts life carrying the exponent it's already sure of &mdash; 2, 3, or 4 for a single-prime number, or 1 for each half of a duo. GCD handshakes tell us which slots secretly belong to the <em>same</em> prime, so those slots need to be merged, with their exponents added together.</p>
+
+      <p>This "merge things that turn out to be connected" job is exactly what a data structure called <strong>Union-Find</strong> (or Disjoint Set Union) is built for. Think of every slot as starting out as its own one-person team. Every handshake calls two team captains and merges their teams into one, combining rosters (and, in our case, adding up the total exponent the merged team now controls).</p>
+
+      <div class="callout fact">
+        <div class="ctitle">The payoff</div>
+        <p>At the very end, every surviving team represents one distinct prime that appears somewhere in the product &mdash; we may never learn its actual numeric value, and that's fine! We only need its <strong>total exponent</strong> across the whole product. Multiply <code>(total exponent + 1)</code> across every team (mod 998244353), and by Level 2's formula, that product <em>is</em> the answer.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Let's build the solution piece by piece. First, a fast primality test &mdash; we'll need it to check whether a square/cube/4th root is actually prime.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>is_prime.py</div>
+        <pre><code><span class="kw">def</span> is_prime(n):
+    <span class="kw">if</span> n &lt; <span class="nu">2</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> p <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>, <span class="nu">17</span>, <span class="nu">19</span>, <span class="nu">23</span>, <span class="nu">29</span>, <span class="nu">31</span>, <span class="nu">37</span>]:
+        <span class="kw">if</span> n % p == <span class="nu">0</span>:
+            <span class="kw">return</span> n == p
+    d, r = n - <span class="nu">1</span>, <span class="nu">0</span>
+    <span class="kw">while</span> d % <span class="nu">2</span> == <span class="nu">0</span>:
+        d //= <span class="nu">2</span>
+        r += <span class="nu">1</span>
+    <span class="kw">for</span> a <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>, <span class="nu">17</span>, <span class="nu">19</span>, <span class="nu">23</span>, <span class="nu">29</span>, <span class="nu">31</span>, <span class="nu">37</span>]:
+        x = <span class="kw">pow</span>(a, d, n)
+        <span class="kw">if</span> x == <span class="nu">1</span> <span class="kw">or</span> x == n - <span class="nu">1</span>:
+            <span class="kw">continue</span>
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(r - <span class="nu">1</span>):
+            x = x * x % n
+            <span class="kw">if</span> x == n - <span class="nu">1</span>:
+                <span class="kw">break</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="kw">True</span></code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Where does this come from?</div>
+        <p>This is the Miller&ndash;Rabin primality test &mdash; it can correctly check numbers up to about 3.3&times;10<sup>18</sup> using just these 12 fixed "witnesses," which is exactly the range we need. If you want to understand <em>why</em> it works instead of taking it on faith, see the <a href="fermat_lie_en.html">Fermat Lie Detector</a> and <a href="miller_rabin_en.html">Miller&ndash;Rabin</a> case files &mdash; this page just borrows the finished tool.</p>
+      </div>
+
+      <p>Next, a helper to compute exact integer <code>n</code>-th roots (Python's <code>math.isqrt</code> already does this for square roots, but we need cube and 4th roots too), and the Level 3 shape-detector built on top of it:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>classify.py</div>
+        <pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> nth_root(x, n):
+    lo, hi = <span class="nu">0</span>, <span class="nu">1</span>
+    <span class="kw">while</span> hi ** n &lt;= x:
+        hi *= <span class="nu">2</span>
+    <span class="kw">while</span> lo &lt; hi:
+        mid = (lo + hi + <span class="nu">1</span>) // <span class="nu">2</span>
+        <span class="kw">if</span> mid ** n &lt;= x:
+            lo = mid
+        <span class="kw">else</span>:
+            hi = mid - <span class="nu">1</span>
+    <span class="kw">return</span> lo
+
+<span class="kw">def</span> classify(a):
+    r2 = math.isqrt(a)
+    <span class="kw">if</span> r2 * r2 == a <span class="kw">and</span> is_prime(r2):
+        <span class="kw">return</span> (<span class="st">"single"</span>, <span class="nu">2</span>)
+    r3 = nth_root(a, <span class="nu">3</span>)
+    <span class="kw">if</span> r3 ** <span class="nu">3</span> == a <span class="kw">and</span> is_prime(r3):
+        <span class="kw">return</span> (<span class="st">"single"</span>, <span class="nu">3</span>)
+    r4 = nth_root(a, <span class="nu">4</span>)
+    <span class="kw">if</span> r4 ** <span class="nu">4</span> == a <span class="kw">and</span> is_prime(r4):
+        <span class="kw">return</span> (<span class="st">"single"</span>, <span class="nu">4</span>)
+    <span class="kw">return</span> (<span class="st">"double"</span>,)</code></pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">No special ordering needed</div>
+        <p>You might expect we'd need to check the 4th-power case <em>before</em> the square case, since <code>p&#8308;</code> is technically also a perfect square (with root <code>p&sup2;</code>). But <code>p&sup2;</code> is never itself prime (it always has 1, p, and p&sup2; as divisors), so the square check's <code>is_prime(r2)</code> automatically fails for a <code>p&#8308;</code> number. All three checks can run independently, in any order &mdash; exactly one of them (or none, meaning it's a mystery duo) will ever succeed.</p>
+      </div>
+
+      <p>Now the Union-Find structure from Level 7:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>dsu.py</div>
+        <pre><code><span class="kw">class</span> DSU:
+    <span class="kw">def</span> __init__(self):
+        self.parent = {}
+        self.weight = {}
+
+    <span class="kw">def</span> make(self, key, w):
+        self.parent[key] = key
+        self.weight[key] = w
+
+    <span class="kw">def</span> find(self, x):
+        <span class="kw">while</span> self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]
+            x = self.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> union(self, x, y):
+        rx, ry = self.find(x), self.find(y)
+        <span class="kw">if</span> rx != ry:
+            self.parent[rx] = ry
+            self.weight[ry] += self.weight[rx]</code></pre>
+      </div>
+
+      <p>And finally, the part that ties Levels 5, 6 and 7 together: compare every pair with gcd, route mystery-duo handshakes to the correct slot, merge, and multiply up the answer.</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">for i, t in enumerate(types):
+    if t[0] == "single":
+        dsu.make(("s", i), t[1])
+    else:
+        dsu.make(("d", i, 0), 1)
+        dsu.make(("d", i, 1), 1)
+        slot[i] = [None, None]</div>
+          <div class="annot-note"><span>Give every number its slot(s): one team per single-prime number (carrying its known exponent), two per mystery duo (each starting at exponent 1, secret value unknown).</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">def route(i, g):
+    s = slot[i]
+    if s[0] is None:
+        s[0], s[1] = g, a_list[i] // g
+        return ("d", i, 0)
+    return ("d", i, 0) if s[0] == g else ("d", i, 1)</div>
+          <div class="annot-note"><span>Level 6's slot logic: first handshake fills both slots at once; any later handshake is matched against what's already known.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for i in range(n):
+    for j in range(i + 1, n):
+        g = math.gcd(a_list[i], a_list[j])
+        if g == 1:
+            continue
+        if types[i][0] == "double" and a_list[i] == a_list[j]:
+            dsu.union(("d", i, 0), ("d", j, 0))
+            dsu.union(("d", i, 1), ("d", j, 1))
+            continue
+        key_i = ("s", i) if types[i][0] == "single" else route(i, g)
+        key_j = ("s", j) if types[j][0] == "single" else route(j, g)
+        dsu.union(key_i, key_j)</div>
+          <div class="annot-note"><span>Every pairwise GCD handshake from Level 5. The one special case: two <em>identical</em> mystery-duo values share <em>both</em> primes at once, so both slot-pairs merge together directly.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">totals = {}
+for key in dsu.parent:
+    root = dsu.find(key)
+    totals[root] = dsu.weight[root]
+
+answer = 1
+for exponent_sum in totals.values():
+    answer = answer * (exponent_sum + 1) % MOD</div>
+          <div class="annot-note"><span>Collect each surviving team's total exponent, and multiply <code>(exponent + 1)</code> across all of them &mdash; Level 2's formula, applied at the very end.</span></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why this stays fast</div>
+        <p>The double loop runs <code>gcd</code> up to <code>n&sup2;/2 &approx; 124,750</code> times, and each Miller&ndash;Rabin check only ever runs on a root at most <code>&radic;(2&times;10<sup>18</sup>) &approx; 1.4&times;10<sup>9</sup></code> &mdash; both comfortably fast. We never once try to fully factor a giant number by brute force; Levels 5 and 6 made that unnecessary.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Let's trace it together: 9, 15, 143</h2></div>
+      <p class="lead">Time to run the whole pipeline by hand on the sample from Level 1.</p>
+
+      <table class="trace">
+        <thead><tr><th>a&#8305;</th><th>classify()</th><th>meaning</th></tr></thead>
+        <tbody>
+          <tr><td>9</td><td class="odd">("single", 2)</td><td>9 = 3&sup2; &mdash; one slot, exponent 2</td></tr>
+          <tr><td>15</td><td class="even">("double",)</td><td>15 = 3&times;5, but we don't know that yet &mdash; two empty slots</td></tr>
+          <tr><td>143</td><td class="even">("double",)</td><td>143 = 11&times;13, unknown &mdash; two empty slots</td></tr>
+        </tbody>
+      </table>
+
+      <table class="trace">
+        <thead><tr><th>pair</th><th>gcd</th><th>handshake result</th></tr></thead>
+        <tbody>
+          <tr><td>9, 15</td><td class="odd">3</td><td>15's slot 0 &larr; 3, slot 1 &larr; 15&divide;3 = 5. Merge 9's team with 15's slot&nbsp;0. Team exponent: 2 + 1 = <b>3</b></td></tr>
+          <tr><td>9, 143</td><td class="even">1</td><td>no shared prime, nothing happens</td></tr>
+          <tr><td>15, 143</td><td class="even">1</td><td>no shared prime (5, 11, 13 are all different), nothing happens</td></tr>
+        </tbody>
+      </table>
+
+      <table class="trace">
+        <thead><tr><th>surviving team</th><th>total exponent</th><th>contributes</th></tr></thead>
+        <tbody>
+          <tr><td>{9's prime, 15's slot 0} &mdash; secretly the prime 3</td><td>3</td><td class="odd">3+1 = 4</td></tr>
+          <tr><td>15's slot 1 &mdash; secretly the prime 5</td><td>1</td><td class="even">1+1 = 2</td></tr>
+          <tr><td>143's slot 0 &mdash; secretly the prime 11</td><td>1</td><td class="even">1+1 = 2</td></tr>
+          <tr><td>143's slot 1 &mdash; secretly the prime 13</td><td>1</td><td class="even">1+1 = 2</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">4 &times; 2 &times; 2 &times; 2 = <b>32</b> &mdash; matches the judge's expected output, and we never fully factored 15 or 143 on their own.</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 10 : INTERACTIVE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">LEVEL 10</span><h2>Now you drive: bring your own numbers</h2></div>
+      <p class="lead">Type in a list of numbers, each with 3&ndash;5 divisors (comma or newline separated), and the tool below runs the exact same pipeline: classify, gcd-handshake every pair, merge teams, and multiply up the answer. It uses JavaScript's <code>BigInt</code> so even 18-digit numbers work exactly, with no rounding.</p>
+
+      <div class="widget">
+        <h3>Divisor detective</h3>
+        <div class="hint">Try the default sample, or paste in the official 8-number example (each is a 16-digit mystery duo) to watch the tool shrug off numbers that big.</div>
+        <div class="field-row">
+          <div class="field"><label for="inNums">a&#8321;, a&#8322;, &hellip; (comma or newline separated, up to 12 numbers)</label><textarea id="inNums">9, 15, 143</textarea></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn" id="runBtn">Investigate!</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 11 ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">LEVEL 11</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out with pencil and paper first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Find the divisor count of 25 &times; 35 by hand, using the GCD-handshake method.</summary>
+        <div class="reveal">
+          <p><code>25 = 5&sup2;</code> (single, exponent 2). <code>35 = 5 &times; 7</code> (mystery duo). <code>gcd(25, 35) = 5</code>, so 35's slot 0 becomes 5 and merges with 25's team, giving a team exponent of <code>2 + 1 = 3</code> &rarr; contributes <code>3+1=4</code>. 35's other slot, the prime 7, stays alone &rarr; contributes <code>1+1=2</code>. Answer: <code>4 &times; 2 = 8</code>. Check directly: <code>25 &times; 35 = 875 = 5&sup3; &times; 7</code>, and <code>(3+1)(1+1) = 8</code>. &check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Find the divisor count of 4 &times; 8 &times; 21 by hand.</summary>
+        <div class="reveal">
+          <p><code>4 = 2&sup2;</code>, <code>8 = 2&sup3;</code> &mdash; these share the prime 2, merging into one team with exponent <code>2+3=5</code>, contributing <code>5+1=6</code>. <code>21 = 3 &times; 7</code> is a mystery duo that shares nothing with 4 or 8, so its two slots stay alone, contributing <code>2 &times; 2 = 4</code>. Total: <code>6 &times; 4 = 24</code>. Check: <code>4 &times; 8 &times; 21 = 672 = 2&#8309; &times; 3 &times; 7</code>, and <code>(5+1)(1+1)(1+1) = 24</code>. &check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why must a GCD handshake between two of these special numbers always hand back an <em>exact</em> prime (or the number itself, for identical duos) &mdash; never some other composite value?</summary>
+        <div class="reveal">
+          <p>Because of the 3-4-5 guarantee from Level 3, every number here has each of its prime factors to the power of at most... well, at most 4, but crucially a mystery duo's primes are each to the power of exactly <b>1</b>. If a mystery duo shares a prime with any <em>other</em> number, the gcd can only pick up that shared prime to the power of 1 (since the duo doesn't have any more copies of it to contribute) &mdash; it can never accidentally pick up the duo's <em>other</em> prime too, unless the other number is that exact same duo value, sharing both at once. That's precisely why Level 6's slot-filling trick is safe.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4 (harder): Suppose a mystery duo <code>x = p &times; q</code> shares <code>p</code> with number A and <code>q</code> with a <em>different</em> number B. Why can't we just merge A, x, and B all into one single team, instead of bothering with two separate slots for x?</summary>
+        <div class="reveal">
+          <p>Because <code>p</code> and <code>q</code> are two <em>different</em> primes with their own separate exponent totals across the whole product &mdash; merging everything into one team would incorrectly add A's exponent of <code>p</code> together with B's exponent of <code>q</code>, as if they were the same prime. The final formula multiplies <code>(exponent+1)</code> <em>per distinct prime</em>, so treating two unrelated primes as one team would silently produce the wrong answer. The two slots keep <code>p</code>'s story and <code>q</code>'s story separate, even though they both live inside the same number <code>x</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5: The problem guarantees every a&#8305; has 3&ndash;5 divisors. What would go wrong if you fed <code>classify()</code> a number that only has 1 divisor (like a&#8305; = 1) or 2 divisors (a prime, like a&#8305; = 7)?</summary>
+        <div class="reveal">
+          <p><code>classify()</code> would fall through all three checks (it's not a perfect square, cube, or 4th power with a prime root) and default to <code>("double",)</code> &mdash; treating a lone prime like 7 as if it were secretly hiding <em>two</em> prime factors, which is simply wrong (7 has only one). The whole algorithm leans on the 3-4-5 guarantee holding for <em>every</em> input number; it isn't designed to double-check that guarantee itself, so it would silently produce a wrong answer rather than crashing. This is a good general lesson: a fast algorithm often trades away safety checks for speed, trusting the problem's stated constraints completely.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1033D &mdash; Divisors. For the number-theory building blocks used here, see <a href="prime_detective_en.html">Prime Number Detective Agency</a> (primes &amp; modular arithmetic), <a href="162C_en.html">Prime Factorization</a> (the divisor formula), <a href="miller_rabin_en.html">Miller&ndash;Rabin</a> (the primality test), and <a href="modified_gcd_en.html">Modified GCD</a> (the Euclidean algorithm).</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 998244353n;
+
+  function bgcd(a, b){
+    a = a < 0n ? -a : a; b = b < 0n ? -b : b;
+    while (b){ var t = a % b; a = b; b = t; }
+    return a;
+  }
+
+  function bpow(base, exp, mod){
+    base %= mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n) result = (result * base) % mod;
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  var SMALL_PRIMES = [2n,3n,5n,7n,11n,13n,17n,19n,23n,29n,31n,37n];
+
+  function isPrime(n){
+    if (n < 2n) return false;
+    for (var i=0;i<SMALL_PRIMES.length;i++){
+      var p = SMALL_PRIMES[i];
+      if (n % p === 0n) return n === p;
+    }
+    var d = n - 1n, r = 0n;
+    while (d % 2n === 0n){ d /= 2n; r += 1n; }
+    for (var k=0;k<SMALL_PRIMES.length;k++){
+      var a = SMALL_PRIMES[k];
+      var x = bpow(a, d, n);
+      if (x === 1n || x === n - 1n) continue;
+      var composite = true;
+      for (var i2 = 0n; i2 < r - 1n; i2++){
+        x = (x * x) % n;
+        if (x === n - 1n){ composite = false; break; }
+      }
+      if (composite) return false;
+    }
+    return true;
+  }
+
+  function nthRoot(x, n){
+    if (x === 0n) return 0n;
+    var lo = 0n, hi = 1n;
+    while (hi ** n <= x) hi *= 2n;
+    while (lo < hi){
+      var mid = (lo + hi + 1n) / 2n;
+      if (mid ** n <= x) lo = mid; else hi = mid - 1n;
+    }
+    return lo;
+  }
+
+  function classify(a){
+    var r2 = nthRoot(a, 2n);
+    if (r2 * r2 === a && isPrime(r2)) return { kind:'single', exp:2n, label:'p²' };
+    var r3 = nthRoot(a, 3n);
+    if (r3 ** 3n === a && isPrime(r3)) return { kind:'single', exp:3n, label:'p³' };
+    var r4 = nthRoot(a, 4n);
+    if (r4 ** 4n === a && isPrime(r4)) return { kind:'single', exp:4n, label:'p⁴' };
+    return { kind:'double', label:'p×q (mystery duo)' };
+  }
+
+  function DSU(){ this.parent = new Map(); this.weight = new Map(); }
+  DSU.prototype.make = function(key, w){ this.parent.set(key, key); this.weight.set(key, w); };
+  DSU.prototype.find = function(x){
+    while (this.parent.get(x) !== x){
+      this.parent.set(x, this.parent.get(this.parent.get(x)));
+      x = this.parent.get(x);
+    }
+    return x;
+  };
+  DSU.prototype.union = function(x, y){
+    var rx = this.find(x), ry = this.find(y);
+    if (rx === ry) return;
+    this.parent.set(rx, ry);
+    this.weight.set(ry, this.weight.get(ry) + this.weight.get(rx));
+  };
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function solve(aList){
+    var n = aList.length;
+    var types = aList.map(classify);
+    var dsu = new DSU();
+    var slotValue = new Map();
+
+    for (var i=0;i<n;i++){
+      if (types[i].kind === 'single'){
+        dsu.make('s'+i, types[i].exp);
+      } else {
+        dsu.make('d'+i+'_0', 1n);
+        dsu.make('d'+i+'_1', 1n);
+        slotValue.set(i, [null, null]);
+      }
+    }
+
+    function route(i, g){
+      var sv = slotValue.get(i);
+      if (sv[0] === null){ sv[0] = g; sv[1] = aList[i] / g; return 'd'+i+'_0'; }
+      return sv[0] === g ? 'd'+i+'_0' : 'd'+i+'_1';
+    }
+
+    var log = [];
+    for (var a=0;a<n;a++){
+      for (var b=a+1;b<n;b++){
+        var g = bgcd(aList[a], aList[b]);
+        if (g === 1n) continue;
+        if (types[a].kind === 'double' && aList[a] === aList[b]){
+          dsu.union('d'+a+'_0','d'+b+'_0');
+          dsu.union('d'+a+'_1','d'+b+'_1');
+          log.push({a:a,b:b,g:g,note:'identical mystery duos — merge both slots'});
+          continue;
+        }
+        var keyA = types[a].kind === 'single' ? 's'+a : route(a, g);
+        var keyB = types[b].kind === 'single' ? 's'+b : route(b, g);
+        dsu.union(keyA, keyB);
+        log.push({a:a,b:b,g:g,keyA:keyA,keyB:keyB});
+      }
+    }
+
+    var roots = new Map();
+    for (var key of dsu.parent.keys()){
+      var r = dsu.find(key);
+      roots.set(r, dsu.weight.get(r));
+    }
+
+    var ans = 1n;
+    for (var w of roots.values()) ans = (ans * (w + 1n)) % MOD;
+
+    return { types: types, log: log, roots: roots, ans: ans };
+  }
+
+  function run(){
+    var raw = document.getElementById('inNums').value;
+    var out = document.getElementById('out');
+    var parts = raw.split(/[,\s]+/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+
+    if (parts.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Type in at least one number.</p></div>';
+      return;
+    }
+    if (parts.length > 12){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Please use 12 numbers or fewer, just to keep the tables readable.</p></div>';
+      return;
+    }
+
+    var aList;
+    try {
+      aList = parts.map(function(s){
+        if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+        var v = BigInt(s);
+        if (v < 1n) throw new Error('bad');
+        return v;
+      });
+    } catch (e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Every entry needs to be a positive whole number.</p></div>';
+      return;
+    }
+
+    var r = solve(aList);
+    var html = '';
+
+    html += '<table class="trace"><thead><tr><th>#</th><th>a&#8305;</th><th>classify()</th></tr></thead><tbody>';
+    for (var i=0;i<aList.length;i++){
+      var chipClass = r.types[i].kind === 'double' ? 'chip duo' : 'chip';
+      html += '<tr><td>'+i+'</td><td>'+esc(aList[i].toString())+'</td><td><span class="'+chipClass+'">'+esc(r.types[i].label)+'</span></td></tr>';
+    }
+    html += '</tbody></table>';
+
+    if (r.log.length > 0){
+      html += '<table class="trace"><thead><tr><th>pair</th><th>gcd</th><th>handshake result</th></tr></thead><tbody>';
+      for (var j=0;j<r.log.length;j++){
+        var e = r.log[j];
+        var desc = e.note ? e.note : ('merge slot ' + e.keyA + ' with ' + e.keyB);
+        html += '<tr><td>#'+e.a+', #'+e.b+'</td><td class="odd">'+esc(e.g.toString())+'</td><td>'+esc(desc)+'</td></tr>';
+      }
+      html += '</tbody></table>';
+    } else {
+      html += '<div class="callout fact"><div class="ctitle">No handshakes</div><p>None of these numbers share a prime factor with each other &mdash; every prime slot stays its own team.</p></div>';
+    }
+
+    html += '<table class="trace"><thead><tr><th>surviving team</th><th>total exponent</th><th>contributes</th></tr></thead><tbody>';
+    var idx = 0;
+    for (var w2 of r.roots.values()){
+      idx++;
+      html += '<tr><td>team '+idx+'</td><td>'+w2.toString()+'</td><td class="odd">'+(w2+1n).toString()+'</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="answer-line">Number of divisors mod 998244353: <b>' + r.ans.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

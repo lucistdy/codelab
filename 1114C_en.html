@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailing Loves: Counting Zeros at the End of a Giant Factorial, in Any Base (Codeforces 1114C)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:180px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1114C &middot; Problem Walkthrough</div>
+      <h1>Trailing Loves: <em>Counting Zeros at the End of a Giant Factorial</em></h1>
+      <p class="sub"><code>n!</code> for <code>n</code> as big as 10<sup>18</sup> has so many digits it couldn't fit on every hard drive on Earth &mdash; and you're asked to write it in some strange base <code>b</code> and count how many zeros sit at the very end. You will never build the actual number. You'll count its zeros anyway, in well under a second.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Primes, Bases &amp; Legendre's Formula</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">You're given two whole numbers: <code>n</code> (up to <code>10<sup>18</sup></code>) and a base <code>b</code> (from 2 up to <code>10<sup>12</sup></code>). Compute <code>n! = 1 &times; 2 &times; 3 &times; \cdots &times; n</code> &mdash; the factorial of <code>n</code> &mdash; write it out in base <code>b</code> instead of the usual base 10, and count how many zeros appear at the end of that write-up.</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>n=6, b=9</code> &rarr; <code>1</code> &nbsp;(because <code>6! = 720</code>, and <code>720</code> in base 9 is written <code>880</code> &mdash; one trailing zero)<br>
+        <code>n=5, b=2</code> &rarr; <code>3</code> &nbsp;(because <code>5! = 120</code>, and in binary that's <code>1111000</code> &mdash; three trailing zeros)<br>
+        <code>n=5, b=10</code> &rarr; <code>1</code> &nbsp;(same <code>120</code>, but ordinary base 10 only has one trailing zero)</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why you can't just compute n! directly</div>
+        <p><code>n</code> can be a billion billion. <code>n!</code> for even a modest <code>n</code> like <code>10<sup>6</sup></code> already has millions of digits &mdash; for <code>n = 10<sup>18</sup></code>, the actual number would need more digits than there are atoms in the observable universe to write down. We need a way to count trailing zeros <em>without ever building the number itself.</em></p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>What a trailing zero actually means</h2></div>
+      <p class="lead">In any base <code>b</code>, a number's digits represent how many <code>1</code>'s, <code>b</code>'s, <code>b&sup2;</code>'s, <code>b&sup3;</code>'s, and so on it's built from. A trailing zero in the last digit means "zero 1's." A trailing zero in the last <em>two</em> digits means "zero 1's <em>and</em> zero b's" &mdash; which is exactly the same as saying the whole number is a clean multiple of <code>b&sup2;</code>.</p>
+
+      <div class="blocks">
+        <div class="block">d&#8323;</div><div class="block">d&#8322;</div><div class="block hi">0</div><div class="block hi">0</div>
+        <div class="block op">= a multiple of b&sup2;, not necessarily of b&sup3;</div>
+      </div>
+
+      <p>In general: <strong>a number has at least <code>k</code> trailing zeros in base <code>b</code> exactly when it's evenly divisible by <code>b<sup>k</sup></code></strong>. So "count the trailing zeros of <code>n!</code> in base <code>b</code>" is really asking: <em>what is the largest power of <code>b</code> that divides <code>n!</code> evenly?</em> That's a question about divisibility, not about writing out any digits at all.</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Warm-up: the classic base-10 version of this puzzle</h2></div>
+      <p class="lead">You may already know a famous puzzle: how many trailing zeros does <code>n!</code> have in ordinary base 10? Since <code>10 = 2 &times; 5</code>, a trailing zero needs one factor of 2 <em>and</em> one factor of 5. Multiples of 2 are everywhere in <code>1&times;2&times;3&times;\cdots&times;n</code> (every other number!), but multiples of 5 are rarer &mdash; so the number of 5's is always the bottleneck.</p>
+
+      <p>To count how many times the prime 5 divides into <code>n!</code>, we can't just count multiples of 5 &mdash; numbers like 25 contribute <em>two</em> factors of 5, not one, and 125 contributes three. The clean way to count all of them is called <strong>Legendre's formula</strong>:</p>
+
+      <div class="blocks">
+        <div class="block hi">&lfloor;n/p&rfloor;</div><div class="block op">+</div><div class="block hi">&lfloor;n/p&sup2;&rfloor;</div><div class="block op">+</div><div class="block hi">&lfloor;n/p&sup3;&rfloor;</div><div class="block op">+ &hellip;</div>
+      </div>
+
+      <p><code>&lfloor;n/p&rfloor;</code> counts every multiple of <code>p</code> up to <code>n</code> &mdash; each contributes at least one factor of <code>p</code>. <code>&lfloor;n/p&sup2;&rfloor;</code> counts multiples of <code>p&sup2;</code>, each of which contributes one <em>extra</em> factor beyond the first (that's why we add it separately, instead of double-counting from scratch). And so on for <code>p&sup3;, p&#8308;, \ldots</code> until the powers of <code>p</code> exceed <code>n</code> and the terms become 0.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Quick check: how many trailing zeros does 12! have in base 10?</div>
+        <p>Count 5's in <code>12!</code>: <code>&lfloor;12/5&rfloor; + &lfloor;12/25&rfloor; = 2 + 0 = 2</code>. Count 2's: <code>&lfloor;12/2&rfloor;+&lfloor;12/4&rfloor;+&lfloor;12/8&rfloor; = 6+3+1=10</code>. The 5's run out first, so <code>12!</code> has exactly <b>2</b> trailing zeros in base 10. (Check: <code>12! = 479001600</code> &mdash; yes, two zeros at the end.)</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Generalizing: what if b isn't prime?</h2></div>
+      <p class="lead">Level 3 worked because <code>10 = 2 &times; 5</code> happens to be a product of two primes, each to the power 1. But our base <code>b</code> could be <em>anything</em> &mdash; a prime, a prime squared, a product of five different primes with weird exponents, whatever. We need the general version of the "5's are the bottleneck" idea.</p>
+
+      <p>Every whole number <code>b</code> breaks down uniquely into primes: <code>b = p&#8321;<sup>e&#8321;</sup> &times; p&#8322;<sup>e&#8322;</sup> &times; \cdots &times; p&#8342;<sup>e&#8342;</sup></code>. For <code>n!</code> to be divisible by <code>b<sup>k</sup></code>, it needs to contain <em>at least</em> <code>k &times; e&#8305;</code> copies of every prime <code>p&#8305;</code> in <code>b</code>'s recipe. If <code>n!</code> contains <code>E&#8305;</code> copies of <code>p&#8305;</code> in total (found with Legendre's formula from Level 3), then the largest <code>k</code> that still works for <em>that one prime</em> is <code>&lfloor;E&#8305; / e&#8305;&rfloor;</code>.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">The bottleneck is whichever prime runs out first</div>
+        <p>Since <em>every</em> prime in <code>b</code>'s recipe has to keep up, the true answer is the <strong>smallest</strong> of these values across all the primes in <code>b</code>: <code>answer = min&#8305;( &lfloor;E&#8305; / e&#8305;&rfloor; )</code>. This is exactly the same reasoning as "5's are rarer than 2's" from Level 3 &mdash; just extended to however many primes (and however large their exponents) happen to make up <code>b</code>.</p>
+      </div>
+
+      <p>Sanity check with sample 1: <code>b = 9 = 3&sup2;</code>, so there's only one prime to worry about, with exponent 2. <code>6!</code> contains <code>&lfloor;6/3&rfloor;+&lfloor;6/9&rfloor; = 2+0 = 2</code> copies of the prime 3. Answer: <code>&lfloor;2/2&rfloor; = 1</code> trailing zero &mdash; matching the judge exactly.</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Two ingredients we still need to build</h2></div>
+      <p class="lead">Level 4 gives us the plan; now we need two fast tools to actually carry it out.</p>
+
+      <p><strong>Ingredient A &mdash; factorize b.</strong> Since <code>b &le; 10<sup>12</sup></code>, we can find all its prime factors with the same &radic;b trial-division shortcut from the <a href="162C_en.html">Prime Factorization</a> page: test divisors from 2 upward, dividing out each one fully before moving on, and stop once the candidate divisor passes &radic;b (whatever's left over, if bigger than 1, is one last prime factor).</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>factorize.py</div>
+        <pre><code><span class="kw">def</span> factorize(b):
+    factors = {}
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= b:
+        <span class="kw">while</span> b % d == <span class="nu">0</span>:
+            factors[d] = factors.get(d, <span class="nu">0</span>) + <span class="nu">1</span>
+            b //= d
+        d += <span class="nu">1</span>
+    <span class="kw">if</span> b &gt; <span class="nu">1</span>:
+        factors[b] = factors.get(b, <span class="nu">0</span>) + <span class="nu">1</span>
+    <span class="kw">return</span> factors</code></pre>
+      </div>
+
+      <p><strong>Ingredient B &mdash; Legendre's formula.</strong> For any prime <code>p</code>, count how many times it divides <code>n!</code> by summing <code>&lfloor;n/p&rfloor; + &lfloor;n/p&sup2;&rfloor; + \cdots</code> from Level 3:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>exponent_in_factorial.py</div>
+        <pre><code><span class="kw">def</span> exponent_in_factorial(n, p):
+    total = <span class="nu">0</span>
+    power = p
+    <span class="kw">while</span> power &lt;= n:
+        total += n // power
+        power *= p
+    <span class="kw">return</span> total</code></pre>
+      </div>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>18</sup></div><div class="lbl">how big n can be &mdash; far too big to loop over one at a time</div></div>
+        <div class="stat fast"><div class="num">&le; 60 steps</div><div class="lbl">how many times the <code>while power &lt;= n</code> loop runs, since even <code>p=2</code> doubles past 10<sup>18</sup> in about 60 steps</div></div>
+        <div class="stat fast"><div class="num">&le; ~10<sup>6</sup> steps</div><div class="lbl">how long factorizing b takes, since &radic;(10<sup>12</sup>) = 10<sup>6</sup></div></div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Why the Legendre loop is so short</div>
+        <p>Each trip through the loop multiplies <code>power</code> by <code>p</code> (at least 2), so after roughly <code>log&#8322;(n)</code> steps <code>power</code> blows past <code>n</code> and the loop stops. For <code>n = 10<sup>18</sup></code>, <code>log&#8322;(10<sup>18</sup>) &approx; 60</code>. Doubling grows unbelievably fast &mdash; the same idea behind the <a href="fast_exponentiation_en.html">fast exponentiation</a> trick, just running in reverse here.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Combine Levels 4 and 5: factorize <code>b</code>, use Legendre's formula on each of its prime factors, divide each exponent by how many copies <code>b</code> needs, and take the minimum.</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">factors = factorize(b)</div>
+          <div class="annot-note"><span>Level 5, Ingredient A: break <code>b</code> down into <code>{prime: exponent}</code> pairs.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">return min(
+    exponent_in_factorial(n, p) // e
+    for p, e in factors.items()
+)</div>
+          <div class="annot-note"><span>Level 4's formula: for each prime <code>p</code> with exponent <code>e</code> in <code>b</code>, find how many full groups of <code>e</code> copies fit inside <code>n!</code>'s supply of <code>p</code> &mdash; then take the smallest across all of <code>b</code>'s primes, since that's the one that runs out first.</span></div>
+        </div>
+      </div>
+
+      <p>Here's the complete program:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>trailing_zeros.py</div>
+        <pre><code><span class="kw">def</span> factorize(b):
+    factors = {}
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= b:
+        <span class="kw">while</span> b % d == <span class="nu">0</span>:
+            factors[d] = factors.get(d, <span class="nu">0</span>) + <span class="nu">1</span>
+            b //= d
+        d += <span class="nu">1</span>
+    <span class="kw">if</span> b &gt; <span class="nu">1</span>:
+        factors[b] = factors.get(b, <span class="nu">0</span>) + <span class="nu">1</span>
+    <span class="kw">return</span> factors
+
+<span class="kw">def</span> exponent_in_factorial(n, p):
+    total = <span class="nu">0</span>
+    power = p
+    <span class="kw">while</span> power &lt;= n:
+        total += n // power
+        power *= p
+    <span class="kw">return</span> total
+
+<span class="kw">def</span> trailing_zeros(n, b):
+    factors = factorize(b)
+    <span class="kw">return</span> <span class="kw">min</span>(
+        exponent_in_factorial(n, p) // e
+        <span class="kw">for</span> p, e <span class="kw">in</span> factors.items()
+    )
+
+n, b = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+<span class="kw">print</span>(trailing_zeros(n, b))</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Let's trace it together: two samples by hand</h2></div>
+      <p class="lead">First, <code>n=6, b=9</code>:</p>
+
+      <table class="trace">
+        <thead><tr><th>step</th><th>value</th></tr></thead>
+        <tbody>
+          <tr><td>factorize(9)</td><td class="odd">{3: 2}</td></tr>
+          <tr><td>exponent_in_factorial(6, 3)</td><td class="even">&lfloor;6/3&rfloor; + &lfloor;6/9&rfloor; = 2 + 0 = 2</td></tr>
+          <tr><td>2 // 2 (exponent needed per copy of b)</td><td class="odd">1</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">Only one prime to check &rarr; answer = <b>1</b>, matching the judge.</td></tr></tfoot>
+      </table>
+
+      <p>Now the trickier <code>n=5, b=10</code>, where <code>b</code> has two different prime factors:</p>
+
+      <table class="trace">
+        <thead><tr><th>prime p in b</th><th>exponent e in b</th><th>exponent_in_factorial(5, p)</th><th>&divide; e</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>1</td><td>&lfloor;5/2&rfloor;+&lfloor;5/4&rfloor; = 2+1 = 3</td><td class="even">3</td></tr>
+          <tr><td>5</td><td>1</td><td>&lfloor;5/5&rfloor; = 1</td><td class="odd">1</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">min(3, 1) = <b>1</b> &mdash; the prime 5 runs out first, exactly like the classic base-10 puzzle from Level 3. Matches the judge.</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Now you drive: try your own n and b</h2></div>
+      <p class="lead">Pick any <code>n</code> (up to 10<sup>18</sup>) and <code>b</code> (2 up to 10<sup>12</sup>). The tool factorizes <code>b</code>, runs Legendre's formula on each prime factor, and shows you exactly which prime becomes the bottleneck &mdash; using JavaScript's <code>BigInt</code> so even 18-digit numbers stay exact.</p>
+
+      <div class="widget">
+        <h3>Trailing zero finder</h3>
+        <div class="hint">Tip: try n=1000000000000000000 (10<sup>18</sup>) with b=2 to see the loop stay short even at the extreme, or try b as a big prime near 10<sup>12</sup> to watch factorizing take a moment longer.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="text" id="inN" value="6"></div>
+          <div class="field"><label for="inB">b</label><input type="text" id="inB" value="9"></div>
+          <div class="field"><button class="btn" id="runBtn">Count the zeros!</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out with pencil and paper first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: How many trailing zeros does <code>10!</code> have in base 10?</summary>
+        <div class="reveal">
+          <p>Count 5's: <code>&lfloor;10/5&rfloor; = 2</code>. Count 2's: <code>&lfloor;10/2&rfloor;+&lfloor;10/4&rfloor;+&lfloor;10/8&rfloor; = 5+2+1=8</code>. The 5's run out first: answer <b>2</b>. (Check: <code>10! = 3628800</code>.)</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: How many trailing zeros does <code>10!</code> have in base 4 (<code>4 = 2&sup2;</code>)?</summary>
+        <div class="reveal">
+          <p>Only one prime, 2, with exponent 2 in <code>b</code>. From Challenge 1, <code>10!</code> has 8 copies of the prime 2. Answer: <code>&lfloor;8/2&rfloor; = 4</code>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why does the algorithm take the <em>minimum</em> across b's prime factors, rather than, say, the sum or the average?</summary>
+        <div class="reveal">
+          <p>Because <code>n!</code> is only divisible by <code>b<sup>k</sup></code> if it has enough copies of <em>every single</em> prime in <code>b</code>'s recipe, all at the same time &mdash; it's an "all must succeed" requirement, not "on average, close enough." If even one prime in <code>b</code> can only support <code>k=1</code> while the others could support <code>k=100</code>, the whole number <code>b<sup>2</sup></code> still fails to divide <code>n!</code>, because that one scarce prime isn't there twice. The minimum is exactly the rule for "the weakest link decides."</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4 (harder): Could the answer ever be 0? Give a concrete example of n and b where it is.</summary>
+        <div class="reveal">
+          <p>Yes &mdash; whenever some prime factor of <code>b</code> doesn't appear in <code>n!</code> at all, or doesn't appear often enough for even one full copy of <code>b</code>. For example, <code>n=3, b=25=5&sup2;</code>: <code>3! = 6</code> contains zero copies of the prime 5 (<code>&lfloor;3/5&rfloor;=0</code>), so <code>&lfloor;0/2&rfloor;=0</code> trailing zeros. Makes sense: <code>6</code> in base 25 is just the single digit <code>6</code> &mdash; no trailing zero at all.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5: Modify the Python code so it also prints out, for each prime factor of b, exactly how many copies of that prime n! contains and how many are needed &mdash; useful for seeing which prime is the bottleneck.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>trailing_zeros_debug.py</div>
+            <pre><code><span class="kw">def</span> trailing_zeros_debug(n, b):
+    factors = factorize(b)
+    best = <span class="kw">None</span>
+    <span class="kw">for</span> p, e <span class="kw">in</span> factors.items():
+        available = exponent_in_factorial(n, p)
+        k = available // e
+        <span class="kw">print</span>(<span class="kw">f</span><span class="st">"prime {p}: n! has {available} copies, b needs {e} per zero -> supports {k} zeros"</span>)
+        <span class="kw">if</span> best <span class="kw">is</span> <span class="kw">None</span> <span class="kw">or</span> k &lt; best:
+            best = k
+    <span class="kw">return</span> best</code></pre>
+          </div>
+          <p style="margin-top:12px;">Same core logic as Level 6, just printing the intermediate numbers for every prime instead of silently taking the minimum.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1114C &mdash; Trailing Loves (or L'oeufs?). For the building blocks used here, see <a href="162C_en.html">Prime Factorization</a> (the &radic;b divisor shortcut) and <a href="fast_exponentiation_en.html">Fast Exponentiation</a> (why doubling grows so fast that loops like Legendre's formula stay short).</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function factorize(b){
+    var factors = new Map();
+    var d = 2n;
+    while (d * d <= b){
+      while (b % d === 0n){
+        factors.set(d, (factors.get(d) || 0n) + 1n);
+        b /= d;
+      }
+      d += 1n;
+    }
+    if (b > 1n) factors.set(b, (factors.get(b) || 0n) + 1n);
+    return factors;
+  }
+
+  function exponentInFactorial(n, p){
+    var total = 0n;
+    var power = p;
+    while (power <= n){
+      total += n / power;
+      power *= p;
+    }
+    return total;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function parseBig(s){
+    s = s.trim();
+    if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+    return BigInt(s);
+  }
+
+  function run(){
+    var out = document.getElementById('out');
+    var n, b;
+    try {
+      n = parseBig(document.getElementById('inN').value);
+      b = parseBig(document.getElementById('inB').value);
+    } catch(e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>n and b both need to be positive whole numbers.</p></div>';
+      return;
+    }
+    if (n < 1n || b < 2n){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>n must be at least 1, and b must be at least 2.</p></div>';
+      return;
+    }
+
+    var factors = factorize(b);
+    var rows = [];
+    var best = null;
+    for (var entry of factors){
+      var p = entry[0], e = entry[1];
+      var available = exponentInFactorial(n, p);
+      var k = available / e;
+      rows.push({p:p, e:e, available:available, k:k});
+      if (best === null || k < best) best = k;
+    }
+
+    var html = '';
+    html += '<table class="trace"><thead><tr><th>prime p in b</th><th>exponent e in b</th><th>copies of p in n!</th><th>supports</th></tr></thead><tbody>';
+    for (var i=0;i<rows.length;i++){
+      var r = rows[i];
+      var isBottleneck = r.k === best;
+      html += '<tr><td>'+esc(r.p.toString())+'</td><td>'+esc(r.e.toString())+'</td><td>'+esc(r.available.toString())+'</td><td class="'+(isBottleneck?'odd':'even')+'">'+esc(r.k.toString())+(isBottleneck?' &larr; bottleneck':'')+'</td></tr>';
+    }
+    html += '</tbody></table>';
+    html += '<div class="answer-line">Trailing zeros of n! in base b: <b>' + best.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

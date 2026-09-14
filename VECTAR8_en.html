@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scary Primes: The Numbers That Survive Getting Chopped From the Front (SPOJ VECTAR8)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:150px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  #out2{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+  .chiplist{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:100px;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">SPOJ VECTAR8 &middot; Problem Walkthrough</div>
+      <h1>Scary Primes: <em>The Numbers That Survive Getting Chopped From the Front</em></h1>
+      <p class="sub">Take a prime number. Chop off its leftmost digit. Is what's left still prime? Chop again. Still prime? Keep going until only one digit remains. A prime that survives this entire ordeal &mdash; and never once shows a digit 0 &mdash; earns the title "scary prime." Your job: count how many of them exist up to some number N, and answer up to 100,000 such questions without breaking a sweat.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Sieve of Eratosthenes &amp; Precomputation</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">You'll be asked up to <code>T = 100,000</code> questions, each one just a single number <code>N</code> (<code>1 &le; N &lt; 1,000,000</code>). For each one, answer: how many <strong>scary primes</strong> are there that are less than or equal to <code>N</code>?</p>
+
+      <p>A number is a <strong>scary prime</strong> if all of the following are true:</p>
+      <ul style="color:var(--ink-soft);">
+        <li>It's prime.</li>
+        <li>None of its digits is <code>0</code>.</li>
+        <li>If you delete its leftmost digit, what remains is <em>also</em> a scary prime &mdash; and you can keep deleting the new leftmost digit, over and over, all the way down to a single leftover digit, and every single stage along the way stays prime.</li>
+      </ul>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p>Input: <code>3</code> (three questions), then <code>2</code>, <code>3</code>, <code>4</code> &mdash; one per line.<br>
+        Output: <code>1</code>, <code>2</code>, <code>2</code>.<br>
+        Why? Up to 2, the only scary prime is <code>2</code> itself &mdash; that's <code>1</code>. Up to 3, we also get <code>3</code> &mdash; that's <code>2</code>. Nothing new shows up between 3 and 4 (4 isn't even prime), so it's still <code>2</code>.</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">A bigger example to really see it in action</div>
+        <p>The seven-digit number <code>4632647</code> is scary. Watch what survives as we chop from the left, one digit at a time: <code>4632647</code> &rarr; <code>632647</code> &rarr; <code>32647</code> &rarr; <code>2647</code> &rarr; <code>647</code> &rarr; <code>47</code> &rarr; <code>7</code>. Every single one of those seven numbers is prime, and not one of the seven original digits is a <code>0</code>. That's what it takes to earn the "scary" badge.</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">Why does chopping ever stop working?</div>
+        <p>Try it with a random prime, like <code>29</code>: chop the <code>2</code> off the front, and you're left with <code>9</code> &mdash; which isn't prime (<code>9 = 3 &times; 3</code>). So <code>29</code> fails immediately and is not scary, even though 29 itself is a perfectly good prime. Most primes fail this test almost right away &mdash; scary primes are rare, and that's exactly what makes counting them an interesting puzzle.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Refresher: primes and the Sieve of Eratosthenes</h2></div>
+      <p class="lead">A <strong>prime</strong> is a whole number greater than 1 whose only divisors are 1 and itself. To find every prime up to some limit fast, we use the <strong>Sieve of Eratosthenes</strong>: start by assuming every number is prime, then for each prime you find, cross out every multiple of it (2 crosses out 4, 6, 8, &hellip;; 3 crosses out 6, 9, 12, &hellip;; and so on). Whatever survives every crossing-out is prime.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sieve.py</div>
+        <pre><code>LIMIT = <span class="nu">1_000_000</span>
+is_composite = <span class="kw">bytearray</span>(LIMIT + <span class="nu">1</span>)
+is_composite[<span class="nu">0</span>] = is_composite[<span class="nu">1</span>] = <span class="nu">1</span>
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, <span class="kw">int</span>(LIMIT**<span class="nu">0.5</span>) + <span class="nu">1</span>):
+    <span class="kw">if</span> <span class="kw">not</span> is_composite[i]:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(i * i, LIMIT + <span class="nu">1</span>, i):
+            is_composite[j] = <span class="nu">1</span></code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Already met the sieve before?</div>
+        <p>If you've read the <a href="prime_detective_en.html">Prime Number Detective Agency</a> case file, this will look familiar &mdash; it's the exact same sieve. Here, though, finding primes is only step one. The real puzzle is what happens next.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Why checking one number at a time is way too slow</h2></div>
+      <p class="lead">The obvious plan: for every query <code>N</code>, loop through all numbers from 2 to <code>N</code>, and for each one, check "is it prime, digit-free of zero, and does chopping its front digit repeatedly always stay prime?" That's a perfectly correct plan &mdash; and a disastrously slow one.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">100,000</div><div class="lbl">questions you might be asked (T can be this large)</div></div>
+        <div class="stat slow"><div class="num">up to 999,999</div><div class="lbl">the size of N in the worst case, for <em>each</em> question</div></div>
+        <div class="stat slow"><div class="num">~10<sup>11</sup></div><div class="lbl">total numbers you'd re-examine if you answered every question from scratch</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">The fix, in one sentence</div>
+        <p>Do all the hard thinking <em>once</em>, before any questions arrive &mdash; figure out, for every number up to 999,999, whether it's scary, then build a running tally so any question can be answered instantly by looking up one number in an array.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The key trick: build up small answers first</h2></div>
+      <p class="lead">Here's the insight that makes this whole problem click. To know if a number <code>n</code> is scary, we need to know if the number left over after chopping its front digit &mdash; call it its <strong>suffix</strong> &mdash; is <em>also</em> scary. But that suffix is always <strong>smaller</strong> than <code>n</code> (it has fewer digits, or at worst the same value if <code>n</code> is a single digit). That means: if we process every number in increasing order, from 2 up to 999,999, the answer for the suffix will <em>already be sitting there waiting for us</em> by the time we need it.</p>
+
+      <div class="blocks">
+        <div class="block hi">4632647</div><div class="block op">&rarr; suffix</div><div class="block hi">632647</div><div class="block op">&larr; already decided!</div>
+      </div>
+
+      <p>This is the same "solve the small pieces first, reuse them for the big piece" idea behind dynamic programming everywhere &mdash; you may have seen it for computing Fibonacci numbers or counting paths. Here, the "small piece" of a number is just its own suffix, which we happen to visit earlier simply by counting upward.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">What exactly is "the suffix"?</div>
+        <p>If <code>n</code> has <code>k</code> digits, its suffix (after removing the leftmost digit) is just <code>n % 10<sup>k-1</sup></code> &mdash; the remainder when you divide by the right power of 10. For <code>4632647</code> (7 digits), the suffix is <code>4632647 % 1000000 = 632647</code>. Keep taking remainders with smaller and smaller powers of ten (<code>% 100000</code>, <code>% 10000</code>, &hellip;, <code>% 10</code>) and you walk through every stage of the chopping, from "just the front digit removed" all the way down to "just the last digit remains."</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>The one trap: arithmetic doesn't know about leading zeros</h2></div>
+      <p class="lead">Here's a subtlety that catches almost everyone the first time. Suppose a number contains a <code>0</code> somewhere in the middle, like <code>907</code>. If we chop off its front digit using <code>907 % 100</code>, we get <code>7</code> &mdash; not <code>"07"</code>. Arithmetic silently swallows leading zeros. But <code>907</code> is supposed to be disqualified for containing a <code>0</code> digit at all &mdash; and if we only checked "is the remainder prime," we'd never notice, because <code>7</code> genuinely is prime!</p>
+
+      <div class="callout warn">
+        <div class="ctitle">The fix: check for zero digits separately, up front</div>
+        <p>Before doing any chopping logic at all, look at every digit of the number directly (as a string, or by repeatedly checking <code>n % 10</code>) and reject it immediately if a <code>0</code> shows up anywhere. Only numbers that pass this check even get considered for the chopping test.</p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">A fun mathematical fact</div>
+        <p>Numbers like this &mdash; primes that stay prime as you chop digits off the front, one at a time &mdash; are called <strong>left-truncatable primes</strong> in mathematics. It turns out there are only <strong>4,260</strong> of them in existence, ever, in the whole infinite universe of numbers &mdash; the largest one has 24 digits. Once you get far enough out, it becomes essentially impossible to keep surviving every single chop.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Turning "scary or not" into instant answers</h2></div>
+      <p class="lead">Once we know, for every number up to 999,999, whether it's scary or not, answering a query is still one more small step. A query asks "how many scary primes are &le; N?" &mdash; not "is N itself scary?" So we build one more array: <strong>a running count</strong>, where entry <code>i</code> stores how many scary primes exist among all numbers from 0 up to <code>i</code>.</p>
+
+      <div class="blocks">
+        <div class="block hi">count[i]</div><div class="block op">=</div><div class="block hi">count[i-1]</div><div class="block op">+</div><div class="block hi">1 if i is scary else 0</div>
+      </div>
+
+      <p>Building this running count takes one simple pass through all the numbers, and afterward, <em>every</em> query &mdash; even all 100,000 of them &mdash; gets answered by looking up a single array entry. No matter how many questions arrive, the hard work only ever happens once.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Putting Levels 2, 4, 5 and 6 together. First, the sieve (Level 2), then deciding which primes are scary (Levels 4&ndash;5), then the running count (Level 6):</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">scary = bytearray(LIMIT + 1)
+for n in range(2, LIMIT + 1):
+    if is_composite[n]:
+        continue
+    if '0' in str(n):
+        continue</div>
+          <div class="annot-note"><span>Level 5's zero-digit trap: reject numbers containing a 0 <em>before</em> even looking at chopping. Non-primes are skipped immediately too.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">    ten = 10
+    ok = True
+    while ten <= n:
+        suffix = n % ten
+        if suffix < 2 or not scary[suffix]:
+            ok = False
+            break
+        ten *= 10
+    scary[n] = ok</div>
+          <div class="annot-note"><span>Level 4's chopping check: walk through every suffix (last 1 digit, last 2 digits, &hellip;) and confirm each one was <em>already</em> marked scary &mdash; guaranteed to be known already, since every suffix is a smaller number we visited earlier.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">count_upto = [0] * (LIMIT + 1)
+running = 0
+for n in range(LIMIT + 1):
+    if scary[n]:
+        running += 1
+    count_upto[n] = running</div>
+          <div class="annot-note"><span>Level 6's running count: one pass, and every query becomes an instant array lookup.</span></div>
+        </div>
+      </div>
+
+      <p>The complete program:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>vectar8.py</div>
+        <pre><code><span class="kw">import</span> sys
+
+LIMIT = <span class="nu">1_000_000</span>
+
+<span class="cm"># Step 1: Sieve of Eratosthenes</span>
+is_composite = <span class="kw">bytearray</span>(LIMIT + <span class="nu">1</span>)
+is_composite[<span class="nu">0</span>] = is_composite[<span class="nu">1</span>] = <span class="nu">1</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, <span class="kw">int</span>(LIMIT**<span class="nu">0.5</span>) + <span class="nu">1</span>):
+    <span class="kw">if</span> <span class="kw">not</span> is_composite[i]:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="kw">range</span>(i * i, LIMIT + <span class="nu">1</span>, i):
+            is_composite[j] = <span class="nu">1</span>
+
+<span class="cm"># Step 2: figure out which primes are "scary"</span>
+scary = <span class="kw">bytearray</span>(LIMIT + <span class="nu">1</span>)
+<span class="kw">for</span> n <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, LIMIT + <span class="nu">1</span>):
+    <span class="kw">if</span> is_composite[n]:
+        <span class="kw">continue</span>
+    <span class="kw">if</span> <span class="st">'0'</span> <span class="kw">in</span> <span class="kw">str</span>(n):
+        <span class="kw">continue</span>
+    ten = <span class="nu">10</span>
+    ok = <span class="kw">True</span>
+    <span class="kw">while</span> ten &lt;= n:
+        suffix = n % ten
+        <span class="kw">if</span> suffix &lt; <span class="nu">2</span> <span class="kw">or</span> <span class="kw">not</span> scary[suffix]:
+            ok = <span class="kw">False</span>
+            <span class="kw">break</span>
+        ten *= <span class="nu">10</span>
+    scary[n] = ok
+
+<span class="cm"># Step 3: prefix counts, so every query is answered in O(1)</span>
+count_upto = [<span class="nu">0</span>] * (LIMIT + <span class="nu">1</span>)
+running = <span class="nu">0</span>
+<span class="kw">for</span> n <span class="kw">in</span> <span class="kw">range</span>(LIMIT + <span class="nu">1</span>):
+    <span class="kw">if</span> scary[n]:
+        running += <span class="nu">1</span>
+    count_upto[n] = running
+
+<span class="cm"># Step 4: answer every query instantly</span>
+data = sys.stdin.read().split()
+t = <span class="kw">int</span>(data[<span class="nu">0</span>])
+out = []
+<span class="kw">for</span> i <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, t + <span class="nu">1</span>):
+    n = <span class="kw">int</span>(data[i])
+    out.append(<span class="kw">str</span>(count_upto[n]))
+<span class="kw">print</span>(<span class="st">"\\n"</span>.join(out))</code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Why read all the input at once?</div>
+        <p>With up to 100,000 queries, calling Python's <code>input()</code> once per query adds up in overhead. Reading everything in a single <code>sys.stdin.read()</code> call and splitting it into a list up front, then printing all the answers joined together at the end, avoids that overhead entirely &mdash; a standard trick whenever a problem promises a large number of queries.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Let's trace it together: building the first few scary primes</h2></div>
+      <p class="lead">Processing numbers in order from 2 upward, here's how the very first scary primes get discovered &mdash; note how each one only ever needs to check suffixes that were already decided.</p>
+
+      <table class="trace">
+        <thead><tr><th>n</th><th>prime? no zero digit?</th><th>suffix check</th><th>scary?</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td class="odd">yes, yes</td><td>single digit &mdash; no suffix to check</td><td class="odd">yes</td></tr>
+          <tr><td>3</td><td class="odd">yes, yes</td><td>single digit</td><td class="odd">yes</td></tr>
+          <tr><td>4</td><td class="even">not prime</td><td>&mdash;</td><td class="even">no</td></tr>
+          <tr><td>7</td><td class="odd">yes, yes</td><td>single digit</td><td class="odd">yes</td></tr>
+          <tr><td>13</td><td class="odd">yes, yes</td><td>suffix 3 &rarr; already known scary</td><td class="odd">yes</td></tr>
+          <tr><td>17</td><td class="odd">yes, yes</td><td>suffix 7 &rarr; already known scary</td><td class="odd">yes</td></tr>
+          <tr><td>19</td><td class="odd">yes, yes</td><td>suffix 9 &rarr; 9 is not even prime</td><td class="even">no</td></tr>
+          <tr><td>29</td><td class="odd">yes, yes</td><td>suffix 9 &rarr; not prime</td><td class="even">no</td></tr>
+          <tr><td>37</td><td class="odd">yes, yes</td><td>suffix 7 &rarr; already known scary</td><td class="odd">yes</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">By the time we check <code>37</code>, we already decided whether <code>7</code> is scary &mdash; we never have to recompute it. This is exactly why processing in increasing order works.</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 9 : INTERACTIVE ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Now you drive: two tools to play with</h2></div>
+      <p class="lead">The first tool answers the judge's actual question. The second lets you type in <em>any</em> number and watch it get chopped from the left, one digit at a time, exactly like the <code>4632647</code> example from Level 1.</p>
+
+      <div class="widget">
+        <h3>Scary prime counter</h3>
+        <div class="hint">Enter an N from 1 to 999,999 to see how many scary primes are &le; N. Try 2, 3, and 4 to check the official sample first.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">N</label><input type="number" id="inN" value="4" min="1" max="999999"></div>
+          <div class="field"><button class="btn" id="runBtn">Count them!</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+
+      <div class="widget">
+        <h3>Chop-checker: is this number scary?</h3>
+        <div class="hint">Try 4632647 from Level 1, or 907 to see the zero-digit trap from Level 5 in action, or any prime you like.</div>
+        <div class="field-row">
+          <div class="field"><label for="inCheck">number</label><input type="number" id="inCheck" value="4632647" min="1" max="99999999"></div>
+          <div class="field"><button class="btn" id="checkBtn">Chop it!</button></div>
+        </div>
+        <div id="out2"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">LEVEL 10</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out with pencil and paper first, then check yourself with the tools above.</p>
+
+      <details>
+        <summary>Challenge 1: Is 373 a scary prime? Show your chopping work.</summary>
+        <div class="reveal">
+          <p><code>373</code> has no zero digits. Is it prime? Yes. Chop to <code>73</code>: prime? Yes. Chop to <code>3</code>: prime? Yes. All checks pass &mdash; <b>373 is scary</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Is 103 a scary prime? Explain using Level 5's trap.</summary>
+        <div class="reveal">
+          <p><code>103</code> contains a <code>0</code> digit, so it's disqualified immediately &mdash; <b>not scary</b> &mdash; regardless of whether chopping would otherwise work out. (In fact <code>103</code> is prime, and <code>103 % 10 = 3</code> is prime too, which is exactly the trap: arithmetic alone would miss the zero, which is why Level 5 insists on checking digits directly.)</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: Why does the algorithm process numbers strictly in increasing order (2, 3, 4, 5, &hellip;) instead of, say, largest to smallest?</summary>
+        <div class="reveal">
+          <p>Because deciding whether <code>n</code> is scary depends on already knowing whether <code>n</code>'s suffix is scary &mdash; and the suffix is always a smaller number. If we worked largest to smallest, we'd need an answer for a smaller number before we'd computed it yet &mdash; a chicken-and-egg problem. Going smallest to largest guarantees every suffix we ever need to look up has already been decided.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4 (harder): Why is it impossible for a scary prime to end in the digit 5 (except for 5 itself)?</summary>
+        <div class="reveal">
+          <p>Any number ending in 5 that's bigger than 5 is divisible by 5 (since 5 itself divides it), so it can't be prime unless it <em>is</em> 5. Since the single last digit is always one of the "suffixes" that must independently be prime, no scary prime with more than one digit can end in 5 &mdash; that final single-digit check would immediately fail. The same reasoning rules out scary primes (other than 2 itself) ending in an even digit.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5: Modify the Python code so it also prints, for the very first N numbers that are found scary, a comma-separated list of them &mdash; useful for double-checking the sieve and chopping logic by eye.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>vectar8_debug.py</div>
+            <pre><code>found = []
+<span class="kw">for</span> n <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">2</span>, LIMIT + <span class="nu">1</span>):
+    <span class="kw">if</span> scary[n]:
+        found.append(n)
+        <span class="kw">if</span> <span class="kw">len</span>(found) == <span class="nu">20</span>:
+            <span class="kw">break</span>
+
+<span class="kw">print</span>(<span class="st">", "</span>.join(<span class="kw">map</span>(<span class="kw">str</span>, found)))</code></pre>
+          </div>
+          <p style="margin-top:12px;">Same <code>scary</code> array from Level 7, just collected into a visible list instead of only being used for counting.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>SPOJ VECTAR8 &mdash; Primal Fear. For the sieve foundation used here, see the <a href="prime_detective_en.html">Prime Number Detective Agency</a> case file and the <a href="162C_en.html">Prime Factorization</a> walkthrough.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var LIMIT = 1000000;
+  var scaryData = null;
+
+  function buildScaryData(){
+    var isComposite = new Uint8Array(LIMIT + 1);
+    isComposite[0] = isComposite[1] = 1;
+    for (var i = 2; i * i <= LIMIT; i++){
+      if (!isComposite[i]){
+        for (var j = i * i; j <= LIMIT; j += i) isComposite[j] = 1;
+      }
+    }
+
+    var scary = new Uint8Array(LIMIT + 1);
+    for (var n = 2; n <= LIMIT; n++){
+      if (isComposite[n]) continue;
+      if (String(n).indexOf('0') !== -1) continue;
+      var ten = 10;
+      var ok = 1;
+      while (ten <= n){
+        var suffix = n % ten;
+        if (suffix < 2 || !scary[suffix]){ ok = 0; break; }
+        ten *= 10;
+      }
+      scary[n] = ok;
+    }
+
+    var countUpto = new Int32Array(LIMIT + 1);
+    var running = 0;
+    for (var m = 0; m <= LIMIT; m++){
+      if (scary[m]) running++;
+      countUpto[m] = running;
+    }
+
+    return { scary: scary, countUpto: countUpto };
+  }
+
+  function getScaryData(){
+    if (!scaryData) scaryData = buildScaryData();
+    return scaryData;
+  }
+
+  function isPrimeSimple(n){
+    if (n < 2) return false;
+    for (var i = 2; i * i <= n; i++) if (n % i === 0) return false;
+    return true;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function runCount(){
+    var out = document.getElementById('out');
+    var nRaw = document.getElementById('inN').value;
+    var n = parseInt(nRaw, 10);
+    if (isNaN(n) || n < 1 || n > 999999){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>N needs to be a whole number between 1 and 999,999.</p></div>';
+      return;
+    }
+    var data = getScaryData();
+    var answer = data.countUpto[n];
+
+    var html = '<div class="answer-line">Scary primes &le; ' + n + ': <b>' + answer + '</b></div>';
+
+    if (n <= 5000){
+      var list = [];
+      for (var i = 2; i <= n; i++) if (data.scary[i]) list.push(i);
+      html += '<div class="chiplist">';
+      for (var k = 0; k < list.length; k++) html += '<span class="chip">' + list[k] + '</span>';
+      html += '</div>';
+    } else {
+      html += '<div class="callout fact"><div class="ctitle">Note</div><p>N is a bit large to list every scary prime here, but the count above is exact.</p></div>';
+    }
+
+    out.innerHTML = html;
+  }
+
+  function runCheck(){
+    var out = document.getElementById('out2');
+    var raw = document.getElementById('inCheck').value;
+    var n = parseInt(raw, 10);
+    if (isNaN(n) || n < 1 || n > 99999999){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Please enter a whole number between 1 and 99,999,999.</p></div>';
+      return;
+    }
+
+    var s = String(n);
+    var hasZero = s.indexOf('0') !== -1;
+    var steps = [];
+    var ok = !hasZero;
+    for (var i = 0; i < s.length; i++){
+      var suf = s.slice(i);
+      var val = parseInt(suf, 10);
+      var p = isPrimeSimple(val);
+      steps.push({ suffix: suf, value: val, prime: p });
+      if (!p) ok = false;
+    }
+
+    var html = '';
+    if (hasZero){
+      html += '<div class="callout warn"><div class="ctitle">Zero digit spotted</div><p>' + n + ' contains a 0 digit, so it is disqualified immediately, no matter what the chopping check finds.</p></div>';
+    }
+    html += '<table class="trace"><thead><tr><th>step</th><th>remaining number</th><th>prime?</th></tr></thead><tbody>';
+    for (var j = 0; j < steps.length; j++){
+      var st = steps[j];
+      var cls = st.prime ? 'odd' : 'even';
+      html += '<tr><td>' + (j+1) + '</td><td>' + esc(st.value) + '</td><td class="' + cls + '">' + (st.prime ? 'yes' : 'no') + '</td></tr>';
+    }
+    html += '</tbody></table>';
+    html += '<div class="answer-line">' + n + ' is ' + (ok ? '<b>a scary prime!</b>' : '<b>not</b> a scary prime.') + '</div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', runCount);
+  document.getElementById('checkBtn').addEventListener('click', runCheck);
+  runCount();
+  runCheck();
+})();
+</script>
+</body>
+</html>

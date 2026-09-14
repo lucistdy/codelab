@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghd: The Divisor Only Half Your Numbers Need to Share (Codeforces 364D)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1 1 100%;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:14.5px;resize:vertical;min-height:52px;}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field textarea:focus, .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12px;font-weight:700;padding:2px 8px;border-radius:100px;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 364D &middot; Problem Walkthrough</div>
+      <h1>Ghd: <em>The Divisor Only Half Your Numbers Need to Share</em></h1>
+      <p class="sub">You know the GCD &mdash; the biggest number that divides <em>every single</em> number in a list. Ghd relaxes that rule: it only needs to divide <em>at least half</em> of them. That small change turns an easy problem into a genuine puzzle &mdash; with up to a million numbers as big as a trillion, and just 4 seconds to solve it. The fix involves a coin flip.</p>
+      <div class="stampbar">
+        <span class="stamp hot">No math background needed</span>
+        <span class="stamp">Randomized Algorithms &amp; GCD</span>
+        <span class="stamp">Interactive</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The mission, straight from the judge</h2></div>
+      <p class="lead">You're given <code>n</code> numbers (<code>1 &le; n &le; 10<sup>6</sup></code>), each between 1 and <code>10<sup>12</sup></code>. You need to find the largest number <code>g</code> such that <strong>at least half</strong> of the numbers in the list are evenly divisible by <code>g</code>. This special value is called the <strong>Ghd</strong> ("greatest half-divisor").</p>
+
+      <div class="callout fact">
+        <div class="ctitle">Straight from the judge</div>
+        <p><code>6 2 3 4 5 6</code> &rarr; <code>3</code> &nbsp;(3 divides 6, 3, and 6 &mdash; that's 3 out of 6 numbers, exactly half)<br>
+        <code>5 5 6 10 15</code> &rarr; <code>5</code> &nbsp;(5 divides 5, 5, 10, and 15 &mdash; 4 out of 5 numbers, more than half)</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">New to GCD?</div>
+        <p>This page assumes you already know what a <strong>greatest common divisor (GCD)</strong> is &mdash; the biggest number that evenly divides every number in a set. If that's new, the <a href="modified_gcd_en.html">Modified GCD</a> and <a href="max_gcd_en.html">Maximum GCD</a> pages are quick warm-ups. Ghd is deliberately named to sound like GCD, because it's the same idea with the rules loosened.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Ghd vs. GCD: why "half" changes everything</h2></div>
+      <p class="lead">The regular GCD of <code>6, 2, 3, 4, 5, 6</code> is just <code>1</code> &mdash; there's no number bigger than 1 that divides <em>all six</em> of them (5 alone kills any candidate bigger than 1, since nothing else shares a factor with it). But Ghd doesn't need everyone's agreement &mdash; it only needs a majority. That's why the answer jumps all the way up to <code>3</code>: three of the six numbers (6, 3, 6) are happy to be divided by 3, and three out of six is enough.</p>
+
+      <p>Here's the brute-force idea, just to pin down exactly what we're computing:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ghd_brute_force.py</div>
+        <pre><code>n = <span class="kw">int</span>(<span class="kw">input</span>())
+a = <span class="kw">list</span>(<span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split()))
+need = (n + <span class="nu">1</span>) // <span class="nu">2</span>  <span class="cm"># "at least half", rounded up</span>
+
+best = <span class="nu">1</span>
+<span class="kw">for</span> g <span class="kw">in</span> <span class="kw">range</span>(<span class="nu">1</span>, <span class="kw">max</span>(a) + <span class="nu">1</span>):
+    count = <span class="kw">sum</span>(<span class="nu">1</span> <span class="kw">for</span> v <span class="kw">in</span> a <span class="kw">if</span> v % g == <span class="nu">0</span>)
+    <span class="kw">if</span> count &gt;= need:
+        best = g
+
+<span class="kw">print</span>(best)</code></pre>
+      </div>
+
+      <p>This is 100% correct &mdash; and 100% hopeless for the real constraints. <code>max(a)</code> can be <code>10<sup>12</sup></code>, and for every single candidate <code>g</code> we'd scan through up to a million numbers. That's roughly <code>10<sup>12</sup> &times; 10<sup>6</sup> = 10<sup>18</sup></code> operations. A computer doing a billion operations per second would still need decades.</p>
+
+      <div class="callout warn">
+        <div class="ctitle">The real challenge</div>
+        <p>We need to find the answer without ever testing "every possible g." We'll need to be clever about which candidates are even worth checking, <em>and</em> clever about how fast we can check each one.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Idea #1: a random guess is a surprisingly good bet</h2></div>
+      <p class="lead">Here's the spark that makes this whole problem solvable. Suppose <code>g</code> is the true Ghd. By definition, <strong>at least half</strong> of the numbers in the array are multiples of <code>g</code>. Now imagine closing your eyes and pointing at one random number in the array. What's the chance you landed on a multiple of <code>g</code>?</p>
+
+      <div class="blocks">
+        <div class="block hi">&ge; 50%</div>
+      </div>
+
+      <p>At least 50-50 &mdash; the same odds as a fair coin landing heads! And if your randomly-picked number <code>x</code> <em>is</em> a multiple of <code>g</code>, then <code>g</code> is automatically one of <code>x</code>'s divisors (a number that divides a multiple of <code>g</code> and happens to equal <code>g</code> itself is, well, a divisor of that multiple). So: pick a random number, look at its divisors, and there's a coin-flip's chance the true answer is hiding in that list.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Why repeating the coin flip basically guarantees success</div>
+        <p>One coin flip landing on the right side only 50% of the time isn't good enough. But what if you flip 20 separate coins, and you only need <em>one</em> of them to land right? The chance that <em>all 20</em> miss is <code>(1/2)<sup>20</sup></code> &mdash; about 1 in a million. So: pick 20 different random numbers from the array (instead of just 1), collect the divisors of each, and check all of those candidates. The odds of the true Ghd not showing up among any of them are astronomically small.</p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Seen randomized tricks like this before?</div>
+        <p>This "repeat a random guess until failure becomes vanishingly unlikely" strategy shows up all over competitive programming &mdash; the <a href="1139D_en.html">GCD Escape Machine</a> and <a href="711E_en.html">Birthday Paradox</a> pages use related probability reasoning, if you want more practice with this style of thinking.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Idea #2: listing one number's divisors is cheap</h2></div>
+      <p class="lead">Level 3 narrowed our search from "every integer up to 10<sup>12</sup>" down to "the divisors of one specific number." How many divisors can a number up to <code>10<sup>12</sup></code> have? Even in the most extreme case, a handful of thousand &mdash; a tiny fraction of a trillion.</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>divisors_of.py</div>
+        <pre><code><span class="kw">def</span> divisors_of(x):
+    result = []
+    d = <span class="nu">1</span>
+    <span class="kw">while</span> d * d &lt;= x:
+        <span class="kw">if</span> x % d == <span class="nu">0</span>:
+            result.append(d)
+            <span class="kw">if</span> d != x // d:
+                result.append(x // d)
+        d += <span class="nu">1</span>
+    <span class="kw">return</span> result</code></pre>
+      </div>
+
+      <p>This is the same &radic;x shortcut from the <a href="162C_en.html">Prime Factorization</a> page: divisors always come in pairs <code>(d, x/d)</code>, so you only ever need to test candidates up to &radic;x. For <code>x = 10<sup>12</sup></code>, &radic;x is just <code>10<sup>6</sup></code> &mdash; a loop that finishes in a fraction of a second.</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>12</sup></div><div class="lbl">candidates to check if we test every possible g directly (Level 2's approach)</div></div>
+        <div class="stat fast"><div class="num">&le; 10<sup>6</sup> steps</div><div class="lbl">to list every divisor of <em>one</em> sampled number, using the &radic;x shortcut</div></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Idea #3: counting fast with a GCD fingerprint</h2></div>
+      <p class="lead">We now have, say, a few thousand candidate divisors from one sampled number <code>x</code>. For each candidate <code>d</code>, we need to know: how many numbers in the whole array does <code>d</code> divide? The obvious way &mdash; scanning the entire array once <em>per candidate</em> &mdash; costs <code>(divisors of x) &times; n</code>, which can still be too slow once you repeat it for 20 different sampled numbers.</p>
+
+      <p>Here's the fix: scan the array <strong>just once</strong> per sampled number, and let GCD do double duty. For every number <code>v</code> in the array, compute <code>gcd(x, v)</code>. Two things are always true about this value:</p>
+
+      <div class="blocks">
+        <div class="block hi">gcd(x, v)</div><div class="block op">is always a divisor of x</div>
+      </div>
+
+      <p>That's just the definition of GCD &mdash; it divides <em>both</em> <code>x</code> and <code>v</code>. So as we scan the array, we can drop each <code>v</code> straight into a "bucket" labeled with the exact divisor of <code>x</code> it landed on, using a dictionary that counts how many numbers landed in each bucket. One pass over the whole array, and every number has been sorted into one of <code>x</code>'s divisor-buckets.</p>
+
+      <div class="callout tip">
+        <div class="ctitle">Turning buckets into "how many are divisible by d"</div>
+        <p>Landing in the bucket for exactly <code>d</code> isn't the whole story &mdash; if <code>v</code> lands in the bucket for <code>10</code>, then <code>v</code> is also divisible by <code>5, 2,</code> and <code>1</code> (every divisor of 10). So to find how many array numbers are divisible by some candidate <code>d</code>, add up the bucket counts of <code>d</code> <em>and every multiple of d that is itself a divisor of x</em>. Since we're only ever summing over <code>x</code>'s own (small) divisor list, this step stays fast.</p>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">Why this is exactly correct</div>
+        <p>Take any divisor <code>d</code> of <code>x</code>, and any number <code>v</code> from the array with bucket value <code>d2 = gcd(x, v)</code>. If <code>d</code> divides <code>d2</code>, then since <code>d2</code> divides <code>v</code> (by definition of gcd), <code>d</code> divides <code>v</code> too. And going the other way: if <code>d</code> divides both <code>x</code> and <code>v</code>, then <code>d</code> must divide <code>gcd(x,v) = d2</code>, since the gcd is the <em>greatest</em> common divisor and every common divisor of two numbers divides it. So "<code>d</code> divides <code>v</code>" and "<code>d</code> divides <code>v</code>'s bucket label" are exactly the same statement &mdash; nothing gets missed, and nothing gets double-counted incorrectly.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Putting the three ideas together</h2></div>
+      <p class="lead">Here's the full plan, combining Levels 3&ndash;5:</p>
+
+      <ul style="color:var(--ink-soft);">
+        <li>Repeat about 20 times: pick a random number <code>x</code> from the array (Level 3).</li>
+        <li>List all of <code>x</code>'s divisors using the &radic;x shortcut (Level 4).</li>
+        <li>Scan the array once, bucketing every number by <code>gcd(x, v)</code> (Level 5).</li>
+        <li>Check <code>x</code>'s divisors from largest to smallest; for each one, sum up bucket counts across its multiples. The first one that reaches "at least half the array" is the best candidate hiding inside this particular <code>x</code>.</li>
+        <li>Keep the largest candidate found across all 20 random picks &mdash; that's the answer.</li>
+      </ul>
+
+      <div class="callout warn">
+        <div class="ctitle">Why this fits inside the time limit</div>
+        <p>Each of the ~20 trials does one O(n) pass over the array (computing a gcd for every element &mdash; fast, since GCD only takes a handful of steps even for 12-digit numbers) plus a small cleanup over just <code>x</code>'s own divisor list. Twenty passes over a million numbers, with cheap arithmetic each time, comfortably fits inside 4 seconds &mdash; a universe away from Level 2's 10<sup>18</sup>-operation brute force.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Writing it in Python</h2></div>
+      <p class="lead">Let's assemble the full solution, using the <code>divisors_of</code> helper from Level 4.</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">n = len(a)
+need = (n + 1) // 2
+best = 1</div>
+          <div class="annot-note"><span><code>need</code> is "at least half," rounded up &mdash; matches Level 2's brute-force definition exactly.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">sample_size = min(trials, n)
+for x in random.sample(a, sample_size):</div>
+          <div class="annot-note"><span>Level 3: try about 20 random numbers (or all of them, if there are fewer than 20).</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">divs = divisors_of(x)
+count = {d: 0 for d in divs}
+for v in a:
+    g = math.gcd(x, v)
+    count[g] += 1</div>
+          <div class="annot-note"><span>Levels 4 &amp; 5: list <code>x</code>'s divisors, then bucket every array number by its gcd with <code>x</code> in one single pass.</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for d in sorted(divs, reverse=True):
+    if d <= best:
+        break
+    total = sum(count[d2] for d2 in divs if d2 % d == 0)
+    if total >= need:
+        best = d
+        break</div>
+          <div class="annot-note"><span>Check <code>x</code>'s divisors biggest-first; sum bucket counts across multiples of <code>d</code> (Level 5's correctness argument); stop at the first one that reaches "at least half," since nothing smaller from this <code>x</code> could beat it.</span></div>
+        </div>
+      </div>
+
+      <p>And here's the whole thing as one runnable program:</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ghd.py</div>
+        <pre><code><span class="kw">import</span> math
+<span class="kw">import</span> random
+
+<span class="kw">def</span> divisors_of(x):
+    result = []
+    d = <span class="nu">1</span>
+    <span class="kw">while</span> d * d &lt;= x:
+        <span class="kw">if</span> x % d == <span class="nu">0</span>:
+            result.append(d)
+            <span class="kw">if</span> d != x // d:
+                result.append(x // d)
+        d += <span class="nu">1</span>
+    <span class="kw">return</span> result
+
+<span class="kw">def</span> ghd(a, trials=<span class="nu">20</span>):
+    n = <span class="kw">len</span>(a)
+    need = (n + <span class="nu">1</span>) // <span class="nu">2</span>
+    best = <span class="nu">1</span>
+
+    sample_size = <span class="kw">min</span>(trials, n)
+    <span class="kw">for</span> x <span class="kw">in</span> random.sample(a, sample_size):
+        divs = divisors_of(x)
+        count = {d: <span class="nu">0</span> <span class="kw">for</span> d <span class="kw">in</span> divs}
+        <span class="kw">for</span> v <span class="kw">in</span> a:
+            g = math.gcd(x, v)
+            count[g] += <span class="nu">1</span>
+
+        <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">sorted</span>(divs, reverse=<span class="kw">True</span>):
+            <span class="kw">if</span> d &lt;= best:
+                <span class="kw">break</span>
+            total = <span class="kw">sum</span>(count[d2] <span class="kw">for</span> d2 <span class="kw">in</span> divs <span class="kw">if</span> d2 % d == <span class="nu">0</span>)
+            <span class="kw">if</span> total &gt;= need:
+                best = d
+                <span class="kw">break</span>
+
+    <span class="kw">return</span> best
+
+n = <span class="kw">int</span>(<span class="kw">input</span>())
+a = <span class="kw">list</span>(<span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split()))
+<span class="kw">print</span>(ghd(a))</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Let's trace it together: 6, 2, 3, 4, 5, 6</h2></div>
+      <p class="lead">Suppose our one random pick happens to be <code>x = 6</code> (position 0). Here's what the algorithm does.</p>
+
+      <table class="trace">
+        <thead><tr><th>divisors of 6</th><th>1</th><th>2</th><th>3</th><th>6</th></tr></thead>
+        <tbody>
+          <tr><td>bucket, gcd(6, v) for each v</td><td class="even">v=5 &rarr; gcd=1</td><td class="even">v=2,4 &rarr; gcd=2</td><td class="even">v=3 &rarr; gcd=3</td><td class="odd">v=6,6 &rarr; gcd=6</td></tr>
+          <tr><td>bucket count</td><td>1</td><td>2</td><td>1</td><td>2</td></tr>
+        </tbody>
+      </table>
+
+      <p>Now check divisors of 6 from largest to smallest, need &ge; 3 (that's <code>(6+1)//2</code>):</p>
+
+      <table class="trace">
+        <thead><tr><th>candidate d</th><th>multiples of d among {1,2,3,6}</th><th>total (sum of their buckets)</th><th>&ge; 3?</th></tr></thead>
+        <tbody>
+          <tr><td>6</td><td>6</td><td>2</td><td class="even">no</td></tr>
+          <tr><td>3</td><td>3, 6</td><td>1 + 2 = 3</td><td class="odd">yes! &rarr; candidate = 3</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">We stop as soon as we find one &mdash; <b>3</b> is the best candidate hiding inside x=6. Trying the other numbers as random picks (2, 3, 4, 5, or the other 6) either rediscovers 3 or finds something no bigger, so after enough trials the final answer stays <b>3</b> &mdash; matching the judge exactly.</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 9 : INTERACTIVE ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">LEVEL 9</span><h2>Now you drive: try your own list</h2></div>
+      <p class="lead">Type in a list of numbers, pick how many random trials to run, and watch the tool sample numbers, build gcd buckets, and hunt for the best candidate &mdash; exactly like the Python code above.</p>
+
+      <div class="widget">
+        <h3>Ghd finder</h3>
+        <div class="hint">Try the default sample, or type in your own numbers (comma or space separated, up to 20 of them). Crank the trial count down to 1 and re-run a few times &mdash; you'll sometimes see a smaller (wrong) answer, which is exactly why Level 3's "repeat ~20 times" matters!</div>
+        <div class="field-row">
+          <div class="field"><label for="inNums">numbers</label><textarea id="inNums">6, 2, 3, 4, 5, 6</textarea></div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="flex:0 0 auto;"><label for="inTrials">random trials</label><input type="number" id="inTrials" value="20" min="1" max="20"></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn" id="runBtn">Find the Ghd!</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">LEVEL 10</span><h2>Your turn: practice challenges</h2></div>
+      <p class="lead">Work these out with pencil and paper first, then check yourself with the tool above.</p>
+
+      <details>
+        <summary>Challenge 1: Find the Ghd of <code>8, 12, 18, 25</code> by hand.</summary>
+        <div class="reveal">
+          <p><code>n=4</code>, so we need at least <code>2</code> numbers to share a divisor. Try <code>g=6</code>: divides 12 and 18 (2 numbers) &mdash; works! Try anything bigger: <code>g=8</code> only divides 8 (1 number, not enough). <code>g=9</code> only divides 18. <code>g=12</code> only divides 12. So no candidate above 6 reaches 2 numbers. Answer: <b>6</b>.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 2: Why does the algorithm need to check <em>divisors of a sampled number</em>, instead of just checking the sampled number <code>x</code> itself?</summary>
+        <div class="reveal">
+          <p>Because <code>x</code> itself might not be the answer &mdash; the true Ghd could be a smaller number that <code>x</code> happens to be a multiple of. For example, if <code>x = 12</code> and the true Ghd is 6, then 6 is a divisor of 12, but 12 itself might not divide "at least half" the array. We have to search through <em>all</em> of <code>x</code>'s divisors to find the biggest one that actually satisfies the "at least half" rule.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 3: In the tool above, set trials to 1 and run the array <code>9, 9, 9, 2, 3</code> a bunch of times. Sometimes you'll get a wrong (too small) answer instead of the true Ghd. Explain why, and what the true Ghd actually is.</summary>
+        <div class="reveal">
+          <p><code>n=5</code>, need &ge; 3. Three of the five numbers (the three 9's) are divisible by 9, so the true Ghd is <b>9</b>. But with only 1 random trial, there's a <code>2/5</code> chance (40%) of picking 2 or 3 instead of a 9 &mdash; and if you pick <code>x=2</code>, its only divisors are 1 and 2, and 2 only divides one number (itself), so the algorithm would wrongly report <b>1</b>. This is exactly why Level 3 insists on ~20 trials: one unlucky pick can miss the answer entirely, but 20 independent unlucky picks in a row is astronomically unlikely.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 4 (harder): Explain why <code>gcd(x, v)</code> is guaranteed to divide <code>x</code>, using only the definition of GCD &mdash; without appealing to any formula.</summary>
+        <div class="reveal">
+          <p>By definition, <code>gcd(x, v)</code> is the greatest number that divides <em>both</em> <code>x</code> and <code>v</code>. "Divides both x and v" already includes "divides x" as one of its two requirements &mdash; so whatever number <code>gcd(x,v)</code> turns out to be, it must divide <code>x</code>, simply because that was part of the definition it had to satisfy in the first place.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Challenge 5: Modify the Python code so that, instead of stopping at the first divisor of <code>x</code> that reaches "at least half," it prints out <em>every</em> divisor of <code>x</code> along with how many array numbers it divides &mdash; useful for double-checking the bucket logic by hand.</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ghd_debug.py</div>
+            <pre><code><span class="kw">def</span> show_all_counts(a, x):
+    divs = divisors_of(x)
+    count = {d: <span class="nu">0</span> <span class="kw">for</span> d <span class="kw">in</span> divs}
+    <span class="kw">for</span> v <span class="kw">in</span> a:
+        count[math.gcd(x, v)] += <span class="nu">1</span>
+
+    <span class="kw">for</span> d <span class="kw">in</span> <span class="kw">sorted</span>(divs, reverse=<span class="kw">True</span>):
+        total = <span class="kw">sum</span>(count[d2] <span class="kw">for</span> d2 <span class="kw">in</span> divs <span class="kw">if</span> d2 % d == <span class="nu">0</span>)
+        <span class="kw">print</span>(<span class="kw">f</span><span class="st">"d={d}: {total} numbers divisible by it"</span>)</code></pre>
+          </div>
+          <p style="margin-top:12px;">Same bucket-building step as before, just without the early-exit &mdash; printing the running total for every one of <code>x</code>'s divisors instead of stopping at the first success.</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 364D &mdash; Ghd. For the building blocks used here, see <a href="modified_gcd_en.html">Modified GCD</a> and <a href="max_gcd_en.html">Maximum GCD</a> (the Euclidean algorithm), <a href="162C_en.html">Prime Factorization</a> (the &radic;x divisor shortcut), and <a href="1139D_en.html">The GCD Escape Machine</a> (more randomized-algorithm intuition).</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function gcdNum(a, b){ while (b){ var t = a % b; a = b; b = t; } return a; }
+
+  function divisorsOf(x){
+    var ds = [];
+    for (var i = 1; i * i <= x; i++){
+      if (x % i === 0){
+        ds.push(i);
+        if (i !== x / i) ds.push(x / i);
+      }
+    }
+    return ds;
+  }
+
+  function shuffleIndices(n){
+    var idx = [];
+    for (var i = 0; i < n; i++) idx.push(i);
+    for (var j = idx.length - 1; j > 0; j--){
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = idx[j]; idx[j] = idx[k]; idx[k] = tmp;
+    }
+    return idx;
+  }
+
+  function ghd(a, trialCount){
+    var n = a.length;
+    var need = Math.ceil(n / 2);
+    var best = 1;
+    var log = [];
+
+    var picks = shuffleIndices(n).slice(0, Math.min(trialCount, n));
+
+    for (var p = 0; p < picks.length; p++){
+      var idx = picks[p];
+      var x = a[idx];
+      var ds = divisorsOf(x);
+      var cnt = new Map();
+      for (var i = 0; i < ds.length; i++) cnt.set(ds[i], 0);
+      for (var v = 0; v < n; v++){
+        var g = gcdNum(x, a[v]);
+        cnt.set(g, cnt.get(g) + 1);
+      }
+      var dsSorted = ds.slice().sort(function(p1, q1){ return q1 - p1; });
+      var trialBest = 1;
+      var trialSteps = [];
+      for (var s = 0; s < dsSorted.length; s++){
+        var d = dsSorted[s];
+        if (d <= best) break;
+        var total = 0;
+        for (var t = 0; t < ds.length; t++){
+          if (ds[t] % d === 0) total += cnt.get(ds[t]);
+        }
+        trialSteps.push({ d: d, total: total, ok: total >= need });
+        if (total >= need){ trialBest = d; break; }
+      }
+      log.push({ idx: idx, x: x, divisorCount: ds.length, trialBest: trialBest, steps: trialSteps });
+      if (trialBest > best) best = trialBest;
+    }
+    return { answer: best, need: need, log: log };
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function run(){
+    var raw = document.getElementById('inNums').value;
+    var trialCount = parseInt(document.getElementById('inTrials').value, 10);
+    var out = document.getElementById('out');
+
+    var parts = raw.split(/[,\s]+/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+
+    if (parts.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Type in at least one number.</p></div>';
+      return;
+    }
+    if (parts.length > 20){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Please use 20 numbers or fewer, just to keep this snappy.</p></div>';
+      return;
+    }
+    if (isNaN(trialCount) || trialCount < 1){
+      trialCount = 1;
+    }
+
+    var a;
+    try {
+      a = parts.map(function(s){
+        if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+        var v = parseInt(s, 10);
+        if (!Number.isSafeInteger(v) || v < 1) throw new Error('bad');
+        return v;
+      });
+    } catch (e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">Hold on</div><p>Every entry needs to be a positive whole number.</p></div>';
+      return;
+    }
+
+    var r = ghd(a, trialCount);
+    var html = '';
+
+    html += '<table class="trace"><thead><tr><th>trial</th><th>sampled x</th><th># divisors of x</th><th>best candidate from this x</th></tr></thead><tbody>';
+    for (var i = 0; i < r.log.length; i++){
+      var e = r.log[i];
+      html += '<tr><td>'+(i+1)+'</td><td>'+esc(e.x)+' <span class="chip">index '+e.idx+'</span></td><td>'+e.divisorCount+'</td><td class="odd">'+e.trialBest+'</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="answer-line">Need at least <b>'+r.need+'</b> out of '+a.length+' numbers to agree. Ghd found: <b>' + r.answer + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

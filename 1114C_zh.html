@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阶乘末尾的爱：数清任意进制下 n! 末尾有多少个零（Codeforces 1114C）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:24px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:180px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1114C &middot; 题目精讲</div>
+      <h1>阶乘末尾的爱：<em>数清任意进制下 n! 末尾有多少个零</em></h1>
+      <p class="sub">当 <code>n</code> 大到 10<sup>18</sup> 时，<code>n!</code> 的位数多到地球上所有硬盘加起来都装不下——而你还要把它写成某种奇怪的进制 <code>b</code>，数出末尾一共有多少个零。你永远不会真的把这个数字造出来，但依然能在远小于一秒的时间里，把它末尾的零数清楚。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">质数、进制与 Legendre 公式</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">给你两个整数：<code>n</code>（最大 <code>10<sup>18</sup></code>）和一个进制 <code>b</code>（从 2 到 <code>10<sup>12</sup></code>）。计算 <code>n! = 1 &times; 2 &times; 3 &times; \cdots &times; n</code>（<code>n</code> 的阶乘），把它写成 <code>b</code> 进制（而不是我们常用的十进制），然后数一数这个写法末尾一共有多少个零。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p><code>n=6, b=9</code> &rarr; <code>1</code>（因为 <code>6! = 720</code>，而 <code>720</code> 写成 9 进制是 <code>880</code>——末尾一个零）<br>
+        <code>n=5, b=2</code> &rarr; <code>3</code>（因为 <code>5! = 120</code>，二进制写法是 <code>1111000</code>——末尾三个零）<br>
+        <code>n=5, b=10</code> &rarr; <code>1</code>（同样是 <code>120</code>，但普通十进制下末尾只有一个零）</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么不能直接算出 n!</div>
+        <p><code>n</code> 可以大到十亿的十亿倍。哪怕 <code>n</code> 只有 <code>10<sup>6</sup></code> 这么"小"，<code>n!</code> 就已经有几百万位数字了——如果 <code>n = 10<sup>18</sup></code>，把这个数字真正写下来所需要的位数，比可观测宇宙里的原子总数还多。我们需要一种<em>完全不用真正造出这个数字</em>就能数清末尾零的办法。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>末尾的零究竟意味着什么</h2></div>
+      <p class="lead">在任意进制 <code>b</code> 下，一个数字的每一位，代表着它由多少个 <code>1</code>、多少个 <code>b</code>、多少个 <code>b&sup2;</code>、多少个 <code>b&sup3;</code>……组成。最后一位是零，意味着"没有 1"。最后<em>两位</em>都是零，意味着"没有 1，<em>也</em>没有 b"——这恰好等价于说整个数字能被 <code>b&sup2;</code> 整除，一点余数都不剩。</p>
+
+      <div class="blocks">
+        <div class="block">d&#8323;</div><div class="block">d&#8322;</div><div class="block hi">0</div><div class="block hi">0</div>
+        <div class="block op">= b&sup2; 的倍数，但不一定是 b&sup3; 的倍数</div>
+      </div>
+
+      <p>一般来说：<strong>一个数字在 b 进制下至少有 k 个末尾零，当且仅当它能被 <code>b<sup>k</sup></code> 整除</strong>。所以"数清 <code>n!</code> 在 b 进制下有多少个末尾零"，本质上问的是：<em>能整除 <code>n!</code> 的、最大的 <code>b</code> 的幂次是多少？</em>这是一个关于整除性的问题，完全不需要真的把任何一位数字写出来。</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>热身：经典的十进制版本</h2></div>
+      <p class="lead">你可能已经见过一个经典的谜题：普通十进制下，<code>n!</code> 末尾有多少个零？因为 <code>10 = 2 &times; 5</code>，一个末尾零需要一个因子 2<em>加上</em>一个因子 5。在 <code>1&times;2&times;3&times;\cdots&times;n</code> 里，2 的倍数到处都是（每隔一个数就有一个！），但 5 的倍数要稀少得多——所以 5 的数量永远是瓶颈。</p>
+
+      <p>要数清质数 5 在 <code>n!</code> 里出现了多少次，不能只数 5 的倍数个数——像 25 这样的数字，贡献的是<em>两个</em>因子 5，而不是一个，125 贡献三个。干净利落地把它们全部数清的方法，叫做 <strong>Legendre 公式</strong>：</p>
+
+      <div class="blocks">
+        <div class="block hi">&lfloor;n/p&rfloor;</div><div class="block op">+</div><div class="block hi">&lfloor;n/p&sup2;&rfloor;</div><div class="block op">+</div><div class="block hi">&lfloor;n/p&sup3;&rfloor;</div><div class="block op">+ &hellip;</div>
+      </div>
+
+      <p><code>&lfloor;n/p&rfloor;</code> 数出了 <code>n</code> 以内 <code>p</code> 的每一个倍数——每一个都至少贡献一个因子 <code>p</code>。<code>&lfloor;n/p&sup2;&rfloor;</code> 数出了 <code>p&sup2;</code> 的倍数，其中每一个都比第一次多贡献<em>一个额外的</em>因子（这正是为什么要单独加上它，而不是从头重新数一遍）。<code>p&sup3;、p&#8308;……</code>以此类推，直到 <code>p</code> 的幂超过 <code>n</code>，这些项就变成 0 了。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">小测验：12! 在十进制下有多少个末尾零？</div>
+        <p>数 <code>12!</code> 里的 5：<code>&lfloor;12/5&rfloor; + &lfloor;12/25&rfloor; = 2 + 0 = 2</code>。数 2：<code>&lfloor;12/2&rfloor;+&lfloor;12/4&rfloor;+&lfloor;12/8&rfloor; = 6+3+1=10</code>。5 先用完，所以 <code>12!</code> 在十进制下恰好有 <b>2</b> 个末尾零。（验证一下：<code>12! = 479001600</code>——确实末尾两个零。）</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>推广：如果 b 不是质数呢？</h2></div>
+      <p class="lead">第三关之所以管用，是因为 <code>10 = 2 &times; 5</code> 碰巧是两个质数的乘积，而且各自的指数都是 1。但我们题目里的 <code>b</code> 可以是<em>任何</em>数字——一个质数、一个质数的平方、五个不同质数带着奇怪指数的组合，什么都有可能。我们需要把"5 是瓶颈"这个想法推广到一般情况。</p>
+
+      <p>任何整数 <code>b</code> 都能唯一地分解成质数：<code>b = p&#8321;<sup>e&#8321;</sup> &times; p&#8322;<sup>e&#8322;</sup> &times; \cdots &times; p&#8342;<sup>e&#8342;</sup></code>。要让 <code>n!</code> 能被 <code>b<sup>k</sup></code> 整除，它需要含有<em>至少</em> <code>k &times; e&#8305;</code> 份 <code>b</code> 配方里的每一个质数 <code>p&#8305;</code>。如果 <code>n!</code> 一共含有 <code>E&#8305;</code> 份质数 <code>p&#8305;</code>（用第三关的 Legendre 公式算出来），那么单单对这一个质数来说，能撑住的最大 <code>k</code> 就是 <code>&lfloor;E&#8305; / e&#8305;&rfloor;</code>。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">瓶颈就是最先"用完"的那个质数</div>
+        <p>因为<em>每一个</em> <code>b</code> 配方里的质数都必须同时跟上，真正的答案就是所有质数里那个<strong>最小</strong>的值：<code>answer = min&#8305;( &lfloor;E&#8305; / e&#8305;&rfloor; )</code>。这正是第三关"5 比 2 稀少"那套推理的完全推广——不管 <code>b</code> 到底是由多少个质数、带着多大的指数组成的。</p>
+      </div>
+
+      <p>用样例 1 验证一下：<code>b = 9 = 3&sup2;</code>，只有一个质数需要担心，指数为 2。<code>6!</code> 含有 <code>&lfloor;6/3&rfloor;+&lfloor;6/9&rfloor; = 2+0 = 2</code> 份质数 3。答案：<code>&lfloor;2/2&rfloor; = 1</code> 个末尾零——和题目给出的答案完全一致。</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>还需要搭建的两个工具</h2></div>
+      <p class="lead">第四关给出了整体方案；现在需要两个快速的工具来真正把它实现出来。</p>
+
+      <p><strong>工具 A——分解 b。</strong>因为 <code>b &le; 10<sup>12</sup></code>，我们可以用 <a href="162C_zh.html">质因数分解</a> 那篇里同样的 &radic;b 试除法捷径找出它的全部质因数：从 2 开始逐个测试候选除数，每次把当前候选彻底除干净再往下走，一旦候选除数超过 &radic;b 就停止（剩下的部分，如果大于 1，就是最后一个质因数）。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>factorize.py</div>
+        <pre><code><span class="kw">def</span> factorize(b):
+    factors = {}
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= b:
+        <span class="kw">while</span> b % d == <span class="nu">0</span>:
+            factors[d] = factors.get(d, <span class="nu">0</span>) + <span class="nu">1</span>
+            b //= d
+        d += <span class="nu">1</span>
+    <span class="kw">if</span> b &gt; <span class="nu">1</span>:
+        factors[b] = factors.get(b, <span class="nu">0</span>) + <span class="nu">1</span>
+    <span class="kw">return</span> factors</code></pre>
+      </div>
+
+      <p><strong>工具 B——Legendre 公式。</strong>对任意质数 <code>p</code>，用第三关的 <code>&lfloor;n/p&rfloor; + &lfloor;n/p&sup2;&rfloor; + \cdots</code> 求和，数出它在 <code>n!</code> 里出现了多少次：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>exponent_in_factorial.py</div>
+        <pre><code><span class="kw">def</span> exponent_in_factorial(n, p):
+    total = <span class="nu">0</span>
+    power = p
+    <span class="kw">while</span> power &lt;= n:
+        total += n // power
+        power *= p
+    <span class="kw">return</span> total</code></pre>
+      </div>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>18</sup></div><div class="lbl">n 能有多大——大到没法一个一个数过来</div></div>
+        <div class="stat fast"><div class="num">&le; 60 步</div><div class="lbl"><code>while power &lt;= n</code> 循环最多跑多少次——即便 <code>p=2</code>，翻倍也只需要大约 60 步就能超过 10<sup>18</sup></div></div>
+        <div class="stat fast"><div class="num">&le; 约 10<sup>6</sup> 步</div><div class="lbl">分解 b 所需的时间，因为 &radic;(10<sup>12</sup>) = 10<sup>6</sup></div></div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">为什么 Legendre 循环这么短</div>
+        <p>每跑一次循环，<code>power</code> 都会乘以 <code>p</code>（至少是 2），所以大约 <code>log&#8322;(n)</code> 步之后，<code>power</code> 就会超过 <code>n</code>，循环随之停止。对 <code>n = 10<sup>18</sup></code> 来说，<code>log&#8322;(10<sup>18</sup>) &approx; 60</code>。翻倍增长快得超乎想象——这正是 <a href="fast_exponentiation_en.html">快速幂</a> 那套技巧背后的同一个道理，只是这里反过来用而已。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>用 Python 写出来</h2></div>
+      <p class="lead">把第四、五关拼在一起：分解 <code>b</code>，对它的每一个质因数用 Legendre 公式，把每个指数除以 <code>b</code> 需要的份数，再取最小值。</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">factors = factorize(b)</div>
+          <div class="annot-note"><span>第五关工具 A：把 <code>b</code> 拆解成 <code>{质数: 指数}</code> 的字典。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">return min(
+    exponent_in_factorial(n, p) // e
+    for p, e in factors.items()
+)</div>
+          <div class="annot-note"><span>第四关的公式：对 <code>b</code> 里每一个指数为 <code>e</code> 的质数 <code>p</code>，看看 <code>n!</code> 里那份 <code>p</code> 的库存，能凑出多少整份的 <code>e</code>——然后在 <code>b</code> 所有质数里取最小值，因为那个最先用完的才是关键。</span></div>
+        </div>
+      </div>
+
+      <p>下面是完整的程序：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>trailing_zeros.py</div>
+        <pre><code><span class="kw">def</span> factorize(b):
+    factors = {}
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= b:
+        <span class="kw">while</span> b % d == <span class="nu">0</span>:
+            factors[d] = factors.get(d, <span class="nu">0</span>) + <span class="nu">1</span>
+            b //= d
+        d += <span class="nu">1</span>
+    <span class="kw">if</span> b &gt; <span class="nu">1</span>:
+        factors[b] = factors.get(b, <span class="nu">0</span>) + <span class="nu">1</span>
+    <span class="kw">return</span> factors
+
+<span class="kw">def</span> exponent_in_factorial(n, p):
+    total = <span class="nu">0</span>
+    power = p
+    <span class="kw">while</span> power &lt;= n:
+        total += n // power
+        power *= p
+    <span class="kw">return</span> total
+
+<span class="kw">def</span> trailing_zeros(n, b):
+    factors = factorize(b)
+    <span class="kw">return</span> <span class="kw">min</span>(
+        exponent_in_factorial(n, p) // e
+        <span class="kw">for</span> p, e <span class="kw">in</span> factors.items()
+    )
+
+n, b = <span class="kw">map</span>(<span class="kw">int</span>, <span class="kw">input</span>().split())
+<span class="kw">print</span>(trailing_zeros(n, b))</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>一起手动推演两个样例</h2></div>
+      <p class="lead">先看 <code>n=6, b=9</code>：</p>
+
+      <table class="trace">
+        <thead><tr><th>步骤</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>factorize(9)</td><td class="odd">{3: 2}</td></tr>
+          <tr><td>exponent_in_factorial(6, 3)</td><td class="even">&lfloor;6/3&rfloor; + &lfloor;6/9&rfloor; = 2 + 0 = 2</td></tr>
+          <tr><td>2 // 2（每份需要的指数）</td><td class="odd">1</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">只需要检查一个质数 &rarr; 答案 = <b>1</b>，和题目一致。</td></tr></tfoot>
+      </table>
+
+      <p>再看更复杂一点的 <code>n=5, b=10</code>，这里 <code>b</code> 有两个不同的质因数：</p>
+
+      <table class="trace">
+        <thead><tr><th>b 中的质数 p</th><th>b 中的指数 e</th><th>exponent_in_factorial(5, p)</th><th>&divide; e</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>1</td><td>&lfloor;5/2&rfloor;+&lfloor;5/4&rfloor; = 2+1 = 3</td><td class="even">3</td></tr>
+          <tr><td>5</td><td>1</td><td>&lfloor;5/5&rfloor; = 1</td><td class="odd">1</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">min(3, 1) = <b>1</b>——质数 5 先用完，和第三关那个经典的十进制谜题一模一样。和题目答案一致。</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 8 : INTERACTIVE ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>轮到你了：试试自己的 n 和 b</h2></div>
+      <p class="lead">任选一个 <code>n</code>（最大到 10<sup>18</sup>）和 <code>b</code>（2 到 10<sup>12</sup>）。工具会分解 <code>b</code>，对每个质因数跑一遍 Legendre 公式，并明确标出到底是哪个质数成了瓶颈——全程使用 JavaScript 的 <code>BigInt</code>，即便是 18 位数字也能保持精确。</p>
+
+      <div class="widget">
+        <h3>末尾零探测器</h3>
+        <div class="hint">提示：试试 n=1000000000000000000（也就是 10<sup>18</sup>）配合 b=2，看看即便到了极限，循环依然很短；或者把 b 设成一个接近 10<sup>12</sup> 的大质数，感受一下分解会花稍微久一点的时间。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">n</label><input type="text" id="inN" value="6"></div>
+          <div class="field"><label for="inB">b</label><input type="text" id="inB" value="9"></div>
+          <div class="field"><button class="btn" id="runBtn">数出末尾的零！</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>轮到你练习了</h2></div>
+      <p class="lead">先用纸笔自己算一遍，再用上面的工具检查答案。</p>
+
+      <details>
+        <summary>练习 1：<code>10!</code> 在十进制下有多少个末尾零？</summary>
+        <div class="reveal">
+          <p>数 5：<code>&lfloor;10/5&rfloor; = 2</code>。数 2：<code>&lfloor;10/2&rfloor;+&lfloor;10/4&rfloor;+&lfloor;10/8&rfloor; = 5+2+1=8</code>。5 先用完：答案 <b>2</b>。（验证：<code>10! = 3628800</code>。）</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：<code>10!</code> 在 4 进制（<code>4 = 2&sup2;</code>）下有多少个末尾零？</summary>
+        <div class="reveal">
+          <p>只有一个质数 2，在 <code>b</code> 里的指数是 2。根据练习 1，<code>10!</code> 含有 8 份质数 2。答案：<code>&lfloor;8/2&rfloor; = 4</code>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：为什么算法要在 b 的各个质因数之间取<em>最小值</em>，而不是求和或者取平均？</summary>
+        <div class="reveal">
+          <p>因为 <code>n!</code> 要能被 <code>b<sup>k</sup></code> 整除，必须同时对 <code>b</code> 配方里<em>每一个</em>质数都有足够的份数——这是"全部都要达标"的要求，不是"平均下来差不多就行"。哪怕只有一个质数在 <code>b</code> 里只能撑住 <code>k=1</code>，而其他质数都能撑住 <code>k=100</code>，整个 <code>b&sup2;</code> 依然整除不了 <code>n!</code>，因为那个稀缺的质数根本凑不出两份。取最小值，正是"最弱的一环决定整体"这条规则的数学写法。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（较难）：答案有没有可能是 0？给出一个具体的 n 和 b 的例子。</summary>
+        <div class="reveal">
+          <p>有——只要 <code>b</code> 的某个质因数在 <code>n!</code> 里根本不出现，或者出现的次数不够凑出哪怕一整份 <code>b</code>。比如 <code>n=3, b=25=5&sup2;</code>：<code>3! = 6</code> 里质数 5 出现了 0 次（<code>&lfloor;3/5&rfloor;=0</code>），所以 <code>&lfloor;0/2&rfloor;=0</code> 个末尾零。这也很好理解：<code>6</code> 在 25 进制下就是单独一位数字 <code>6</code>——根本没有末尾零。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5：修改 Python 代码，让它对 b 的每一个质因数都打印出：n! 里含有多少份这个质数、需要多少份——这样就能直观看出到底是哪个质数成了瓶颈。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>trailing_zeros_debug.py</div>
+            <pre><code><span class="kw">def</span> trailing_zeros_debug(n, b):
+    factors = factorize(b)
+    best = <span class="kw">None</span>
+    <span class="kw">for</span> p, e <span class="kw">in</span> factors.items():
+        available = exponent_in_factorial(n, p)
+        k = available // e
+        <span class="kw">print</span>(<span class="kw">f</span><span class="st">"prime {p}: n! has {available} copies, b needs {e} per zero -> supports {k} zeros"</span>)
+        <span class="kw">if</span> best <span class="kw">is</span> <span class="kw">None</span> <span class="kw">or</span> k &lt; best:
+            best = k
+    <span class="kw">return</span> best</code></pre>
+          </div>
+          <p style="margin-top:12px;">和第六关一样的核心逻辑，只是把每个质数的中间结果都打印出来，而不是悄悄取最小值。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1114C —— Trailing Loves (or L'oeufs?)。这里用到的基础知识，可以参考 <a href="162C_zh.html">质因数分解</a>（&radic;b 约数捷径）与 <a href="fast_exponentiation_zh.html">快速幂</a>（为什么翻倍增长得这么快，使得 Legendre 公式这样的循环能保持很短）。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function factorize(b){
+    var factors = new Map();
+    var d = 2n;
+    while (d * d <= b){
+      while (b % d === 0n){
+        factors.set(d, (factors.get(d) || 0n) + 1n);
+        b /= d;
+      }
+      d += 1n;
+    }
+    if (b > 1n) factors.set(b, (factors.get(b) || 0n) + 1n);
+    return factors;
+  }
+
+  function exponentInFactorial(n, p){
+    var total = 0n;
+    var power = p;
+    while (power <= n){
+      total += n / power;
+      power *= p;
+    }
+    return total;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function parseBig(s){
+    s = s.trim();
+    if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+    return BigInt(s);
+  }
+
+  function run(){
+    var out = document.getElementById('out');
+    var n, b;
+    try {
+      n = parseBig(document.getElementById('inN').value);
+      b = parseBig(document.getElementById('inB').value);
+    } catch(e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>n 和 b 都必须是正整数。</p></div>';
+      return;
+    }
+    if (n < 1n || b < 2n){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>n 至少是 1，b 至少是 2。</p></div>';
+      return;
+    }
+
+    var factors = factorize(b);
+    var rows = [];
+    var best = null;
+    for (var entry of factors){
+      var p = entry[0], e = entry[1];
+      var available = exponentInFactorial(n, p);
+      var k = available / e;
+      rows.push({p:p, e:e, available:available, k:k});
+      if (best === null || k < best) best = k;
+    }
+
+    var html = '';
+    html += '<table class="trace"><thead><tr><th>b 中的质数 p</th><th>b 中的指数 e</th><th>n! 中 p 的份数</th><th>能撑住</th></tr></thead><tbody>';
+    for (var i=0;i<rows.length;i++){
+      var r = rows[i];
+      var isBottleneck = r.k === best;
+      html += '<tr><td>'+esc(r.p.toString())+'</td><td>'+esc(r.e.toString())+'</td><td>'+esc(r.available.toString())+'</td><td class="'+(isBottleneck?'odd':'even')+'">'+esc(r.k.toString())+(isBottleneck?' &larr; 瓶颈':'')+'</td></tr>';
+    }
+    html += '</tbody></table>';
+    html += '<div class="answer-line">n! 在 b 进制下的末尾零个数：<b>' + best.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

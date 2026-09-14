@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GCD 握手：数出大到无法分解的数字有多少个因数（Codeforces 1033D）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1 1 100%;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:14.5px;resize:vertical;min-height:52px;}
+  .field textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12px;font-weight:700;padding:2px 8px;border-radius:100px;background:var(--accent-soft);color:var(--accent-strong);}
+  .chip.duo{background:var(--clue-soft);color:var(--clue);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Codeforces 1033D &middot; 题目精讲</div>
+      <h1>GCD 握手：<em>数出大到无法分解的数字有多少个因数</em></h1>
+      <p class="sub">给你一堆巨大的数字——有些甚至有 16、17、19 位——并且只告诉你一件事：每个数字碰巧都恰好有 3 到 5 个因数。把它们全部乘起来，问：这个庞然大物一共有多少个因数？限时一秒。就算只对<em>其中一个</em>数字用笨办法分解质因数，都可能要算上好几年。这里面藏着一个巧妙的窍门。</p>
+      <div class="stampbar">
+        <span class="stamp hot">这个系列里最难的题目之一</span>
+        <span class="stamp">GCD 与并查集</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">给你 <code>n</code> 个数字 <code>a&#8321;, a&#8322;, &hellip;, a&#8345;</code>（<code>1 &le; n &le; 500</code>），每一个都在 1 到 2&times;10<sup>18</sup> 之间。题目还告诉了你一件很奇怪但非常有用的事实：<strong>每个 <code>a&#8305;</code> 恰好有 3 到 5 个因数</strong>——不多不少。把这 <code>n</code> 个数字全部乘起来，得到一个巨大无比的数 <code>a = a&#8321; &times; a&#8322; &times; &hellip; &times; a&#8345;</code>，然后输出<em>它</em>有多少个因数，对质数 <code>998244353</code> 取模（因为真实的因数个数可能大得离谱）。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p>输入：<code>3</code>，接下来是 <code>9</code>、<code>15</code>、<code>143</code>，每个一行。<br>
+        输出：<code>32</code>——因为 <code>9 &times; 15 &times; 143 = 19305</code>，而 19305 恰好有 32 个因数。</p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">还不熟悉因数和质数？</div>
+        <p>这篇文章默认你已经知道因数和质数是什么。如果这部分还不太扎实，<a href="prime_detective_cn.html">质数侦探事务所</a>案卷和<a href="162C_zh.html">质因数分解</a>这两篇是很好的热身。接下来的内容全都建立在它们之上。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>复习一下：数因数个数的公式</h2></div>
+      <p class="lead">整道题都建立在这一个公式之上。如果一个数 <code>N</code> 能分解成 <code>N = p&#8321;<sup>e&#8321;</sup> &times; p&#8322;<sup>e&#8322;</sup> &times; &hellip; &times; p&#8342;<sup>e&#8342;</sup></code>，那么 <code>N</code> 的因数个数就是：</p>
+
+      <div class="blocks">
+        <div class="block hi">e&#8321;+1</div><div class="block op">&times;</div><div class="block hi">e&#8322;+1</div><div class="block op">&times;</div><div class="block op">&hellip;</div><div class="block op">&times;</div><div class="block hi">e&#8342;+1</div>
+      </div>
+
+      <p>为什么？因为 <code>N</code> 的每一个因数，都可以看成对每个质数 <code>p&#8305;</code> 独立地选一个"要放几个"的数量——从 0 个到 <code>e&#8305;</code> 个，一共 <code>e&#8305;+1</code> 种选法。把每个质数的选法数量乘起来，就能不重不漏地数出所有因数。</p>
+
+      <p>以 <code>N = 60 = 2&sup2; &times; 3&sup1; &times; 5&sup1;</code> 为例：<code>(2+1)(1+1)(1+1) = 3 &times; 2 &times; 2 = 12</code>。直接把因数列出来验证一下：<code>1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60</code>——正好 12 个，和预测的一样。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>count_divisors_small.py</div>
+        <pre><code>n = <span class="kw">int</span>(<span class="kw">input</span>())
+
+count = <span class="nu">0</span>
+d = <span class="nu">1</span>
+<span class="kw">while</span> d * d &lt;= n:
+    <span class="kw">if</span> n % d == <span class="nu">0</span>:
+        count += <span class="nu">2</span> <span class="kw">if</span> d * d != n <span class="kw">else</span> <span class="nu">1</span>
+    d += <span class="nu">1</span>
+
+<span class="kw">print</span>(count)</code></pre>
+      </div>
+
+      <p>对于能在合理时间内跑完的 <code>n</code>，这个小循环都能正确数出因数个数。但回头看看第一关：我们的数字可以大到 <code>2&times;10<sup>18</sup></code>。这个循环大约需要 <code>&radic;n</code> 步，也就是 <code>&radic;(2&times;10<sup>18</sup>) &approx; 1.4</code><em>十亿</em>步——而且这只是<em>一个</em>数字。我们最多有 500 个这样的数字。这一句话就是整道题的核心难点：第二关的公式完全正确，我们只是没办法用最直接的方式去算它。</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>3-4-5 俱乐部：从因数个数反推形状</h2></div>
+      <p class="lead">这里是破解整道题的关键一步。题目<em>告诉</em>我们每个 <code>a&#8305;</code> 有 3、4 或 5 个因数。第二关的公式反过来用也照样成立——只要知道因数<em>个数</em>，我们就能推出这个数的质因数分解<em>只可能</em>是什么形状。</p>
+
+      <table class="trace">
+        <thead><tr><th>因数个数</th><th>这个数唯一的拆法</th><th>a&#8305; 唯一可能的形状</th><th>例子</th></tr></thead>
+        <tbody>
+          <tr><td>3</td><td>3 = 3</td><td><code>p&sup2;</code>（一个质数，指数为 2）</td><td>9 = 3&sup2;</td></tr>
+          <tr><td>4</td><td>4 = 4，或 4 = 2&times;2</td><td><code>p&sup3;</code>&nbsp;<b>或</b>&nbsp;<code>p &times; q</code>（两个<em>不同</em>的质数）</td><td>8 = 2&sup3;，或 15 = 3&times;5</td></tr>
+          <tr><td>5</td><td>5 = 5</td><td><code>p&#8308;</code>（一个质数，指数为 4）</td><td>16 = 2&#8308;</td></tr>
+        </tbody>
+      </table>
+
+      <p>也就是说，输入里的每一个 <code>a&#8305;</code>，其实都偷偷是这四种形状之一：<code>p&sup2;</code>、<code>p&sup3;</code>、<code>p&#8308;</code>，或者 <code>p&times;q</code>。这是一个巨大的限制条件——每个数<strong>最多只有两个不同的质因数</strong>。相比之下，一个随机的 19 位数字可能由十几个不同的质数以各种方式组合而成。正是这条guarantee，才让这道题变得有解。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">为什么 4 个因数不能是 p&times;q&times;r 之类的组合？</div>
+        <p>因为把 <code>4</code> 写成若干个大于等于 2 的整数相乘，只有 <code>4&times;1</code> 和 <code>2&times;2</code> 两种方式——没办法把 4 拆成三个或更多个都 &ge; 2 的因子相乘。所以恰好有 4 个因数的数，要么是一个质数的三次方，要么是两个不同质数各自的一次方，别无其他可能。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>为什么还是不能直接对每个数分解质因数</h2></div>
+      <p class="lead">知道形状是一回事——但对于 <code>p&times;q</code> 这种形状，我们仍然不知道 <code>p</code> 和 <code>q</code> 究竟<em>是</em>什么。而对这么大的数字来说，老老实实用试除法去找，是没有希望的。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">&approx;14 亿</div><div class="lbl">要完全分解<em>一个</em>接近 2&times;10<sup>18</sup> 的数字，把从 2 到 &radic;n 的每个候选数都试一遍所需的除法次数</div></div>
+        <div class="stat slow"><div class="num">&approx;7000 亿</div><div class="lbl">如果对最坏情况下的全部 500 个数字都这样做，总共需要的除法次数</div></div>
+        <div class="stat fast"><div class="num">1 秒</div><div class="lbl">时间限制——一台现代计算机每秒大约能完成几亿次简单操作</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">结论</div>
+        <p>光是对一个最坏情况的数字做完整试除法分解就已经太慢了，更别说 500 个。我们要找的算法，几乎不能对单个数字单独做完整的质因数分解。需要一种能把这些数字<em>放在一起</em>利用的捷径，而不是一个一个单独处理。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>关键技巧：一次 GCD 握手就能揭穿共享的秘密</h2></div>
+      <p class="lead">这就是打开整道题的那把钥匙。虽然我们没办法单独拆开一个巨大的数字，但看看当列表里<em>两个</em>数字碰巧共享同一个质因数时会发生什么。</p>
+
+      <p>拿样例里的 <code>9 = 3&sup2;</code> 和 <code>15 = 3 &times; 5</code> 来说。光看这两个数字本身，谁也不会告诉你它们的秘密成分。但只要算一下它们的<strong>最大公约数</strong>：<code>gcd(9, 15) = 3</code>。这不是巧合——两个数的最大公约数大于 1，<em>只可能</em>是因为它们共享某个质因数，而欧几里得算法几乎瞬间就能把它找出来，完全不需要对任何一方做质因数分解。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">已经熟悉欧几里得算法了吗？</div>
+        <p>如果 gcd 对你来说还是新概念，<a href="modified_gcd_zh.html">Modified GCD</a> 和 <a href="max_gcd_zh.html">Maximum GCD</a> 这两篇从头讲起。简单说：<code>gcd(a, b) = gcd(b, a % b)</code>，一直重复直到余数变成 0——而且它收敛得出奇地快，即便面对 19 位数字也是如此。</p>
+      </div>
+
+      <p>于是计划就是：把列表里<strong>每一对</strong>数字都拿来算一次 gcd。最多 500 个数字，一共大约 <code>500 &times; 499 / 2 &approx; 124,750</code> 对——而每一次 gcd 计算基本上"不要钱"（就算数字有十几位，也只要几十步）。总的工作量，在一秒的预算内绰绰有余，尽管单独分解一个数字是做不到的。</p>
+
+      <p>每当 <code>gcd(a&#8305;, a&#8580;) &gt; 1</code>，我们就当场抓到两个数字在偷偷共享一个质因数——这就是一次 <strong>GCD 握手</strong>。大多数时候，我们根本不需要知道这个质数具体是多少，只需要知道<em>这两个数字之间存在秘密联系</em>，好在后面把它们的指数加到一起。</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>神秘二人组问题：带两个空格的卡片</h2></div>
+      <p class="lead"><code>p&sup2;</code>、<code>p&sup3;</code> 和 <code>p&#8308;</code> 这三种形状都只藏着<em>一个</em>质数，所以涉及它们的 GCD 握手很简单：那就是它们唯一的秘密，被抓到了。<code>p&times;q</code> 这种形状（"神秘二人组"）就麻烦一些——它藏着<em>两个</em>秘密，我们得搞清楚一次握手到底揭穿的是哪一个。</p>
+
+      <p>把神秘二人组想象成一张有两个空格的卡片，一开始两个都是未知的。一旦某次 GCD 握手揭示出一个值 <code>g</code>，神奇的事情就发生了：因为这个二人组里那个质数的指数只有 <strong>1</strong>，所以 <code>g</code> <em>必定</em>正好等于它两个质数中的一个——不会是更高的次方，也不会是两个质数的混合。而一旦知道了其中一个空格，另一个也就顺手得到了：就是 <code>a&#8305; &divide; g</code>，不需要判断质数，也不需要搜索，什么都不用做。</p>
+
+      <div class="blocks">
+        <div class="block hi">g</div><div class="block op">和</div><div class="block hi">a&#8305; &divide; g</div>
+      </div>
+
+      <p>用样例来说：<code>15 = 3 &times; 5</code> 就是一个神秘二人组。当它和 <code>9 = 3&sup2;</code> 握手时，<code>gcd(9, 15) = 3</code> 把空格 0 填上了 <code>3</code>，空格 1 也立刻被填上 <code>15 &divide; 3 = 5</code>。仅凭一次 gcd，我们就知道了 15 的两个秘密——15 本身从来没有被真正分解过。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">如果二人组后来又收到一次<em>不一样</em>的握手怎么办？</div>
+        <p>假设空格 0 已经因为之前的一次握手而记下了 <code>3</code>，这时列表里另一个数字带来了一次新的握手，得到 <code>g = 5</code>。我们比较一下：<code>5</code> 和空格 0 里已经有的值一样吗？不一样。那它必定属于空格 1——这次比较是在<em>确认</em>而不是覆盖我们已经知道的东西。正是这一步比较，保证了我们永远不会把二人组的两个不同质数搞混。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>并查集：合并团队，累加指数</h2></div>
+      <p class="lead">现在我们手上有一堆<strong>质数格子</strong>：每个 <code>p&sup2;</code>/<code>p&sup3;</code>/<code>p&#8308;</code> 数字对应一个格子，每个神秘二人组对应两个格子。每个格子一开始就带着自己已经确定的指数——单质数数字是 2、3 或 4，二人组的每一半是 1。GCD 握手告诉我们哪些格子其实属于<em>同一个</em>质数，这些格子就需要合并，把指数加在一起。</p>
+
+      <p>这种"发现有联系的东西就合并"的工作，正是<strong>并查集</strong>（Union-Find / Disjoint Set Union）这种数据结构擅长的。把每个格子想象成一开始各自成队的一人小队。每次握手，就相当于两个队长打了个电话，把两队合并成一队，同时把队伍的花名册（在这里就是总指数）也合并起来。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">最终的收获</div>
+        <p>到最后，每一支存活下来的队伍，都代表乘积中出现的一个不同质数——我们可能永远不知道它具体是多少，这没关系！我们只需要它在整个乘积里的<strong>总指数</strong>。把每支队伍的 <code>(总指数 + 1)</code> 都乘起来（对 998244353 取模），根据第二关的公式，这个乘积<em>就是</em>答案。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>用 Python 写出来</h2></div>
+      <p class="lead">我们一块一块地搭出这个解法。首先是一个快速的质数判定——判断一个数的平方根/立方根/四次方根是不是质数时会用到它。</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>is_prime.py</div>
+        <pre><code><span class="kw">def</span> is_prime(n):
+    <span class="kw">if</span> n &lt; <span class="nu">2</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> p <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>, <span class="nu">17</span>, <span class="nu">19</span>, <span class="nu">23</span>, <span class="nu">29</span>, <span class="nu">31</span>, <span class="nu">37</span>]:
+        <span class="kw">if</span> n % p == <span class="nu">0</span>:
+            <span class="kw">return</span> n == p
+    d, r = n - <span class="nu">1</span>, <span class="nu">0</span>
+    <span class="kw">while</span> d % <span class="nu">2</span> == <span class="nu">0</span>:
+        d //= <span class="nu">2</span>
+        r += <span class="nu">1</span>
+    <span class="kw">for</span> a <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>, <span class="nu">17</span>, <span class="nu">19</span>, <span class="nu">23</span>, <span class="nu">29</span>, <span class="nu">31</span>, <span class="nu">37</span>]:
+        x = <span class="kw">pow</span>(a, d, n)
+        <span class="kw">if</span> x == <span class="nu">1</span> <span class="kw">or</span> x == n - <span class="nu">1</span>:
+            <span class="kw">continue</span>
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(r - <span class="nu">1</span>):
+            x = x * x % n
+            <span class="kw">if</span> x == n - <span class="nu">1</span>:
+                <span class="kw">break</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="kw">True</span></code></pre>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">这段代码是从哪来的？</div>
+        <p>这是 Miller&ndash;Rabin 质数检测法——只用这固定的 12 个"证人"，就能正确判断大约 3.3&times;10<sup>18</sup> 以内的数字，正好覆盖我们需要的范围。如果你想搞懂它<em>为什么</em>可靠，而不只是照单全收，可以看看 <a href="fermat_lie_zh.html">费马测谎仪</a> 和 <a href="miller_rabin_zh.html">Miller&ndash;Rabin</a> 这两份案卷——这篇文章只是直接拿来当现成的工具用。</p>
+      </div>
+
+      <p>接下来是一个计算整数 <code>n</code> 次方根的小工具（Python 的 <code>math.isqrt</code> 已经能算平方根了，但我们还需要立方根和四次方根），以及建立在它之上的、第三关那套"形状判定器"：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>classify.py</div>
+        <pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> nth_root(x, n):
+    lo, hi = <span class="nu">0</span>, <span class="nu">1</span>
+    <span class="kw">while</span> hi ** n &lt;= x:
+        hi *= <span class="nu">2</span>
+    <span class="kw">while</span> lo &lt; hi:
+        mid = (lo + hi + <span class="nu">1</span>) // <span class="nu">2</span>
+        <span class="kw">if</span> mid ** n &lt;= x:
+            lo = mid
+        <span class="kw">else</span>:
+            hi = mid - <span class="nu">1</span>
+    <span class="kw">return</span> lo
+
+<span class="kw">def</span> classify(a):
+    r2 = math.isqrt(a)
+    <span class="kw">if</span> r2 * r2 == a <span class="kw">and</span> is_prime(r2):
+        <span class="kw">return</span> (<span class="st">"single"</span>, <span class="nu">2</span>)
+    r3 = nth_root(a, <span class="nu">3</span>)
+    <span class="kw">if</span> r3 ** <span class="nu">3</span> == a <span class="kw">and</span> is_prime(r3):
+        <span class="kw">return</span> (<span class="st">"single"</span>, <span class="nu">3</span>)
+    r4 = nth_root(a, <span class="nu">4</span>)
+    <span class="kw">if</span> r4 ** <span class="nu">4</span> == a <span class="kw">and</span> is_prime(r4):
+        <span class="kw">return</span> (<span class="st">"single"</span>, <span class="nu">4</span>)
+    <span class="kw">return</span> (<span class="st">"double"</span>,)</code></pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">不需要讲究检查顺序</div>
+        <p>你可能会以为要先检查"四次方"这种情况，再检查"平方"，因为 <code>p&#8308;</code> 严格来说也是一个完全平方数（平方根是 <code>p&sup2;</code>）。但 <code>p&sup2;</code> 本身永远不是质数（它总有 1、p、p&sup2; 这三个因数），所以对 <code>p&#8308;</code> 这种数字，平方检查里的 <code>is_prime(r2)</code> 自然会失败。这三项检查可以按任意顺序独立进行——最终一定<em>恰好</em>有一项成立（或者都不成立，说明它是个神秘二人组）。</p>
+      </div>
+
+      <p>接下来是第七关提到的并查集结构：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>dsu.py</div>
+        <pre><code><span class="kw">class</span> DSU:
+    <span class="kw">def</span> __init__(self):
+        self.parent = {}
+        self.weight = {}
+
+    <span class="kw">def</span> make(self, key, w):
+        self.parent[key] = key
+        self.weight[key] = w
+
+    <span class="kw">def</span> find(self, x):
+        <span class="kw">while</span> self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]
+            x = self.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> union(self, x, y):
+        rx, ry = self.find(x), self.find(y)
+        <span class="kw">if</span> rx != ry:
+            self.parent[rx] = ry
+            self.weight[ry] += self.weight[rx]</code></pre>
+      </div>
+
+      <p>最后，是把第五、第六、第七关串起来的部分：把每一对数字都拿来算 gcd，把神秘二人组的握手结果分配到正确的空格，合并团队，最后把答案乘起来。</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">for i, t in enumerate(types):
+    if t[0] == "single":
+        dsu.make(("s", i), t[1])
+    else:
+        dsu.make(("d", i, 0), 1)
+        dsu.make(("d", i, 1), 1)
+        slot[i] = [None, None]</div>
+          <div class="annot-note"><span>给每个数字建立它的格子：每个单质数数字一个团队（带着已知的指数），每个神秘二人组两个团队（各自从指数 1 开始，具体是哪个质数还不知道）。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">def route(i, g):
+    s = slot[i]
+    if s[0] is None:
+        s[0], s[1] = g, a_list[i] // g
+        return ("d", i, 0)
+    return ("d", i, 0) if s[0] == g else ("d", i, 1)</div>
+          <div class="annot-note"><span>第六关的填格子逻辑：第一次握手同时填满两个空格；之后每次握手都要跟已经知道的值做比对。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">for i in range(n):
+    for j in range(i + 1, n):
+        g = math.gcd(a_list[i], a_list[j])
+        if g == 1:
+            continue
+        if types[i][0] == "double" and a_list[i] == a_list[j]:
+            dsu.union(("d", i, 0), ("d", j, 0))
+            dsu.union(("d", i, 1), ("d", j, 1))
+            continue
+        key_i = ("s", i) if types[i][0] == "single" else route(i, g)
+        key_j = ("s", j) if types[j][0] == "single" else route(j, g)
+        dsu.union(key_i, key_j)</div>
+          <div class="annot-note"><span>第五关说的每一对数字的 GCD 握手，全部在这里进行。唯一的特殊情况：两个<em>完全相同</em>的神秘二人组数值会同时共享<em>两个</em>质数，所以两对空格要直接分别合并。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">totals = {}
+for key in dsu.parent:
+    root = dsu.find(key)
+    totals[root] = dsu.weight[root]
+
+answer = 1
+for exponent_sum in totals.values():
+    answer = answer * (exponent_sum + 1) % MOD</div>
+          <div class="annot-note"><span>收集每支存活团队的总指数，把 <code>(指数 + 1)</code> 一个个乘起来——这正是第二关的公式，只是放到了最后才用。</span></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="ctitle">为什么这样做还是很快</div>
+        <p>双重循环最多调用 <code>gcd</code> 大约 <code>n&sup2;/2 &approx; 124,750</code> 次，每次 Miller&ndash;Rabin 检查的对象也不过是最多 <code>&radic;(2&times;10<sup>18</sup>) &approx; 1.4&times;10<sup>9</sup></code> 的一个根——两者都相当轻松。我们从头到尾都没有用暴力方法去完整分解某个巨大的数字；第五关和第六关早已让这变得没有必要。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>一起手动推演一遍：9, 15, 143</h2></div>
+      <p class="lead">现在把第一关的样例，从头到尾手动跑一遍整个流程。</p>
+
+      <table class="trace">
+        <thead><tr><th>a&#8305;</th><th>classify() 结果</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td>9</td><td class="odd">("single", 2)</td><td>9 = 3&sup2;——一个格子，指数 2</td></tr>
+          <tr><td>15</td><td class="even">("double",)</td><td>15 = 3&times;5，但我们目前还不知道——两个空格子</td></tr>
+          <tr><td>143</td><td class="even">("double",)</td><td>143 = 11&times;13，未知——两个空格子</td></tr>
+        </tbody>
+      </table>
+
+      <table class="trace">
+        <thead><tr><th>数对</th><th>gcd</th><th>握手结果</th></tr></thead>
+        <tbody>
+          <tr><td>9, 15</td><td class="odd">3</td><td>15 的空格 0 &larr; 3，空格 1 &larr; 15&divide;3 = 5。把 9 的团队和 15 的空格&nbsp;0 合并。团队指数：2 + 1 = <b>3</b></td></tr>
+          <tr><td>9, 143</td><td class="even">1</td><td>没有共享质数，什么都不发生</td></tr>
+          <tr><td>15, 143</td><td class="even">1</td><td>没有共享质数（5、11、13 各不相同），什么都不发生</td></tr>
+        </tbody>
+      </table>
+
+      <table class="trace">
+        <thead><tr><th>存活的团队</th><th>总指数</th><th>贡献</th></tr></thead>
+        <tbody>
+          <tr><td>{9 的质数, 15 的空格 0} —— 其实就是质数 3</td><td>3</td><td class="odd">3+1 = 4</td></tr>
+          <tr><td>15 的空格 1 —— 其实就是质数 5</td><td>1</td><td class="even">1+1 = 2</td></tr>
+          <tr><td>143 的空格 0 —— 其实就是质数 11</td><td>1</td><td class="even">1+1 = 2</td></tr>
+          <tr><td>143 的空格 1 —— 其实就是质数 13</td><td>1</td><td class="even">1+1 = 2</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">4 &times; 2 &times; 2 &times; 2 = <b>32</b>——和题目给出的答案一致，而且我们从头到尾都没有真正分解过 15 或 143。</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 10 : INTERACTIVE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">第十关</span><h2>轮到你了：换成自己的数字试试</h2></div>
+      <p class="lead">输入一串数字，每个都恰好有 3&ndash;5 个因数（用逗号或换行分隔），下面的工具会跑一遍完全相同的流程：分类、给每一对数字做 GCD 握手、合并团队，最后把答案乘出来。它用了 JavaScript 的 <code>BigInt</code>，所以即便是 18 位数字也能精确计算，不会有任何舍入误差。</p>
+
+      <div class="widget">
+        <h3>因数侦探</h3>
+        <div class="hint">试试默认的样例，或者把官方那组 8 个数字的例子（每个都是 16 位的神秘二人组）粘贴进来，看看工具怎么轻松搞定这么大的数字。</div>
+        <div class="field-row">
+          <div class="field"><label for="inNums">a&#8321;, a&#8322;, &hellip;（用逗号或换行分隔，最多 12 个数字）</label><textarea id="inNums">9, 15, 143</textarea></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn" id="runBtn">开始侦查！</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 11 ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">第十一关</span><h2>轮到你练习了</h2></div>
+      <p class="lead">先用纸笔自己算一遍，再用上面的工具检查答案。</p>
+
+      <details>
+        <summary>练习 1：用 GCD 握手法手动算出 25 &times; 35 的因数个数。</summary>
+        <div class="reveal">
+          <p><code>25 = 5&sup2;</code>（单质数，指数 2）。<code>35 = 5 &times; 7</code>（神秘二人组）。<code>gcd(25, 35) = 5</code>，所以 35 的空格 0 变成 5，并和 25 的团队合并，团队指数变成 <code>2 + 1 = 3</code> &rarr; 贡献 <code>3+1=4</code>。35 的另一个空格，也就是质数 7，独自留下 &rarr; 贡献 <code>1+1=2</code>。答案：<code>4 &times; 2 = 8</code>。直接验证：<code>25 &times; 35 = 875 = 5&sup3; &times; 7</code>，<code>(3+1)(1+1) = 8</code>。&check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：手动算出 4 &times; 8 &times; 21 的因数个数。</summary>
+        <div class="reveal">
+          <p><code>4 = 2&sup2;</code>，<code>8 = 2&sup3;</code>——它们共享质数 2，合并成一个团队，指数为 <code>2+3=5</code>，贡献 <code>5+1=6</code>。<code>21 = 3 &times; 7</code> 是一个神秘二人组，和 4、8 没有任何共享，所以它的两个空格各自独立，贡献 <code>2 &times; 2 = 4</code>。总计：<code>6 &times; 4 = 24</code>。验证：<code>4 &times; 8 &times; 21 = 672 = 2&#8309; &times; 3 &times; 7</code>，<code>(5+1)(1+1)(1+1) = 24</code>。&check;</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：为什么这些特殊数字之间的 GCD 握手结果，一定<em>恰好</em>是某个质数（或者对完全相同的二人组来说，就是它本身），而不可能是别的合数？</summary>
+        <div class="reveal">
+          <p>因为第三关那条 3-4-5 的guarantee：这里每个数字的质因数，指数最多不超过 4，而关键在于，神秘二人组里的每个质数指数都恰好是 <b>1</b>。如果一个神秘二人组和<em>另一个</em>数字共享一个质数，gcd 只能取到这个共享质数的 1 次方（因为这个二人组自己也没有更多份可以贡献）——它绝不会不小心把二人组的<em>另一个</em>质数也一起带出来，除非对方正好是同一个二人组的数值，两个质数同时共享。这正是第六关"填空格"技巧之所以安全可靠的原因。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（较难）：假设一个神秘二人组 <code>x = p &times; q</code> 和数字 A 共享 <code>p</code>，又和另一个不同的数字 B 共享 <code>q</code>。为什么不能直接把 A、x、B 全部合并成一个团队，而非要为 x 单独准备两个空格？</summary>
+        <div class="reveal">
+          <p>因为 <code>p</code> 和 <code>q</code> 是两个<em>不同</em>的质数，它们在整个乘积里各自有自己独立的总指数——如果把所有东西都合并成一个团队，就会错误地把 A 贡献的 <code>p</code> 的指数和 B 贡献的 <code>q</code> 的指数加在一起，好像它们是同一个质数一样。最终公式是<em>对每一个不同的质数</em>分别乘上 <code>(指数+1)</code>，把两个毫不相干的质数当成一个团队处理，会悄无声息地得出错误答案。两个独立的空格分别保存着 <code>p</code> 和 <code>q</code> 各自的"故事"，即便它们同住在数字 <code>x</code> 里面。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5：题目保证每个 a&#8305; 都恰好有 3&ndash;5 个因数。如果给 <code>classify()</code> 喂一个只有 1 个因数（比如 a&#8305; = 1）或 2 个因数（也就是质数，比如 a&#8305; = 7）的数字，会出什么问题？</summary>
+        <div class="reveal">
+          <p><code>classify()</code> 会三项检查全部落空（它既不是带质数根的完全平方数，也不是完全立方数或四次方数），于是默认归类为 <code>("double",)</code>——把像 7 这样的单个质数，当成偷偷藏了<em>两个</em>质因数，这显然是错的（7 只有一个）。整个算法都依赖"每个输入数字都满足 3-5 guarantee"这个前提，它本身并不负责去二次确认这个前提；所以一旦前提被打破，它不会报错崩溃，而是悄悄给出一个错误答案。这是一个很值得记住的道理：一个追求速度的算法，往往会牺牲掉安全检查，完全信任题目给出的约束条件。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Codeforces 1033D —— Divisors。这里用到的数论基础，可以参考 <a href="prime_detective_cn.html">质数侦探事务所</a>（质数与模运算）、<a href="162C_zh.html">质因数分解</a>（因数个数公式）、<a href="miller_rabin_zh.html">Miller&ndash;Rabin</a>（质数检测），以及 <a href="modified_gcd_zh.html">Modified GCD</a>（欧几里得算法）。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var MOD = 998244353n;
+
+  function bgcd(a, b){
+    a = a < 0n ? -a : a; b = b < 0n ? -b : b;
+    while (b){ var t = a % b; a = b; b = t; }
+    return a;
+  }
+
+  function bpow(base, exp, mod){
+    base %= mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n) result = (result * base) % mod;
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  var SMALL_PRIMES = [2n,3n,5n,7n,11n,13n,17n,19n,23n,29n,31n,37n];
+
+  function isPrime(n){
+    if (n < 2n) return false;
+    for (var i=0;i<SMALL_PRIMES.length;i++){
+      var p = SMALL_PRIMES[i];
+      if (n % p === 0n) return n === p;
+    }
+    var d = n - 1n, r = 0n;
+    while (d % 2n === 0n){ d /= 2n; r += 1n; }
+    for (var k=0;k<SMALL_PRIMES.length;k++){
+      var a = SMALL_PRIMES[k];
+      var x = bpow(a, d, n);
+      if (x === 1n || x === n - 1n) continue;
+      var composite = true;
+      for (var i2 = 0n; i2 < r - 1n; i2++){
+        x = (x * x) % n;
+        if (x === n - 1n){ composite = false; break; }
+      }
+      if (composite) return false;
+    }
+    return true;
+  }
+
+  function nthRoot(x, n){
+    if (x === 0n) return 0n;
+    var lo = 0n, hi = 1n;
+    while (hi ** n <= x) hi *= 2n;
+    while (lo < hi){
+      var mid = (lo + hi + 1n) / 2n;
+      if (mid ** n <= x) lo = mid; else hi = mid - 1n;
+    }
+    return lo;
+  }
+
+  function classify(a){
+    var r2 = nthRoot(a, 2n);
+    if (r2 * r2 === a && isPrime(r2)) return { kind:'single', exp:2n, label:'p²' };
+    var r3 = nthRoot(a, 3n);
+    if (r3 ** 3n === a && isPrime(r3)) return { kind:'single', exp:3n, label:'p³' };
+    var r4 = nthRoot(a, 4n);
+    if (r4 ** 4n === a && isPrime(r4)) return { kind:'single', exp:4n, label:'p⁴' };
+    return { kind:'double', label:'p×q（神秘二人组）' };
+  }
+
+  function DSU(){ this.parent = new Map(); this.weight = new Map(); }
+  DSU.prototype.make = function(key, w){ this.parent.set(key, key); this.weight.set(key, w); };
+  DSU.prototype.find = function(x){
+    while (this.parent.get(x) !== x){
+      this.parent.set(x, this.parent.get(this.parent.get(x)));
+      x = this.parent.get(x);
+    }
+    return x;
+  };
+  DSU.prototype.union = function(x, y){
+    var rx = this.find(x), ry = this.find(y);
+    if (rx === ry) return;
+    this.parent.set(rx, ry);
+    this.weight.set(ry, this.weight.get(ry) + this.weight.get(rx));
+  };
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function solve(aList){
+    var n = aList.length;
+    var types = aList.map(classify);
+    var dsu = new DSU();
+    var slotValue = new Map();
+
+    for (var i=0;i<n;i++){
+      if (types[i].kind === 'single'){
+        dsu.make('s'+i, types[i].exp);
+      } else {
+        dsu.make('d'+i+'_0', 1n);
+        dsu.make('d'+i+'_1', 1n);
+        slotValue.set(i, [null, null]);
+      }
+    }
+
+    function route(i, g){
+      var sv = slotValue.get(i);
+      if (sv[0] === null){ sv[0] = g; sv[1] = aList[i] / g; return 'd'+i+'_0'; }
+      return sv[0] === g ? 'd'+i+'_0' : 'd'+i+'_1';
+    }
+
+    var log = [];
+    for (var a=0;a<n;a++){
+      for (var b=a+1;b<n;b++){
+        var g = bgcd(aList[a], aList[b]);
+        if (g === 1n) continue;
+        if (types[a].kind === 'double' && aList[a] === aList[b]){
+          dsu.union('d'+a+'_0','d'+b+'_0');
+          dsu.union('d'+a+'_1','d'+b+'_1');
+          log.push({a:a,b:b,g:g,note:'两个完全相同的神秘二人组 —— 两个空格一起合并'});
+          continue;
+        }
+        var keyA = types[a].kind === 'single' ? 's'+a : route(a, g);
+        var keyB = types[b].kind === 'single' ? 's'+b : route(b, g);
+        dsu.union(keyA, keyB);
+        log.push({a:a,b:b,g:g,keyA:keyA,keyB:keyB});
+      }
+    }
+
+    var roots = new Map();
+    for (var key of dsu.parent.keys()){
+      var r = dsu.find(key);
+      roots.set(r, dsu.weight.get(r));
+    }
+
+    var ans = 1n;
+    for (var w of roots.values()) ans = (ans * (w + 1n)) % MOD;
+
+    return { types: types, log: log, roots: roots, ans: ans };
+  }
+
+  function run(){
+    var raw = document.getElementById('inNums').value;
+    var out = document.getElementById('out');
+    var parts = raw.split(/[,\s]+/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+
+    if (parts.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请至少输入一个数字。</p></div>';
+      return;
+    }
+    if (parts.length > 12){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请使用 12 个或更少的数字，方便表格显示。</p></div>';
+      return;
+    }
+
+    var aList;
+    try {
+      aList = parts.map(function(s){
+        if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+        var v = BigInt(s);
+        if (v < 1n) throw new Error('bad');
+        return v;
+      });
+    } catch (e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>每一项都必须是一个正整数。</p></div>';
+      return;
+    }
+
+    var r = solve(aList);
+    var html = '';
+
+    html += '<table class="trace"><thead><tr><th>#</th><th>a&#8305;</th><th>classify() 结果</th></tr></thead><tbody>';
+    for (var i=0;i<aList.length;i++){
+      var chipClass = r.types[i].kind === 'double' ? 'chip duo' : 'chip';
+      html += '<tr><td>'+i+'</td><td>'+esc(aList[i].toString())+'</td><td><span class="'+chipClass+'">'+esc(r.types[i].label)+'</span></td></tr>';
+    }
+    html += '</tbody></table>';
+
+    if (r.log.length > 0){
+      html += '<table class="trace"><thead><tr><th>数对</th><th>gcd</th><th>握手结果</th></tr></thead><tbody>';
+      for (var j=0;j<r.log.length;j++){
+        var e = r.log[j];
+        var desc = e.note ? e.note : ('合并空格 ' + e.keyA + ' 与 ' + e.keyB);
+        html += '<tr><td>#'+e.a+', #'+e.b+'</td><td class="odd">'+esc(e.g.toString())+'</td><td>'+esc(desc)+'</td></tr>';
+      }
+      html += '</tbody></table>';
+    } else {
+      html += '<div class="callout fact"><div class="ctitle">没有握手发生</div><p>这些数字彼此都没有共享质因数——每个质数格子都各自独立成队。</p></div>';
+    }
+
+    html += '<table class="trace"><thead><tr><th>存活的团队</th><th>总指数</th><th>贡献</th></tr></thead><tbody>';
+    var idx = 0;
+    for (var w2 of r.roots.values()){
+      idx++;
+      html += '<tr><td>团队 '+idx+'</td><td>'+w2.toString()+'</td><td class="odd">'+(w2+1n).toString()+'</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="answer-line">因数个数（对 998244353 取模）：<b>' + r.ans.toString() + '</b></div>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>

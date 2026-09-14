@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pollard's Rho：追着自己的尾巴破解 20 位数字（SPOJ FACT1）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    --code-bg:#161f1a;
+    --code-fg:#c9e8b8;
+    --code-cm:#7fa08f;
+    --code-kw:#e2a13e;
+    --code-st:#8fc8e0;
+    --code-nu:#e08a8a;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ---------- Code ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);}
+  .codebox .bar{background:#0e1512;color:#9fb5a8;font-family:var(--font-mono);font-size:12px;padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;background:#3a453e;display:inline-block;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;}
+  .codebox code{font-family:var(--font-mono);}
+  .cm{color:var(--code-cm);}
+  .kw{color:var(--code-kw);}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid rgba(255,255,255,.06);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:13px;padding:10px 14px;white-space:pre;overflow-x:auto;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:13.5px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Building blocks ---------- */
+  .blocks{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;justify-content:center;}
+  .block{min-width:44px;height:44px;padding:0 10px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;font-size:16px;border:2px solid var(--line);background:var(--paper-raised-2);color:var(--ink);}
+  .block.hi{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .block.op{border:none;background:none;color:var(--ink-soft);font-weight:400;min-width:auto;}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:22px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Table ---------- */
+  table.trace{width:100%;border-collapse:collapse;margin:18px 0;font-size:13.5px;background:var(--paper-raised);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1 1 100%;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:14.5px;resize:vertical;min-height:80px;}
+  .field textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  #out{margin-top:6px;}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;word-break:break-all;}
+  .answer-line b{color:var(--accent-strong);}
+
+  /* ---------- Details / quiz ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">SPOJ FACT1 &middot; 题目精讲</div>
+      <h1>Pollard's Rho：<em>追着自己的尾巴破解 20 位数字</em></h1>
+      <p class="sub">任务和之前一样——把每个数字的质数配方打印成 <code>p^e</code> 的形式——只是现在一个数字可能有<strong>20 位</strong>。上次救了我们的 &radic;n 试除法这次终于跑不动了。破解它的办法，借用了这个网站上已经出现过的两个想法：生日悖论，还有一只乌龟追一只兔子。</p>
+      <div class="stampbar">
+        <span class="stamp hot">不需要数学基础</span>
+        <span class="stamp">随机化算法与数论</span>
+        <span class="stamp">可以互动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第一关</span><h2>任务目标，原样来自题目</h2></div>
+      <p class="lead">输入输出格式和它的姊妹题一模一样：输入包含若干个正整数，每行一个，最后以单独一行的 <code>0</code> 结束（这个 0 不需要分解）。对 <code>0</code> 之前的每一个数字，输出它的质因数分解，写成 <code>p&#8321;^e&#8321; p&#8322;^e&#8322; \ldots</code>，质数从小到大排列。唯一变化的地方：数字现在最多可以有 <strong>20 位</strong>——比之前大了十万倍。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">题目原样给出的例子</div>
+        <p>输入：<code>3111989</code>、<code>13091989</code>、<code>77145199750673</code>，然后 <code>0</code> 结束。<br>
+        输出：<br>
+        <code>317^1 9817^1</code><br>
+        <code>17^2 89^1 509^1</code><br>
+        <code>328439^1 234884407^1</code></p>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">这篇文章建立在三篇文章之上</div>
+        <p>我们会大量借用这个网站已经讲过的内容：<a href="FACT0_zh.html">质数工厂</a>那篇（试除法和它的 &radic;n 捷径，还有完全一样的输入输出格式）、<a href="miller_rabin_zh.html">Miller&ndash;Rabin</a> 和 <a href="fermat_lie_zh.html">费马测谎仪</a>那两篇（快速质数检测），以及 <a href="floyd_cycle_detection_zh.html">龟兔赛跑</a>那篇（判圈算法）。如果这些内容你还不熟悉，正好借这个机会先去读一读——我们会精确链接到我们复用的那部分内容。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第二关</span><h2>快速复习：15 位数字时管用的办法</h2></div>
+      <p class="lead"><a href="FACT0_zh.html">质数工厂</a>那篇用试除法解决了这道题的 15 位版本：测试候选除数直到 &radic;n，每个候选彻底除干净再往下走，处理完 2 之后跳过所有偶数。这个算法在这里依然完全正确——只是它马上就要变得慢到没法按时跑完了。</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第三关</span><h2>试除法终于撑不住的地方</h2></div>
+      <p class="lead">一个 20 位的数字最大可以到 <code>10<sup>20</sup></code>。它的平方根是 <code>10<sup>10</sup></code>——一百亿。更糟糕的是：最难对付的输入，是一个由<em>两个</em> 10 位质数相乘而成的数字，这两个质数都恰好卡在 &radic;n 附近。这种情况下没有捷径可以绕过——你真的必须把候选除数一路检查到那个平方根，因为较小的那个因子确实可能就有那么大。</p>
+
+      <div class="stats">
+        <div class="stat slow"><div class="num">10<sup>10</sup></div><div class="lbl">对最坏情况的 20 位半质数，即便用了 &radic;n 捷径，也要检查的候选除数数量</div></div>
+        <div class="stat slow"><div class="num">以秒计，而不是毫秒</div><div class="lbl">一百亿次除法要花多久——这还只是<em>一个</em>数字，而输入里大约有 10 个</div></div>
+        </div>
+
+      <div class="callout warn">
+        <div class="ctitle">结论</div>
+        <p>试除法在这里并不是<em>错</em>了——只是当两个质因数都很大的时候，它实在太慢了。我们需要一种速度不取决于因子相对 &radic;n 有多大的方法。这正是 Pollard's rho 算法能做到的事。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第四关</span><h2>核心想法：碰撞来得比你想象的早得多</h2></div>
+      <p class="lead">假设 <code>n = p &times; q</code>，想象用一条简单的规则构造一串数字：从某个 <code>x&#8320;</code> 开始，反复计算 <code>x&#8305;&#8330;&#8321; = (x&#8305;&sup2; + c) mod n</code>，其中 <code>c</code> 是一个固定常数。这串数字看起来毫无规律地跳来跳去——"看上去"是随机的，尽管它其实完全是确定性的。</p>
+
+      <p>这里是关键一招：与其盯着这串数字模 <code>n</code> 的样子看（它要循环之前，最多可以取到 <code>n</code> 个不同的值），不如<strong>模那个藏起来的质因数 <code>p</code></strong> 来看。因为 <code>p</code> 比 <code>n</code> 小得多，数列 <code>x&#8305; mod p</code> 会<em>快得多</em>地重复出现某个值——一旦两项在模 <code>p</code> 意义下相撞，之后这串数字就会一直循环下去。</p>
+
+      <div class="callout tip">
+        <div class="ctitle">这又是生日悖论</div>
+        <p>如果你看过 <a href="711E_zh.html">生日悖论</a>那篇，这应该会觉得眼熟：当取值只在 <code>p</code> 种可能之间跳动时，大约取 &radic;p 次之后（而不是 p 次）就很可能出现重复——正是"一个房间里 23 个人就足够两人同一天生日"背后那套"比你想的早得多"的逻辑。如果 <code>p</code> 恰好在 &radic;n 附近（第三关的最坏情况），模 <code>p</code> 的碰撞往往在数列走了大约 <code>n<sup>1/4</sup></code> 步之后就会出现——比 &radic;n 本身小得多。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第五关</span><h2>侦测一场你根本看不见的碰撞</h2></div>
+      <p class="lead">这里有个明显的问题：我们还不知道 <code>p</code> 是多少——这正是我们想要找的东西！那要怎么察觉数列在模一个我们不知道的数字时发生了碰撞呢？</p>
+
+      <p>答案是用 GCD，和 <a href="1033D_zh.html">GCD 握手</a>、<a href="364D_zh.html">Ghd</a> 那两篇一模一样：如果 <code>x&#8305; &equiv; x&#8580; (mod p)</code>，就意味着 <code>p</code> 能整除差值 <code>x&#8305; - x&#8580;</code>。而因为 <code>p</code> 同时也整除 <code>n</code>（它本来就是 <code>n</code> 的一个质因数），所以 <code>p</code> 也能整除 <code>gcd(x&#8305; - x&#8580;, n)</code>。于是：只要我们算出 <code>gcd(x&#8305; - x&#8580;, n)</code> 大于 1，就很可能已经找到了 <code>n</code> 的一个真正因子——完全不需要提前知道 <code>p</code> 是多少。</p>
+
+      <div class="blocks">
+        <div class="block hi">x&#8305; &equiv; x&#8580; (mod p)</div><div class="block op">&rArr;</div><div class="block hi">gcd(x&#8305; &minus; x&#8580;, n) &gt; 1</div>
+      </div>
+
+      <div class="callout fact">
+        <div class="ctitle">一个偶尔出现的小意外</div>
+        <p>有时候算出来的 gcd 恰好等于 <code>n</code> 本身，而不是一个真正的因子——这发生在碰撞其实是在整个 <code>n</code> 意义下发生的，而不只是在 <code>p</code> 意义下。遇到这种情况，解决办法很简单：换一个新的随机常数 <code>c</code>（和起点），用一条形状不同的新数列重新试一次。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第六关</span><h2>找到碰撞：请出乌龟和兔子</h2></div>
+      <p class="lead">我们还需要一种高效的办法，真正找到两个发生碰撞的项 <code>x&#8305;</code> 和 <code>x&#8580;</code>，而不用把见过的每一项都存下来。因为我们的数列是靠反复套用同一个函数生成的，它注定迟早会绕回自己走过的路——这正是 <a href="floyd_cycle_detection_zh.html">龟兔赛跑</a>那篇里的设定。</p>
+
+      <p>我们在这里原封不动地复用那个想法：让两个指针沿着数列走，一个（"乌龟"）每次走一步，另一个（"兔子"）每次走两步。如果存在一个环——在模 <code>p</code> 的意义下，环总是存在的——兔子迟早会绕一圈追上乌龟，两者会在模 <code>p</code> 意义下落到同一个值上，尽管我们全程只是在模 <code>n</code> 做计算。</p>
+
+      <div class="callout fact">
+        <div class="ctitle">已经认识乌龟和兔子了吗？</div>
+        <p>如果你做过 <a href="floyd_cycle_detection_zh.html">龟兔赛跑</a>那篇，Pollard's rho 其实就是把那个判圈算法，套用在这条"平方再取模 n"的数列上，并且在每一步之后都加了一次 gcd 检查，好尽早察觉那场看不见的碰撞。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第七关</span><h2>拼出完整的 Pollard's rho</h2></div>
+      <p class="lead">把第四到第六关拼在一起，下面就是从一个合数 <code>n</code> 里找出<em>一个</em>非平凡因子的完整算法：</p>
+
+      <ul style="color:var(--ink-soft);">
+        <li>随机选一个起点 <code>x&#8320;</code> 和一个随机常数 <code>c</code>。定义 <code>f(x) = (x&sup2; + c) mod n</code>。</li>
+        <li>每一轮让乌龟走一步（<code>x = f(x)</code>），兔子走两步（<code>y = f(f(y))</code>）。</li>
+        <li>每一轮之后，计算 <code>d = gcd(|x - y|, n)</code>。</li>
+        <li>如果 <code>1 &lt; d &lt; n</code>：成功！<code>d</code> 就是 <code>n</code> 的一个真正因子。</li>
+        <li>如果 <code>d == n</code>：运气不好——换一组新的随机 <code>x&#8320;</code> 和 <code>c</code> 重新开始。</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="ctitle">为什么叫"rho（ρ）"</div>
+        <p>如果你把数列 <code>x&#8305; mod p</code> 画出来，它会先游荡一阵子，然后进入一个循环——整个形状看起来就像希腊字母 &rho;（rho）：一条尾巴接上一个圆圈。这个算法的名字正是来自这幅画面。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第八关</span><h2>完整方案：只在必要时才升级火力</h2></div>
+      <p class="lead">Pollard's rho 很强大，但用来对付小因子就有点大材小用，而且它还需要一个质数检测来知道什么时候该收手。最稳妥的做法是把手上所有工具都用上，先用最便宜的：</p>
+
+      <ul style="color:var(--ink-soft);">
+        <li><strong>先用试除法处理小质数</strong>（比如到 100000 为止）——这是一份便宜的保险，能立刻处理掉"有小因子"这种常见情况，和 <a href="FACT0_zh.html">质数工厂</a>那篇一模一样。</li>
+        <li><strong>用 Miller&ndash;Rabin 检查剩下的部分。</strong>如果它已经是质数了，这一支就处理完了——质数没必要再往下分解。（参见 <a href="miller_rabin_zh.html">Miller&ndash;Rabin</a>。）</li>
+        <li><strong>否则，就上 Pollard's rho</strong>，把剩下的部分拆成两个更小的部分，再对每一部分递归地重复这整套流程。</li>
+      </ul>
+
+      <div class="callout fact">
+        <div class="ctitle">用 Python（或 JavaScript）的一个额外好处</div>
+        <p>经典实现需要非常小心地处理两个高达 10<sup>20</sup> 的数字相乘，不能让固定大小的整数类型溢出——C++ 解法常常要专门用一种 128 位整数的技巧来应付这一步。Python 的整数（以及 JavaScript 的 <code>BigInt</code>）会自动变大，所以 <code>x * x</code> 直接就能用，不管 <code>x</code> 有多大。这是少数几个"语言慢一点，但少操很多心"反而是笔好交易的场合。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9 ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">第九关</span><h2>用 Python 写出来</h2></div>
+      <p class="lead">先写一轮 Pollard's rho——找出一个因子，运气不好就换一组随机参数重试：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>pollard_rho.py</div>
+        <pre><code><span class="kw">import</span> random
+<span class="kw">import</span> math
+
+<span class="kw">def</span> pollard_rho(n):
+    <span class="kw">if</span> n % <span class="nu">2</span> == <span class="nu">0</span>:
+        <span class="kw">return</span> <span class="nu">2</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        c = random.randint(<span class="nu">1</span>, n - <span class="nu">1</span>)
+        f = <span class="kw">lambda</span> x: (x * x + c) % n
+
+        x = y = random.randint(<span class="nu">2</span>, n - <span class="nu">1</span>)
+        d = <span class="nu">1</span>
+        <span class="kw">while</span> d == <span class="nu">1</span>:
+            x = f(x)
+            y = f(f(y))
+            d = math.gcd(<span class="kw">abs</span>(x - y), n)
+
+        <span class="kw">if</span> d != n:
+            <span class="kw">return</span> d
+        <span class="cm"># d == n 说明这次 c 选得不走运——继续循环重试</span></code></pre>
+      </div>
+
+      <p>再加上第八关的完整方案：先用小范围试除法，再用 Miller&ndash;Rabin（直接借用 <a href="miller_rabin_zh.html">Miller&ndash;Rabin</a>那篇的代码）来决定什么时候该停手，剩下的交给 Pollard's rho 加递归：</p>
+
+      <div class="annot">
+        <div class="annot-row">
+          <div class="annot-code">d = 2
+while d * d <= n and d <= 100000:
+    while n % d == 0:
+        add(d)
+        n //= d
+    d = 3 if d == 2 else d + 2</div>
+          <div class="annot-note"><span>第八关的便宜第一步：和 <a href="FACT0_zh.html">质数工厂</a>那篇完全一样的试除循环，上限设在 100000，所以它永远跑不了太久。</span></div>
+        </div>
+        <div class="annot-row">
+          <div class="annot-code">def recurse(m):
+    if m == 1:
+        return
+    if is_prime(m):
+        add(m)
+        return
+    d = pollard_rho(m)
+    recurse(d)
+    recurse(m // d)</div>
+          <div class="annot-note"><span>升级方案：遇到质数就停下（第八关），否则用 Pollard's rho 拆开，再对两半各自用同样的方式处理。</span></div>
+        </div>
+      </div>
+
+      <p>完整程序如下：</p>
+
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>fact1.py</div>
+        <pre><code><span class="kw">import</span> random
+<span class="kw">import</span> math
+
+<span class="kw">def</span> is_prime(n):
+    <span class="kw">if</span> n &lt; <span class="nu">2</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> p <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>, <span class="nu">17</span>, <span class="nu">19</span>, <span class="nu">23</span>, <span class="nu">29</span>, <span class="nu">31</span>, <span class="nu">37</span>]:
+        <span class="kw">if</span> n % p == <span class="nu">0</span>:
+            <span class="kw">return</span> n == p
+    d, r = n - <span class="nu">1</span>, <span class="nu">0</span>
+    <span class="kw">while</span> d % <span class="nu">2</span> == <span class="nu">0</span>:
+        d //= <span class="nu">2</span>
+        r += <span class="nu">1</span>
+    <span class="kw">for</span> a <span class="kw">in</span> [<span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">5</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">13</span>, <span class="nu">17</span>, <span class="nu">19</span>, <span class="nu">23</span>, <span class="nu">29</span>, <span class="nu">31</span>, <span class="nu">37</span>]:
+        x = <span class="kw">pow</span>(a, d, n)
+        <span class="kw">if</span> x == <span class="nu">1</span> <span class="kw">or</span> x == n - <span class="nu">1</span>:
+            <span class="kw">continue</span>
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="kw">range</span>(r - <span class="nu">1</span>):
+            x = x * x % n
+            <span class="kw">if</span> x == n - <span class="nu">1</span>:
+                <span class="kw">break</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="kw">def</span> pollard_rho(n):
+    <span class="kw">if</span> n % <span class="nu">2</span> == <span class="nu">0</span>:
+        <span class="kw">return</span> <span class="nu">2</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        c = random.randint(<span class="nu">1</span>, n - <span class="nu">1</span>)
+        f = <span class="kw">lambda</span> x: (x * x + c) % n
+        x = y = random.randint(<span class="nu">2</span>, n - <span class="nu">1</span>)
+        d = <span class="nu">1</span>
+        <span class="kw">while</span> d == <span class="nu">1</span>:
+            x = f(x)
+            y = f(f(y))
+            d = math.gcd(<span class="kw">abs</span>(x - y), n)
+        <span class="kw">if</span> d != n:
+            <span class="kw">return</span> d
+
+<span class="kw">def</span> factorize(n):
+    factors = {}
+
+    <span class="kw">def</span> add(p, e=<span class="nu">1</span>):
+        factors[p] = factors.get(p, <span class="nu">0</span>) + e
+
+    d = <span class="nu">2</span>
+    <span class="kw">while</span> d * d &lt;= n <span class="kw">and</span> d &lt;= <span class="nu">100000</span>:
+        <span class="kw">while</span> n % d == <span class="nu">0</span>:
+            add(d)
+            n //= d
+        d = <span class="nu">3</span> <span class="kw">if</span> d == <span class="nu">2</span> <span class="kw">else</span> d + <span class="nu">2</span>
+
+    <span class="kw">def</span> recurse(m):
+        <span class="kw">if</span> m == <span class="nu">1</span>:
+            <span class="kw">return</span>
+        <span class="kw">if</span> is_prime(m):
+            add(m)
+            <span class="kw">return</span>
+        d = pollard_rho(m)
+        recurse(d)
+        recurse(m // d)
+
+    recurse(n)
+    <span class="kw">return</span> factors
+
+n = <span class="kw">int</span>(<span class="kw">input</span>())
+<span class="kw">while</span> n != <span class="nu">0</span>:
+    factors = factorize(n)
+    <span class="kw">print</span>(<span class="st">" "</span>.join(<span class="kw">f</span><span class="st">"{p}^{e}"</span> <span class="kw">for</span> p, e <span class="kw">in</span> <span class="kw">sorted</span>(factors.items())))
+    n = <span class="kw">int</span>(<span class="kw">input</span>())</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 10 ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">第十关</span><h2>一起手动推演：抓住藏着的因子 317</h2></div>
+      <p class="lead">取 <code>n = 2206637</code>（它正好等于 <code>317 &times; 6961</code>），<code>x&#8320;=2</code>，<code>c=1</code>，所以 <code>f(x) = (x&sup2;+1) mod n</code>。留意 gcd 那一列——再看看模 317 的那两列是怎么悄悄逼近一次碰撞的，远远早于完整数值（模 n）出现任何异常。</p>
+
+      <table class="trace">
+        <thead><tr><th>i</th><th>乌龟 mod n</th><th>兔子 mod n</th><th>乌龟 mod 317</th><th>兔子 mod 317</th><th>gcd</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>5</td><td>26</td><td>5</td><td>26</td><td class="even">1</td></tr>
+          <tr><td>2</td><td>26</td><td>458330</td><td>26</td><td>265</td><td class="even">1</td></tr>
+          <tr><td>3</td><td>677</td><td>1671573</td><td>43</td><td>32</td><td class="even">1</td></tr>
+          <tr><td>4</td><td>458330</td><td>641379</td><td>265</td><td>88</td><td class="even">1</td></tr>
+          <tr><td>5</td><td>1166412</td><td>351937</td><td>169</td><td>67</td><td class="even">1</td></tr>
+          <tr><td>6</td><td>1671573</td><td>1264682</td><td>32</td><td>169</td><td class="even">1</td></tr>
+          <tr><td>7</td><td>2193080</td><td>2088470</td><td>74</td><td>74</td><td class="odd">317</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="6">到第 7 步，乌龟和兔子终于在模 317 意义下相遇（都落在 74）——果然，<code>gcd(2193080 &minus; 2088470, 2206637) = 317</code>，一个真正的因子，只用了 7 轮，而不是把候选除数一路测到 &radic;2206637 &approx; 1485。</td></tr></tfoot>
+      </table>
+    </section>
+
+    <!-- ============ LEVEL 11 : INTERACTIVE ============ -->
+    <section class="level" id="level11">
+      <div class="level-head"><span class="level-num">第十一关</span><h2>轮到你了：分解自己的数字</h2></div>
+      <p class="lead">输入一串数字（用逗号或换行分隔）。工具会用第八关那套完整方案分解每一个——先小范围试除，再 Miller&ndash;Rabin，需要时再上 Pollard's rho——全程使用 JavaScript 的 <code>BigInt</code>，即便是 20 位数字也能保持精确。</p>
+
+      <div class="widget">
+        <h3>Rho 机器</h3>
+        <div class="hint">试试默认的样例，或者把两个大质数乘起来（比如 6924716023 &times; 9639245201），看看 Pollard's rho 用远小于一秒的时间搞定一个 20 位的半质数。</div>
+        <div class="field-row">
+          <div class="field"><label for="inNums">数字列表</label><textarea id="inNums">3111989
+13091989
+77145199750673
+66749035692990555623</textarea></div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="flex:0 0 auto;"><button class="btn" id="runBtn">全部分解！</button></div>
+        </div>
+        <div id="out"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 12 ============ -->
+    <section class="level" id="level12">
+      <div class="level-head"><span class="level-num">第十二关</span><h2>轮到你练习了</h2></div>
+      <p class="lead">先用纸笔（以及计算器）自己算一遍，再用上面的工具检查答案。</p>
+
+      <details>
+        <summary>练习 1：为什么 Pollard's rho 在处理 n = p&sup2; 时，比处理两个不同质数相乘的 n = p&times;q 更容易失败（卡在 d=n 上）？</summary>
+        <div class="reveal">
+          <p>当 <code>n = p&sup2;</code> 时，只存在<em>一个</em>不同的质因数，所以数列在模 <code>p</code> 意义下发生碰撞，和在模 <code>n</code> 意义下发生碰撞，几乎会在同一时间发生——没有一个更小的模数能让数列"提前绊一跤"。这意味着 <code>gcd(x-y, n)</code> 更容易直接跳到 <code>n</code> 本身，而不是先落在真正的因子 <code>p</code> 上。这正是为什么算法在遇到这种情况时，需要换一个新的随机 <code>c</code> 重试。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 2：为什么要在跑 Pollard's rho 之前先用 Miller&ndash;Rabin 检查一下，而不是干脆直接跑 Pollard's rho，看看会发生什么？</summary>
+        <div class="reveal">
+          <p>Pollard's rho 是一种<em>拆分</em>合数的方法——它假设存在一个更小的因子等着被发现。如果你把一个真正的质数喂给它，根本没有因子可找，乌龟和兔子的赛跑（通常）就只会在模 n 意义下相撞，白白浪费大量时间才肯放弃。先用速度飞快的 Miller&ndash;Rabin 检查一下质数性，就能避免把这件昂贵的工具用在一个根本没有因子可找的数字上。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 3：在第十关的推演里，为什么我们要比较乌龟和兔子<em>模 317</em> 的值，即便算法本身其实从来没有真的算过任何模 317 的东西？</summary>
+        <div class="reveal">
+          <p>模 317 这一列纯粹是为了帮<em>我们</em>理解算法为什么管用——它是算法暗中追逐的那个隐藏信号。真正的程序全程只计算模 <code>n</code>（2206637）的东西，并且拿它和 <code>n</code> 求 gcd；在 gcd 计算揭示出 317 之前，程序根本不知道 317 跟这件事有什么关系。我们是事后自己加上模 317 这一列的，为的是看清那场让 <code>gcd &gt; 1</code> 发生的、原本看不见的碰撞。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 4（较难）：第八、九关里的小范围试除法上限设在 100000。如果去掉这个上限，让它一路除到 &radic;n，会（在速度上，而不是正确性上）出什么问题？</summary>
+        <div class="reveal">
+          <p>正确性不会有任何问题——但对最坏情况的 20 位数字来说，&radic;n 可以达到一百亿，试除法会在真正用上 Pollard's rho 之前，先把这一百亿一点一点磨完，这就完全违背了引入 Pollard's rho 的初衷。设这个上限，就是为了让试除法只处理<em>便宜</em>的情况（小因子），一旦剩下的数字原来是几个大质数相乘，就赶紧把接力棒交给 Pollard's rho。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>练习 5：修改 pollard_rho，让它同时返回找到因子花了多少轮（乌龟兔子各走了多少步），这样你就能亲手把这个数字和 &radic;n 做个对比。</summary>
+        <div class="reveal">
+          <div class="codebox" style="margin:0;">
+            <div class="bar"><span class="dots"><span></span><span></span><span></span></span>pollard_rho_debug.py</div>
+            <pre><code><span class="kw">def</span> pollard_rho_debug(n):
+    <span class="kw">if</span> n % <span class="nu">2</span> == <span class="nu">0</span>:
+        <span class="kw">return</span> <span class="nu">2</span>, <span class="nu">0</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        c = random.randint(<span class="nu">1</span>, n - <span class="nu">1</span>)
+        f = <span class="kw">lambda</span> x: (x * x + c) % n
+        x = y = random.randint(<span class="nu">2</span>, n - <span class="nu">1</span>)
+        d = <span class="nu">1</span>
+        rounds = <span class="nu">0</span>
+        <span class="kw">while</span> d == <span class="nu">1</span>:
+            x = f(x)
+            y = f(f(y))
+            d = math.gcd(<span class="kw">abs</span>(x - y), n)
+            rounds += <span class="nu">1</span>
+        <span class="kw">if</span> d != n:
+            <span class="kw">return</span> d, rounds</code></pre>
+          </div>
+          <p style="margin-top:12px;">和第九关一样的算法，只是多加了一个计数器——对大多数输入来说，<code>rounds</code> 会落在 <code>n<sup>1/4</sup></code> 附近，比 &radic;n 小得多。</p>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>SPOJ FACT1 —— Integer Factorization (20 digits)。建立在 <a href="FACT0_zh.html">质数工厂</a>（试除法）、<a href="miller_rabin_zh.html">Miller&ndash;Rabin</a> 与 <a href="fermat_lie_zh.html">费马测谎仪</a>（质数检测）、<a href="floyd_cycle_detection_zh.html">龟兔赛跑</a>（判圈算法），以及 <a href="711E_zh.html">生日悖论</a>（为什么碰撞来得比预期早）之上。</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function bgcd(a, b){
+    a = a < 0n ? -a : a; b = b < 0n ? -b : b;
+    while (b){ var t = a % b; a = b; b = t; }
+    return a;
+  }
+
+  function bpow(base, exp, mod){
+    base %= mod;
+    var result = 1n;
+    while (exp > 0n){
+      if (exp & 1n) result = (result * base) % mod;
+      base = (base * base) % mod;
+      exp >>= 1n;
+    }
+    return result;
+  }
+
+  var SMALL_PRIMES = [2n,3n,5n,7n,11n,13n,17n,19n,23n,29n,31n,37n];
+
+  function isPrime(n){
+    if (n < 2n) return false;
+    for (var i=0;i<SMALL_PRIMES.length;i++){
+      var p = SMALL_PRIMES[i];
+      if (n % p === 0n) return n === p;
+    }
+    var d = n - 1n, r = 0n;
+    while (d % 2n === 0n){ d /= 2n; r += 1n; }
+    for (var k=0;k<SMALL_PRIMES.length;k++){
+      var a = SMALL_PRIMES[k];
+      var x = bpow(a, d, n);
+      if (x === 1n || x === n - 1n) continue;
+      var composite = true;
+      for (var i2 = 0n; i2 < r - 1n; i2++){
+        x = (x * x) % n;
+        if (x === n - 1n){ composite = false; break; }
+      }
+      if (composite) return false;
+    }
+    return true;
+  }
+
+  function randBigInt(max){
+    var s = max.toString().length;
+    var r;
+    do {
+      r = 0n;
+      for (var i = 0; i < s; i++) r = r * 10n + BigInt(Math.floor(Math.random() * 10));
+      r = r % max;
+    } while (r < 2n);
+    return r;
+  }
+
+  function pollardRho(n){
+    if (n % 2n === 0n) return 2n;
+    while (true){
+      var c = randBigInt(n);
+      var f = function(x){ return (x * x + c) % n; };
+      var x = randBigInt(n);
+      var y = x;
+      var d = 1n;
+      while (d === 1n){
+        x = f(x);
+        y = f(f(y));
+        d = bgcd(x > y ? x - y : y - x, n);
+      }
+      if (d !== n) return d;
+    }
+  }
+
+  function smallFactor(n, limit){
+    limit = limit || 100000n;
+    var factors = new Map();
+    var d = 2n;
+    while (d <= limit && d * d <= n){
+      while (n % d === 0n){
+        factors.set(d, (factors.get(d) || 0n) + 1n);
+        n /= d;
+      }
+      d = d === 2n ? 3n : d + 2n;
+    }
+    return [factors, n];
+  }
+
+  function factorize(n){
+    var result = new Map();
+    var pair = smallFactor(n);
+    var small = pair[0], rest = pair[1];
+    for (var entry of small) result.set(entry[0], (result.get(entry[0]) || 0n) + entry[1]);
+
+    function recurse(m){
+      if (m === 1n) return;
+      if (isPrime(m)){
+        result.set(m, (result.get(m) || 0n) + 1n);
+        return;
+      }
+      var d = pollardRho(m);
+      recurse(d);
+      recurse(m / d);
+    }
+    recurse(rest);
+    return result;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function run(){
+    var raw = document.getElementById('inNums').value;
+    var out = document.getElementById('out');
+    var parts = raw.split(/[,\s]+/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+
+    if (parts.length === 0){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请至少输入一个数字。</p></div>';
+      return;
+    }
+    if (parts.length > 8){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>请使用 8 个或更少的数字，以保证浏览器里运行流畅。</p></div>';
+      return;
+    }
+
+    var nums;
+    try {
+      nums = parts.map(function(s){
+        if (!/^[0-9]+$/.test(s)) throw new Error('bad');
+        var v = BigInt(s);
+        if (v < 0n || v > 99999999999999999999n) throw new Error('range');
+        return v;
+      });
+    } catch (e){
+      out.innerHTML = '<div class="callout warn"><div class="ctitle">等一下</div><p>每一项都必须是最多 20 位的整数。</p></div>';
+      return;
+    }
+
+    var html = '<table class="trace"><thead><tr><th>n</th><th>质因数分解</th></tr></thead><tbody>';
+    for (var i = 0; i < nums.length; i++){
+      var n = nums[i];
+      if (n === 0n){
+        html += '<tr><td>0</td><td class="even">（停止信号，不进行分解）</td></tr>';
+        continue;
+      }
+      var f = factorize(n);
+      var sorted = Array.from(f.entries()).sort(function(a,b){ return a[0] < b[0] ? -1 : (a[0] > b[0] ? 1 : 0); });
+      var str = sorted.length === 0 ? '（没有质因数 —— n=1）' : sorted.map(function(pe){ return pe[0].toString() + '^' + pe[1].toString(); }).join(' ');
+      html += '<tr><td>' + esc(n.toString()) + '</td><td class="odd">' + esc(str) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    out.innerHTML = html;
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  run();
+})();
+</script>
+</body>
+</html>
