@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>城堡守卫谜题：在奇形怪状的棋盘上摆棋子（POJ 1321）</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+
+  /* ---------- Castle boards ---------- */
+  .sq.hole{background:repeating-linear-gradient(45deg,#7d858c 0 5px,#69717a 5px 10px);}
+  .sq .rook{color:#1b1b1b;}
+  .board.mini{max-width:150px;margin:0;}
+  .board.small{max-width:240px;margin:0;}
+  .boards{display:flex;flex-wrap:wrap;gap:18px 28px;justify-content:center;align-items:flex-end;margin:20px 0;}
+  .boards figure{margin:0;text-align:center;}
+  .boards figcaption{font-size:13px;color:var(--ink-soft);margin-top:6px;}
+  .board.clickable .sq{cursor:pointer;}
+  .board.clickable .sq:hover{outline:3px solid var(--accent);outline-offset:-3px;}
+  .tree rect.ok{fill:var(--clue-soft);stroke:var(--clue);}
+  .tree text.elabel{font-family:var(--font-body);font-size:13px;font-weight:600;fill:var(--ink-soft);}
+
+  /* ---------- Bug detective (diff view) ---------- */
+  .codebox pre.diff{padding:12px 0;}
+  .codebox pre.diff code{display:block;}
+  .codebox pre.diff span.ln{display:block;padding:0 18px;white-space:pre;}
+  .bugs{counter-reset:bug;list-style:none;padding:0;margin:20px 0;}
+  .bugs li{position:relative;background:var(--paper-raised);border:1px solid var(--line);border-left:4px solid var(--alert);border-radius:var(--radius);padding:12px 16px 12px 52px;margin:10px 0;box-shadow:var(--shadow);}
+  .bugs li::before{counter-increment:bug;content:"🐞" counter(bug);position:absolute;left:12px;top:12px;font-family:var(--font-mono);font-size:13px;font-weight:800;color:var(--alert);}
+  .bugs li .err{display:block;font-family:var(--font-mono);font-size:12.5px;color:var(--alert);margin-top:4px;}
+  .codebox pre.diff span.bug{background:var(--alert-soft);box-shadow:inset 3px 0 0 var(--alert);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="chessboard_en.html">English &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">算法 &middot; 题目精讲 &middot; POJ 1321</div>
+      <h1>城堡守卫谜题：<em>在奇形怪状的棋盘上摆棋子</em></h1>
+      <p class="sub">一座歪歪扭扭、形状古怪的城堡需要 <b>k</b> 名守卫。每名守卫都能看到自己所在的整行和整列，任何守卫都不能站在别的守卫看得见的地方。一共有多少种不同的安排方法？我们一步步解决这道经典竞赛题，还要揪出它示例代码里藏着的<b>五个 bug</b>。</p>
+      <div class="stampbar">
+        <span class="stamp hot">适合 13 岁+</span>
+        <span class="stamp">回溯</span>
+        <span class="stamp">捉 bug</span>
+        <span class="stamp">互动棋盘</span>
+        <span class="stamp">8 道练习题</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第 1 关</span><h2>谜题是什么</h2></div>
+      <p class="lead">先用大白话把题目说清楚。</p>
+      <div class="callout fact">
+        <div class="ctitle">题目（POJ 1321 棋盘问题）</div>
+        <p>给你一个能放进 <code>n × n</code> 方框（<code>n ≤ 8</code>）的棋盘。不是每个格子都属于棋盘：<code>#</code> 表示真正的棋盘格，<code>.</code> 表示空洞，什么都不能放。要在真正的格子上摆 <code>k</code> 个<b>完全相同</b>的棋子（<code>k ≤ n</code>），要求<b>任意两个棋子不能在同一行或同一列</b>。求所有不同摆法的数量。</p>
+      </div>
+      <p>如果你会下国际象棋，就会认出这种棋子：它和<b>车</b>（♜）一模一样，沿着行和列攻击。所以问题其实是：<i>在这块破破烂烂的棋盘上，有多少种方法放 k 个车，让它们互相攻击不到？</i></p>
+      <p>先试最小的例子。棋盘是 2 × 2，只有两个真格子，要放 <b>k = 1</b> 个棋子：</p>
+      <div class="boards">
+        <figure><div class="board mini" style="grid-template-columns:repeat(2,1fr);"><div class="sq l"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq l"></div></div><figcaption>棋盘：<code>#.</code> / <code>.#</code></figcaption></figure>
+        <figure><div class="board mini" style="grid-template-columns:repeat(2,1fr);"><div class="sq l"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq l"><span class="rook">&#x265C;</span></div></div><figcaption>摆法 1</figcaption></figure>
+        <figure><div class="board mini" style="grid-template-columns:repeat(2,1fr);"><div class="sq l"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq l"></div></div><figcaption>摆法 2</figcaption></figure>
+      </div>
+      <p>带斜纹的格子是空洞。只放一个棋子，有两个真格子可选，所以答案是 <b>2</b>。</p>
+      <p>再看一座 4 × 4 的城堡，要放 <b>k = 4</b> 名守卫。每一行、每一列都必须正好有一名守卫，而真格子排成了一条斜线：</p>
+      <div class="boards">
+        <figure><div class="board small" style="grid-template-columns:repeat(4,1fr);"><div class="sq hole"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq hole"></div></div><figcaption>棋盘</figcaption></figure>
+        <figure><div class="board small" style="grid-template-columns:repeat(4,1fr);"><div class="sq hole"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq hole"></div></div><figcaption>唯一的摆法</figcaption></figure>
+      </div>
+      <p>每一行只有一个真格子，根本没得选：答案是 <b>1</b>。</p>
+      <div class="callout tip">
+        <div class="ctitle">"完全相同"很重要</div>
+        <p>棋子长得一模一样，所以交换两个棋子<b>不</b>算新的摆法，只有<i>用了哪些格子</i>才重要。记住这一点，因为它决定了程序该怎么搜索。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第 2 关</span><h2>读入棋盘</h2></div>
+      <p class="lead">竞赛题用纯文本给出数据。每组测试先给一行 <code>n k</code>，接着是 <code>n</code> 行棋盘。读到一行 <code>-1 -1</code> 就表示"没有更多测试了"。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>样例输入</div>
+<pre class="diff"><code><span class="ln">2 1</span><span class="ln">#.</span><span class="ln">.#</span><span class="ln">4 4</span><span class="ln">...#</span><span class="ln">..#.</span><span class="ln">.#..</span><span class="ln">#...</span><span class="ln">-1 -1</span></code></pre>
+      </div>
+      <p>期望输出：<code>2</code> 和 <code>1</code>，和我们手算的一样。在 Python 里，棋盘变成一个字符串列表，<code>board[row][col]</code> 就能告诉我们任意格子上是什么：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>read_board.py</div>
+<pre><code>lines = [<span class="st">"2 1"</span>, <span class="st">"#."</span>, <span class="st">".#"</span>]
+n, k = <span class="fn">map</span>(<span class="fn">int</span>, lines[<span class="nu">0</span>].split())
+board = lines[<span class="nu">1</span>:<span class="nu">1</span> + n]
+
+<span class="fn">print</span>(n, k)          <span class="cm"># 2 1</span>
+<span class="fn">print</span>(board)         <span class="cm"># ['#.', '.#']</span>
+<span class="fn">print</span>(board[<span class="nu">0</span>][<span class="nu">1</span>])   <span class="cm"># .   (第 0 行第 1 列是空洞)</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第 3 关</span><h2>一行一行地想</h2></div>
+      <p class="lead">两个棋子不能同行，所以每一行<b>最多</b>放一个棋子。这就给了我们一个清爽的计划：从上往下一行一行走，每行只做一个决定。</p>
+      <div class="recipe">
+        <div class="step"><div class="k">选项 A</div><div class="t">跳过这一行</div><div class="d">这一行不放棋子，直接去下一行。k 可能比 n 小，所以必须有这个选项。</div></div>
+        <div class="step"><div class="k">选项 B</div><div class="t">放一个棋子</div><div class="d">选一列：它必须是真格子（<code>#</code>），而且这一列还没被别的棋子占用。</div></div>
+        <div class="step"><div class="k">什么时候停</div><div class="t">放满 k 个</div><div class="d">这就是一种合法摆法：计数！如果行先用完了，就是死路。</div></div>
+      </div>
+      <p>为了记住哪些列被占了，我们用一个由 <code>True</code>/<code>False</code> 组成的列表 <code>cols_used</code>。这又是<b>回溯</b>的模板：<b>做选择</b>（占一列）→ <b>往下走</b>（去下一行）→ <b>撤销选择</b>（释放这一列，让别的分支还能用）。</p>
+      <p>下面是第一组样例（<code>#.</code> / <code>.#</code>，k = 1）的完整搜索树。<code>dfs(row, placed)</code> 的意思是"现在在第 row 行，已经放了 placed 个棋子"：</p>
+      <div class="tree">
+        <svg viewBox="0 0 800 250" role="img" aria-label="样例 1 的搜索树：两个成功的叶子和一个死路">
+          <line x1="400" y1="34" x2="230" y2="114"/><line x1="400" y1="34" x2="600" y2="114"/>
+          <line x1="230" y1="114" x2="110" y2="204"/><line x1="230" y1="114" x2="350" y2="204"/>
+          <text class="elabel" x="270" y="66" text-anchor="middle">跳过第 0 行</text>
+          <text class="elabel" x="540" y="66" text-anchor="middle">在 (0, 0) 放棋子</text>
+          <text class="elabel" x="125" y="156" text-anchor="middle">跳过第 1 行</text>
+          <text class="elabel" x="345" y="156" text-anchor="middle">在 (1, 1) 放棋子</text>
+          <rect x="330" y="16" width="140" height="36" rx="8"/><text x="400" y="40" text-anchor="middle">dfs(0, 0)</text>
+          <rect x="160" y="96" width="140" height="36" rx="8"/><text x="230" y="120" text-anchor="middle">dfs(1, 0)</text>
+          <rect class="ok" x="510" y="96" width="180" height="36" rx="8"/><text x="600" y="120" text-anchor="middle">dfs(1, 1) ✔</text>
+          <rect class="r2" x="20" y="186" width="180" height="36" rx="8"/><text x="110" y="210" text-anchor="middle">dfs(2, 0) ✗</text>
+          <rect class="ok" x="260" y="186" width="180" height="36" rx="8"/><text x="350" y="210" text-anchor="middle">dfs(2, 1) ✔</text>
+        </svg>
+        <div class="legend"><span><span class="swatch" style="background:var(--clue-soft);border-color:var(--clue)"></span>放满 k 个 → 计数 +1</span><span><span class="swatch s2"></span>行用完了 → 死路</span></div>
+      </div>
+      <details>
+        <summary>小测验：为什么我们总是去<i>下一</i>行，从不回到前面的行？</summary>
+        <div class="reveal"><p>因为棋子是完全相同的。如果允许先在第 1 行放一个棋子，<i>再</i>回到第 0 行放，就会用不同的顺序拼出同一组格子，把它数两次。严格地从上往下走，每种摆法就只有唯一一种搭建顺序，所以正好被数一次。</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第 4 关</span><h2>bug 侦探：修好示例代码</h2></div>
+      <p class="lead">这是题目给出的解题代码。思路完全正确，可是如果你原样敲进去，<b>Python 根本不肯运行</b>。戴上侦探帽：高亮的行里藏着五个 bug。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>original.py（原样，无法运行）</div>
+<pre class="diff"><code><span class="ln">while True:</span><span class="ln">n, k = map(int, input().split())</span><span class="ln bug">if (n, k) = (-1, -1): break</span><span class="ln">board = [input() for _ in range(n)]</span><span class="ln">ans = 0</span><span class="ln">cols_used = [False] * n</span><span class="ln">def dfs(row, placed):</span><span class="ln bug">nonlocal ans # look this up - useful for</span><span class="ln"># recursion</span><span class="ln bug">if placed = k:</span><span class="ln">ans += 1</span><span class="ln">return</span><span class="ln bug">if row = n: return</span><span class="ln">dfs(row + 1, placed)</span><span class="ln">for col in range(n):</span><span class="ln bug">if board[row][col] = '.' or cols_used[col]:</span><span class="ln">continue</span><span class="ln bug">col_used[i] = True</span><span class="ln">dfs(row + 1, placed + 1)</span><span class="ln bug">col_used[i] = False</span><span class="ln">dfs(0, 0)</span><span class="ln">print(ans)</span></code></pre>
+      </div>
+      <ol class="bugs">
+        <li><b>把 <code>==</code> 写成了 <code>=</code>。</b>在 Python 里，<code>=</code> 是<i>赋值</i>，<code>==</code> 才是<i>比较</i>。有四行本意是"是否相等？"却用了 <code>=</code>：<code>(n, k) = (-1, -1)</code>、<code>placed = k</code>、<code>row = n</code> 和 <code>board[row][col] = '.'</code>。<span class="err">SyntaxError: invalid syntax</span></li>
+        <li><b><code>nonlocal</code> 找不到对象。</b><code>nonlocal ans</code> 的意思是"使用外层函数里的 <code>ans</code>"。可是这里的 <code>dfs</code> 并不在另一个函数里面，而是在程序最外层，所以 Python 找不到那个 <code>ans</code>。修法是把搜索包进一个函数 <code>solve(n, k, board)</code>。<span class="err">SyntaxError: no binding for nonlocal 'ans' found</span></li>
+        <li><b>名字拼错了。</b>列表创建时叫 <code>cols_used</code>，后面却写成了 <code>col_used</code>（少了个 "s"）。<span class="err">NameError: name 'col_used' is not defined</span></li>
+        <li><b>用错了循环变量。</b>循环变量是 <code>col</code>，代码里却写的是 <code>[i]</code>。整个程序里根本没有 <code>i</code>！应该是 <code>cols_used[col]</code>。</li>
+        <li><b>缩进丢了。</b>Python 靠缩进判断哪些行属于 <code>while</code>、<code>def</code>、<code>if</code>、<code>for</code> 的内部。没有缩进，代码连第一行都过不去。（从网页或聊天里复制代码时经常发生这种事。）<span class="err">IndentationError: expected an indented block after 'while' statement on line 1</span></li>
+      </ol>
+      <p>这是修好的程序。逻辑和原来完全一样，我们只是把搜索放进 <code>solve()</code>，并修掉了所有 bug：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>chessboard.py（修复版）</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve</span>(n, k, board):
+    ans = <span class="nu">0</span>
+    cols_used = [<span class="kw">False</span>] * n               <span class="cm"># 哪些列已经有棋子了</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row, placed):
+        <span class="kw">nonlocal</span> ans                       <span class="cm"># ✅ ans 属于 solve()</span>
+        <span class="kw">if</span> placed == k:                    <span class="cm"># ✅ 用 == 比较</span>
+            ans += <span class="nu">1</span>                        <span class="cm"># 放满 k 个：又多一种！</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:                       <span class="cm"># 行用完了：死路</span>
+            <span class="kw">return</span>
+        dfs(row + <span class="nu">1</span>, placed)                <span class="cm"># 选项 A：跳过这一行</span>
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):                <span class="cm"># 选项 B：在这一行放一个棋子</span>
+            <span class="kw">if</span> board[row][col] == <span class="st">'.'</span> <span class="kw">or</span> cols_used[col]:
+                <span class="kw">continue</span>                    <span class="cm"># 是空洞，或者这一列已被占用</span>
+            cols_used[col] = <span class="kw">True</span>          <span class="cm"># 做选择  ✅ cols_used[col]</span>
+            dfs(row + <span class="nu">1</span>, placed + <span class="nu">1</span>)        <span class="cm"># 往下走</span>
+            cols_used[col] = <span class="kw">False</span>         <span class="cm"># 撤销选择</span>
+
+    dfs(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> ans
+
+<span class="kw">while</span> <span class="kw">True</span>:
+    n, k = <span class="fn">map</span>(<span class="fn">int</span>, <span class="fn">input</span>().split())
+    <span class="kw">if</span> (n, k) == (-<span class="nu">1</span>, -<span class="nu">1</span>):
+        <span class="kw">break</span>
+    board = [<span class="fn">input</span>() <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+    <span class="fn">print</span>(solve(n, k, board))
+
+<span class="cm"># 输入上面的样例，会输出：</span>
+<span class="cm"># 2</span>
+<span class="cm"># 1</span></code></pre>
+      </div>
+      <div class="callout warn">
+        <div class="ctitle">附加陷阱：输入里的空行</div>
+        <p>有些评测系统会在两组测试之间放一个空行。这时 <code>input().split()</code> 返回空列表，程序会崩溃：<code>ValueError: not enough values to unpack</code>。更安全的做法是一次读入<b>全部</b>输入，再逐个单词处理，因为 <code>split()</code> 会完全忽略空行：</p>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>robust_input.py（替换 while 循环）</div>
+<pre><code><span class="kw">import</span> sys
+
+<span class="kw">def</span> <span class="fn">main</span>():
+    data = sys.stdin.read().split()    <span class="cm"># 输入里的所有单词，空行被忽略</span>
+    pos = <span class="nu">0</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        n, k = <span class="fn">int</span>(data[pos]), <span class="fn">int</span>(data[pos + <span class="nu">1</span>])
+        pos += <span class="nu">2</span>
+        <span class="kw">if</span> n == -<span class="nu">1</span> <span class="kw">and</span> k == -<span class="nu">1</span>:
+            <span class="kw">break</span>
+        board = data[pos:pos + n]        <span class="cm"># 接下来的 n 个单词就是棋盘的各行</span>
+        pos += n
+        <span class="fn">print</span>(solve(n, k, board))
+
+main()
+<span class="cm"># 2</span>
+<span class="cm"># 1</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第 5 关</span><h2>顺着线索走一遍</h2></div>
+      <p class="lead">我们看看修好的程序在第一组样例上是怎么一次次调用的。这正是第 3 关那棵树。</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>#</th><th>调用</th><th>发生了什么</th><th>cols_used</th><th>ans</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>dfs(0, 0)</td><td class="left">还没完成 → 先试选项 A：跳过第 0 行</td><td>[F, F]</td><td>0</td></tr>
+            <tr><td>2</td><td>dfs(1, 0)</td><td class="left">第 1 行也跳过</td><td>[F, F]</td><td>0</td></tr>
+            <tr><td>3</td><td>dfs(2, 0)</td><td class="left">row == n 但一个棋子都没放 → <b>死路</b>，返回</td><td>[F, F]</td><td class="even">0</td></tr>
+            <tr><td>–</td><td>回到 dfs(1, 0)</td><td class="left">第 0 列是 <code>.</code> → 跳过；第 1 列是 <code>#</code> → <b>选它</b></td><td>[F, <b>T</b>]</td><td>0</td></tr>
+            <tr><td>4</td><td>dfs(2, 1)</td><td class="left">placed == k → <b>计数！</b></td><td>[F, T]</td><td class="odd">1</td></tr>
+            <tr><td>–</td><td>回到 dfs(1, 0)</td><td class="left"><b>撤销</b>第 1 列，循环结束，返回</td><td>[F, <b>F</b>]</td><td>1</td></tr>
+            <tr><td>–</td><td>回到 dfs(0, 0)</td><td class="left">选项 B：第 0 列是 <code>#</code> → <b>选它</b></td><td>[<b>T</b>, F]</td><td>1</td></tr>
+            <tr><td>5</td><td>dfs(1, 1)</td><td class="left">placed == k → <b>计数！</b>（不用再看第 1 行）</td><td>[T, F]</td><td class="odd">2</td></tr>
+            <tr><td>–</td><td>回到 dfs(0, 0)</td><td class="left"><b>撤销</b>第 0 列；第 1 列是 <code>.</code> → 跳过。结束！</td><td>[<b>F</b>, F]</td><td class="odd">2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>一共调用了 5 次，答案是 <b>2</b>。注意第 5 次调用：检查 <code>placed == k</code> 写在 <code>row == n</code> <b>前面</b>，所以一种摆法一旦完成就立刻被数上，哪怕后面还剩几行。</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第 6 关</span><h2>设计你自己的城堡</h2></div>
+      <p class="lead">现在轮到你来设计棋盘了。这个小工具在浏览器里运行同样的 <code>solve()</code> 搜索，数出所有摆法，还能让你一种一种地翻看。</p>
+      <div class="widget" id="castleWidget">
+        <h3>城堡设计器</h3>
+        <div class="hint"><b>点击任意格子</b>，把它变成空洞（斜纹），或者变回真格子。修改 <b>k</b> 可以放更多或更少的守卫。然后用 ◀ ▶ 查看每一种摆法。</div>
+        <div class="controls">
+          <button class="btn ghost" id="pS1" type="button">样例 1</button>
+          <button class="btn ghost" id="pS2" type="button">样例 2</button>
+          <button class="btn ghost" id="pFull" type="button">完整棋盘</button>
+          <button class="btn ghost" id="pRand" type="button">随机城堡</button>
+        </div>
+        <div class="field-row" style="justify-content:center;">
+          <div class="field"><label for="inSize">棋盘大小 n（2–8）</label><input id="inSize" type="number" min="2" max="8" value="4"></div>
+          <div class="field"><label for="inK">棋子数 k</label><input id="inK" type="number" min="1" max="8" value="2"></div>
+        </div>
+        <div id="cBoard"></div>
+        <div class="controls">
+          <button class="btn ghost" id="cPrev" type="button">&#x25C0;</button>
+          <button class="btn ghost" id="cNext" type="button">&#x25B6;</button>
+        </div>
+        <div class="log" id="cLog"></div>
+        <div class="answer-line" id="cStats"></div>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">挑战</div>
+        <ul>
+          <li>你能设计一座 4 × 4 的城堡，让 k = 4 时<b>正好有 2 种</b>摆法吗？</li>
+          <li>在完整的 4 × 4 棋盘上，k 从 1 变到 4，摆法数怎么变化？</li>
+          <li>做一个真格子很多、但 k = 3 时摆法数为 <b>0</b> 的棋盘。（提示：把所有真格子都放在两行或两列里。）</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第 7 关</span><h2>剪枝：别追不可能的梦</h2></div>
+      <p class="lead">设想还要放 5 个棋子，却只剩 3 行了。每行最多放一个，这<b>绝对</b>不可能成功，可我们的程序还在继续探索！</p>
+      <p>多加一行就能解决：如果 <code>placed + 剩下的行数 &lt; k</code>，立刻放弃。我们来数一数，在完整的 8 × 8 棋盘、k = 8 时，加和不加这一行，<code>dfs</code> 分别被调用多少次：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>pruning.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_counted</span>(n, k, board, prune):
+    ans = calls = <span class="nu">0</span>
+    cols_used = [<span class="kw">False</span>] * n
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row, placed):
+        <span class="kw">nonlocal</span> ans, calls
+        calls += <span class="nu">1</span>
+        <span class="kw">if</span> placed == k:
+            ans += <span class="nu">1</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span>
+        <span class="kw">if</span> prune <span class="kw">and</span> placed + (n - row) &lt; k:
+            <span class="kw">return</span>                     <span class="cm"># ✂ 剩下的行不够了</span>
+        dfs(row + <span class="nu">1</span>, placed)
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'.'</span> <span class="kw">or</span> cols_used[col]:
+                <span class="kw">continue</span>
+            cols_used[col] = <span class="kw">True</span>
+            dfs(row + <span class="nu">1</span>, placed + <span class="nu">1</span>)
+            cols_used[col] = <span class="kw">False</span>
+
+    dfs(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> ans, calls
+
+full = [<span class="st">"#"</span> * <span class="nu">8</span>] * <span class="nu">8</span>
+<span class="fn">print</span>(solve_counted(<span class="nu">8</span>, <span class="nu">8</span>, full, prune=<span class="kw">False</span>))   <span class="cm"># (40320, 1952457)</span>
+<span class="fn">print</span>(solve_counted(<span class="nu">8</span>, <span class="nu">8</span>, full, prune=<span class="kw">True</span>))    <span class="cm"># (40320, 178882)</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat slow"><div class="num">1,952,457</div><div class="lbl">不剪枝时的调用次数</div></div>
+        <div class="stat fast"><div class="num">178,882</div><div class="lbl">只加一行剪枝：工作量少了约 <b>11 倍</b>，答案还是 40,320</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">为什么差这么多？</div>
+        <p>当 k = n 时，每一行<i>都必须</i>放一个棋子，所以"跳过这一行"的分支永远没希望。不剪枝的话，程序会沿着每一条跳过分支一直走到底才发现。剪枝检查则会立刻察觉，马上掉头。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第 8 关</span><h2>大数字，以及为什么还得搜索</h2></div>
+      <p class="lead">在<b>完整</b>的棋盘（没有空洞）上，其实可以用公式算。我们看看公式是怎么来的。</p>
+      <p>取一个完整的 n × n 棋盘，k = n。第 0 行有 n 列可选，第 1 行有 n − 1 列（有一列被占了），第 2 行有 n − 2 列……所以总数是 n × (n − 1) × … × 1 = <b>n!</b>（"n 的阶乘"）。</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>n</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr></thead>
+          <tbody><tr><td>n!</td><td>1</td><td>2</td><td>6</td><td>24</td><td>120</td><td>720</td><td>5,040</td><td class="odd">40,320</td></tr></tbody>
+        </table>
+      </div>
+      <p>k 更小时也有公式：从 n 行里选 k 行，从 n 列里选 k 列，再把它们一一配对，有 k! 种配法。完整的 8 × 8 棋盘、k = 4 时，就是 70 × 70 × 24 = <b>117,600</b>。</p>
+      <div class="callout warn">
+        <div class="ctitle">但空洞会打破所有公式</div>
+        <p>棋盘一旦有了空洞，漂亮的乘法就不灵了，因为每一行能用的列都不一样。这正是题目要我们<b>搜索</b>的原因。<code>n ≤ 8</code> 时，回溯已经足够快。棋盘更大时，程序员会把它和<a href="dynamic_programming_zh.html">动态规划</a>结合起来：记住"当前行 + 已用的列 + 已放的棋子数"，同样的局面就不用再算第二次。练习题第 8 题就让你亲手实现！</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9: QUIZ ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">检查站</span><h2>概念小测验</h2></div>
+      <p class="lead">先在脑子里想好答案，再点开看。</p>
+      <details>
+        <summary>Q1. 如果删掉 <code>dfs(row + 1, placed)</code> 这一行（"跳过这一行"的选项），会出什么问题？</summary>
+        <div class="reveal"><p>那样一来，走到的每一行都<i>必须</i>放一个棋子，只有 k = n 时才对。对样例 1（k = 1），程序会在第 0 行放一个棋子就结束，永远找不到只用第 1 行的那种摆法，会输出 <b>1</b> 而不是 2。</p></div>
+      </details>
+      <details>
+        <summary>Q2. 如果忘了写 <code>cols_used[col] = False</code>（撤销选择那一步）呢？</summary>
+        <div class="reveal"><p>列一旦被用过，就永远保持"已占用"，哪怕我们已经退出了那个分支。后面的分支会误以为这些列被挡住了，于是很多合法摆法找不到，结果<b>偏小</b>。</p></div>
+      </details>
+      <details>
+        <summary>Q3. 为什么 <code>if placed == k</code> 要写在 <code>if row == n</code> 前面？</summary>
+        <div class="reveal"><p>如果最后一个棋子放在最后一行，我们会调用 <code>dfs(n, k)</code>。这时两个条件都成立，而我们要的是<b>计数</b>，不是把它当死路扔掉。先检查 <code>placed == k</code> 还能让我们在 k 个棋子放完时立刻停下，不必再走完剩下的行。</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 10: PRACTICE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">训练场</span><h2>练习题</h2></div>
+      <p class="lead">八道题，从热身 ★ 到 Boss 级 ★★★。有些答案会用到第 4 关的 <code>solve()</code>，做题时把它粘贴在你的代码上面。认真尝试过之后再看答案！</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. 手动追踪样例 2 <span class="stars">★</span></h3>
+        <p>对棋盘 <code>...#</code> / <code>..#.</code> / <code>.#..</code> / <code>#...</code>、k = 4，在纸上跟着搜索走一遍。哪些"跳过这一行"的分支会死掉？为什么答案是 1？然后用 <code>solve()</code> 验证。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>每行正好一个 <code>#</code>，而且 k = 4 = n。所以跳过<i>任何</i>一行，剩下的行都不够放 4 个棋子。每条跳过分支最后都会以不到 4 个棋子的状态走到 <code>row == n</code>。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_sample2.py</div>
+<pre><code>board = [<span class="st">"...#"</span>, <span class="st">"..#."</span>, <span class="st">".#.."</span>, <span class="st">"#..."</span>]
+<span class="fn">print</span>(solve(<span class="nu">4</span>, <span class="nu">4</span>, board))   <span class="cm"># 1  → 棋子在 (0,3), (1,2), (2,1), (3,0)</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. 完整的 4 × 4 城堡 <span class="stars">★</span></h3>
+        <p>在没有空洞的 4 × 4 棋盘上，放 k = 4 个棋子有几种方法？k = 2 呢？先用第 8 关的公式预测，再用 <code>solve()</code> 验证。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>k = 4：4! = 24。k = 2：选 2 行（6 种）× 选 2 列（6 种）× 配对（2 种）。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_full_board.py</div>
+<pre><code>full = [<span class="st">"####"</span>] * <span class="nu">4</span>
+<span class="fn">print</span>(solve(<span class="nu">4</span>, <span class="nu">4</span>, full))   <span class="cm"># 24</span>
+<span class="fn">print</span>(solve(<span class="nu">4</span>, <span class="nu">2</span>, full))   <span class="cm"># 72  (= 6 × 6 × 2)</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. 把棋盘画出来 <span class="stars">★★</span></h3>
+        <p>不只计数，还要把每种摆法画成图：用 <code>O</code> 表示棋子，图与图之间空一行。（检验：样例 1 会画出两张图。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>维护一个由 <code>(row, col)</code> 组成的列表 <code>pieces</code>：做选择时 <code>append</code>，撤销时 <code>pop</code>。当 <code>len(pieces) == k</code> 时，画出棋盘。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_show_all.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">show_all</span>(n, k, board):
+    cols_used = [<span class="kw">False</span>] * n
+    pieces = []                              <span class="cm"># 每个棋子的 (row, col)</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row):
+        <span class="kw">if</span> <span class="fn">len</span>(pieces) == k:
+            <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(n):
+                line = <span class="fn">list</span>(board[r])
+                <span class="kw">for</span> pr, pc <span class="kw">in</span> pieces:
+                    <span class="kw">if</span> pr == r:
+                        line[pc] = <span class="st">"O"</span>
+                <span class="fn">print</span>(<span class="st">""</span>.join(line))
+            <span class="fn">print</span>()
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span>
+        dfs(row + <span class="nu">1</span>)
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'.'</span> <span class="kw">or</span> cols_used[col]:
+                <span class="kw">continue</span>
+            cols_used[col] = <span class="kw">True</span>; pieces.append((row, col))
+            dfs(row + <span class="nu">1</span>)
+            pieces.pop(); cols_used[col] = <span class="kw">False</span>
+
+    dfs(<span class="nu">0</span>)
+
+show_all(<span class="nu">2</span>, <span class="nu">1</span>, [<span class="st">"#."</span>, <span class="st">".#"</span>])
+<span class="cm"># #.</span>
+<span class="cm"># .O</span>
+<span class="cm">#</span>
+<span class="cm"># O.</span>
+<span class="cm"># .#</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. 量一量剪枝的效果 <span class="stars">★★</span></h3>
+        <p>用第 7 关的 <code>solve_counted</code>，在完整的 8 × 8 棋盘上分别试 k = 4 和 k = 6。剪枝什么时候帮大忙，什么时候只帮一点点？为什么？</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>只有剩下的行不够时，剪枝才会生效。k 很小时，行数几乎总是够的，所以它很少生效。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_measure.py</div>
+<pre><code>full = [<span class="st">"#"</span> * <span class="nu">8</span>] * <span class="nu">8</span>
+<span class="kw">for</span> k <span class="kw">in</span> (<span class="nu">4</span>, <span class="nu">6</span>, <span class="nu">8</span>):
+    _, slow = solve_counted(<span class="nu">8</span>, k, full, prune=<span class="kw">False</span>)
+    _, fast = solve_counted(<span class="nu">8</span>, k, full, prune=<span class="kw">True</span>)
+    <span class="fn">print</span>(k, slow, fast)
+<span class="cm"># 4 164937 155846     ← 几乎没帮上忙：剩下的行几乎总是够的</span>
+<span class="cm"># 6 1387977 963612</span>
+<span class="cm"># 8 1952457 178882    ← 帮了大忙：每次跳过都没希望</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. 彩色的守卫 <span class="stars">★★</span></h3>
+        <p>如果 k 个棋子各不相同（红的、蓝的、绿的……）呢？这时交换两个棋子<i>就</i>算新摆法了。在完整的 3 × 3 棋盘、k = 2 时数一数。（检验：相同棋子 18 种 → 彩色棋子 36 种。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>每一种相同棋子的摆法，都能用 k! 种方式上色。所以不用重新搜索，乘一下就行。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_colours.py</div>
+<pre><code><span class="kw">import</span> math
+
+board = [<span class="st">"###"</span>] * <span class="nu">3</span>
+same = solve(<span class="nu">3</span>, <span class="nu">2</span>, board)
+<span class="fn">print</span>(same)                        <span class="cm"># 18</span>
+<span class="fn">print</span>(same * math.factorial(<span class="nu">2</span>))   <span class="cm"># 36</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. 城堡里的皇后 <span class="stars">★★★</span></h3>
+        <p>把棋子升级成<b>皇后</b>：两个棋子不能同行、同列，<i>也不能在同一条斜线上</i>。在有形状的棋盘上数一数。（检验：完整 8 × 8、k = 8 → 92，就是著名的八皇后答案；样例 1、k = 2 → 0。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>记住每个棋子的位置。两个格子 <code>(r1, c1)</code> 和 <code>(r2, c2)</code> 在同一条斜线上，当且仅当 <code>abs(r1 - r2) == abs(c1 - c2)</code>。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_queens.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_queens</span>(n, k, board):
+    ans = <span class="nu">0</span>
+    cols_used = [<span class="kw">False</span>] * n
+    pieces = []
+
+    <span class="kw">def</span> <span class="fn">diagonal_free</span>(r, c):
+        <span class="kw">return</span> <span class="fn">all</span>(<span class="fn">abs</span>(pr - r) != <span class="fn">abs</span>(pc - c) <span class="kw">for</span> pr, pc <span class="kw">in</span> pieces)
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row, placed):
+        <span class="kw">nonlocal</span> ans
+        <span class="kw">if</span> placed == k:
+            ans += <span class="nu">1</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span>
+        dfs(row + <span class="nu">1</span>, placed)
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'.'</span> <span class="kw">or</span> cols_used[col] <span class="kw">or</span> <span class="kw">not</span> diagonal_free(row, col):
+                <span class="kw">continue</span>
+            cols_used[col] = <span class="kw">True</span>; pieces.append((row, col))
+            dfs(row + <span class="nu">1</span>, placed + <span class="nu">1</span>)
+            pieces.pop(); cols_used[col] = <span class="kw">False</span>
+
+    dfs(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> ans
+
+<span class="fn">print</span>(solve_queens(<span class="nu">8</span>, <span class="nu">8</span>, [<span class="st">"#"</span> * <span class="nu">8</span>] * <span class="nu">8</span>))   <span class="cm"># 92</span>
+<span class="fn">print</span>(solve_queens(<span class="nu">2</span>, <span class="nu">2</span>, [<span class="st">"#."</span>, <span class="st">".#"</span>]))    <span class="cm"># 0   (两个格子在同一条斜线上)</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. 用二进制位表示列 <span class="stars">★★★</span></h3>
+        <p>用一个整数 <code>used</code> 代替 <code>cols_used</code> 列表：第 <code>c</code> 位是 1，就表示第 <code>c</code> 列被占了。附加题：为什么不再需要"撤销选择"那一行了？</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>如果 <code>used &amp; (1 &lt;&lt; c)</code> 不为零，第 <code>c</code> 列就被占了。把 <code>used | (1 &lt;&lt; c)</code> 传给下一层调用。这是一个<i>新</i>的数，你自己的 <code>used</code> 从没被改过，就像回溯那一课里的 <code>code + letter</code>。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_bits.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_bits</span>(n, k, board):
+    ans = <span class="nu">0</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row, placed, used):
+        <span class="kw">nonlocal</span> ans
+        <span class="kw">if</span> placed == k:
+            ans += <span class="nu">1</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span>
+        dfs(row + <span class="nu">1</span>, placed, used)
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'#'</span> <span class="kw">and</span> <span class="kw">not</span> used &amp; (<span class="nu">1</span> &lt;&lt; col):
+                dfs(row + <span class="nu">1</span>, placed + <span class="nu">1</span>, used | (<span class="nu">1</span> &lt;&lt; col))   <span class="cm"># 新的数：不用撤销</span>
+
+    dfs(<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> ans
+
+<span class="fn">print</span>(solve_bits(<span class="nu">2</span>, <span class="nu">1</span>, [<span class="st">"#."</span>, <span class="st">".#"</span>]))                      <span class="cm"># 2</span>
+<span class="fn">print</span>(solve_bits(<span class="nu">4</span>, <span class="nu">4</span>, [<span class="st">"...#"</span>, <span class="st">"..#."</span>, <span class="st">".#.."</span>, <span class="st">"#..."</span>]))   <span class="cm"># 1</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. 记住，别重复（DP） <span class="stars">★★★</span></h3>
+        <p>把搜索改成一个<b>返回</b>剩余棋盘摆法数的函数 <code>ways(row, placed, used)</code>，再加上 <code>@lru_cache</code>，让重复出现的局面只算一次。在 300 个随机棋盘上和（第 7 题的）<code>solve_bits</code> 对比检验。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>还是那三种情况：<code>placed == k</code> 返回 1；<code>row == n</code> 返回 0；否则把"跳过"分支和每个合法的"放置"分支加起来。答案只取决于 <code>(row, placed, used)</code>，这就是缓存能起作用的原因。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_memo.py</div>
+<pre><code><span class="kw">import</span> random
+<span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+<span class="kw">def</span> <span class="fn">solve_memo</span>(n, k, board):
+    <span class="fn">@lru_cache</span>(maxsize=<span class="kw">None</span>)
+    <span class="kw">def</span> <span class="fn">ways</span>(row, placed, used):
+        <span class="kw">if</span> placed == k:
+            <span class="kw">return</span> <span class="nu">1</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span> <span class="nu">0</span>
+        total = ways(row + <span class="nu">1</span>, placed, used)                   <span class="cm"># 跳过这一行</span>
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'#'</span> <span class="kw">and</span> <span class="kw">not</span> used &amp; (<span class="nu">1</span> &lt;&lt; col):
+                total += ways(row + <span class="nu">1</span>, placed + <span class="nu">1</span>, used | (<span class="nu">1</span> &lt;&lt; col))
+        <span class="kw">return</span> total
+    <span class="kw">return</span> ways(<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>)
+
+random.seed(<span class="nu">2026</span>)
+ok = <span class="kw">True</span>
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">300</span>):
+    n = random.randint(<span class="nu">1</span>, <span class="nu">6</span>)
+    k = random.randint(<span class="nu">1</span>, n)
+    board = [<span class="st">""</span>.join(random.choice(<span class="st">"#."</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+    ok = ok <span class="kw">and</span> solve_memo(n, k, board) == solve_bits(n, k, board)
+<span class="fn">print</span>(ok)                                   <span class="cm"># True</span>
+<span class="fn">print</span>(solve_memo(<span class="nu">8</span>, <span class="nu">8</span>, [<span class="st">"#"</span> * <span class="nu">8</span>] * <span class="nu">8</span>))      <span class="cm"># 40320</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">结案！</div>
+        <p>你把一段跑不起来的代码变成了可用的解法，弄懂了其中每一行，用剪枝让它变快，还偷看了一眼 DP 升级版。这些本领（仔细读题、一次只想一个决定、用样例测试代码）会陪你闯过更多竞赛题。</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>POJ 1321 棋盘问题：在有形状的棋盘上放 k 个相同的棋子，任意两个不同行不同列，用逐行回溯来计数。通用方法请看<a href="Backtracking_zh.html">回溯算法</a>，"记住而不是重复"的升级版请看<a href="dynamic_programming_zh.html">动态规划</a>。</p>
+    <p><a href="index_cn.html">&#x2190; 返回全部讲解</a> &middot; <a href="chessboard_en.html">English version</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    total: function(t, calls){ return '摆法数：<b>' + t + '</b> &middot; dfs 调用次数：<b>' + calls + '</b>'; },
+    showing: function(i, t, capped){ return '第 <b>' + i + '</b> 种，共 ' + t + ' 种' + (capped ? '（只能查看前 ' + capped + ' 种）' : ''); },
+    none: '这块棋盘上没有办法放下这些棋子。试试更小的 k，或者多加几个格子。',
+    bad: '棋盘大小 n 必须在 2–8 之间，k 必须在 1–n 之间。'
+  };
+
+  /* ---------- Castle widget (mirrors solve() in chessboard.py) ---------- */
+  var MAX_SHOW = 5000;
+  var n = 4, k = 2, board = [], arrangements = [], total = 0, calls = 0, view = 0;
+  var boardEl = document.getElementById('cBoard'), logEl = document.getElementById('cLog'), statsEl = document.getElementById('cStats');
+
+  function search(){
+    var colsUsed = [], pieces = [];
+    for (var i = 0; i < n; i++) colsUsed.push(false);
+    total = 0; calls = 0; arrangements = [];
+    function dfs(row, placed){
+      calls++;
+      if (placed === k){
+        total++;
+        if (arrangements.length < MAX_SHOW) arrangements.push(pieces.slice());
+        return;
+      }
+      if (row === n) return;
+      dfs(row + 1, placed);                       // option A: skip this row
+      for (var col = 0; col < n; col++){           // option B: a piece in this row
+        if (board[row][col] === '.' || colsUsed[col]) continue;
+        colsUsed[col] = true; pieces.push(col + row * 8);
+        dfs(row + 1, placed + 1);
+        pieces.pop(); colsUsed[col] = false;
+      }
+    }
+    dfs(0, 0);
+    view = 0;
+  }
+
+  function draw(){
+    var on = {};
+    var cur = arrangements[view] || [];
+    for (var i = 0; i < cur.length; i++) on[cur[i]] = true;
+    var html = '<div class="board clickable" style="grid-template-columns:repeat(' + n + ',1fr);">';
+    for (var r = 0; r < n; r++){
+      for (var c = 0; c < n; c++){
+        var hole = board[r][c] === '.';
+        var cls = 'sq ' + (hole ? 'hole' : ((r + c) % 2 === 0 ? 'l' : 'd'));
+        html += '<div class="' + cls + '" data-r="' + r + '" data-c="' + c + '">' + (on[c + r * 8] ? '<span class="rook">&#x265C;</span>' : '') + '</div>';
+      }
+    }
+    html += '</div>';
+    boardEl.innerHTML = html;
+    statsEl.innerHTML = T.total(total, calls);
+    if (total === 0) logEl.innerHTML = T.none;
+    else logEl.innerHTML = T.showing(view + 1, total, total > MAX_SHOW ? MAX_SHOW : 0);
+  }
+
+  function update(){
+    var newN = parseInt(document.getElementById('inSize').value, 10);
+    var newK = parseInt(document.getElementById('inK').value, 10);
+    if (isNaN(newN) || isNaN(newK) || newN < 2 || newN > 8 || newK < 1 || newK > newN){
+      logEl.innerHTML = T.bad; return;
+    }
+    if (newN !== n){ n = newN; board = fullBoard(n); }
+    k = newK;
+    search(); draw();
+  }
+
+  function fullBoard(size){
+    var b = [];
+    for (var r = 0; r < size; r++){ var row = []; for (var c = 0; c < size; c++) row.push('#'); b.push(row); }
+    return b;
+  }
+  function load(rows, kk){
+    n = rows.length; board = [];
+    for (var r = 0; r < n; r++) board.push(rows[r].split(''));
+    document.getElementById('inSize').value = n;
+    document.getElementById('inK').value = kk;
+    k = kk; search(); draw();
+  }
+
+  boardEl.addEventListener('click', function(e){
+    var sq = e.target.closest('.sq');
+    if (!sq) return;
+    var r = +sq.getAttribute('data-r'), c = +sq.getAttribute('data-c');
+    board[r][c] = board[r][c] === '#' ? '.' : '#';
+    search(); draw();
+  });
+  document.getElementById('cPrev').addEventListener('click', function(){ if (arrangements.length){ view = (view - 1 + arrangements.length) % arrangements.length; draw(); } });
+  document.getElementById('cNext').addEventListener('click', function(){ if (arrangements.length){ view = (view + 1) % arrangements.length; draw(); } });
+  document.getElementById('inSize').addEventListener('change', update);
+  document.getElementById('inK').addEventListener('change', update);
+  document.getElementById('pS1').addEventListener('click', function(){ load(['#.', '.#'], 1); });
+  document.getElementById('pS2').addEventListener('click', function(){ load(['...#', '..#.', '.#..', '#...'], 4); });
+  document.getElementById('pFull').addEventListener('click', function(){
+    var size = parseInt(document.getElementById('inSize').value, 10);
+    if (isNaN(size) || size < 2 || size > 8) size = 4;
+    var rows = []; for (var r = 0; r < size; r++){ var s = ''; for (var c = 0; c < size; c++) s += '#'; rows.push(s); }
+    load(rows, size);
+  });
+  document.getElementById('pRand').addEventListener('click', function(){
+    var size = 4 + Math.floor(Math.random() * 3), rows = [];
+    for (var r = 0; r < size; r++){ var s = ''; for (var c = 0; c < size; c++) s += Math.random() < 0.65 ? '#' : '.'; rows.push(s); }
+    load(rows, 2 + Math.floor(Math.random() * (size - 2)));
+  });
+
+  load(['#..#', '.##.', '##.#', '.#.#'], 2);
+})();
+</script>
+</body>
+</html>

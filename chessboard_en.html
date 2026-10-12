@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Castle Guard Puzzle: Placing Pieces on a Strange Chessboard (POJ 1321)</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+
+  /* ---------- Castle boards ---------- */
+  .sq.hole{background:repeating-linear-gradient(45deg,#7d858c 0 5px,#69717a 5px 10px);}
+  .sq .rook{color:#1b1b1b;}
+  .board.mini{max-width:150px;margin:0;}
+  .board.small{max-width:240px;margin:0;}
+  .boards{display:flex;flex-wrap:wrap;gap:18px 28px;justify-content:center;align-items:flex-end;margin:20px 0;}
+  .boards figure{margin:0;text-align:center;}
+  .boards figcaption{font-size:13px;color:var(--ink-soft);margin-top:6px;}
+  .board.clickable .sq{cursor:pointer;}
+  .board.clickable .sq:hover{outline:3px solid var(--accent);outline-offset:-3px;}
+  .tree rect.ok{fill:var(--clue-soft);stroke:var(--clue);}
+  .tree text.elabel{font-family:var(--font-body);font-size:13px;font-weight:600;fill:var(--ink-soft);}
+
+  /* ---------- Bug detective (diff view) ---------- */
+  .codebox pre.diff{padding:12px 0;}
+  .codebox pre.diff code{display:block;}
+  .codebox pre.diff span.ln{display:block;padding:0 18px;white-space:pre;}
+  .bugs{counter-reset:bug;list-style:none;padding:0;margin:20px 0;}
+  .bugs li{position:relative;background:var(--paper-raised);border:1px solid var(--line);border-left:4px solid var(--alert);border-radius:var(--radius);padding:12px 16px 12px 52px;margin:10px 0;box-shadow:var(--shadow);}
+  .bugs li::before{counter-increment:bug;content:"🐞" counter(bug);position:absolute;left:12px;top:12px;font-family:var(--font-mono);font-size:13px;font-weight:800;color:var(--alert);}
+  .bugs li .err{display:block;font-family:var(--font-mono);font-size:12.5px;color:var(--alert);margin-top:4px;}
+  .codebox pre.diff span.bug{background:var(--alert-soft);box-shadow:inset 3px 0 0 var(--alert);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="chessboard_zh.html">中文 &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Algorithms &middot; Problem Walkthrough &middot; POJ 1321</div>
+      <h1>The Castle Guard Puzzle: <em>Placing Pieces on a Strange Chessboard</em></h1>
+      <p class="sub">A wobbly, oddly shaped castle needs <b>k</b> guards. Each guard can see along their whole row and their whole column, and no guard may stand where another guard can see them. In how many different ways can the guards be placed? We'll solve this classic contest problem step by step, and we'll even catch the <b>five bugs</b> hiding in its sample solution.</p>
+      <div class="stampbar">
+        <span class="stamp hot">Ages 13+</span>
+        <span class="stamp">Backtracking</span>
+        <span class="stamp">Bug hunt</span>
+        <span class="stamp">Interactive board</span>
+        <span class="stamp">8 practice problems</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>The puzzle</h2></div>
+      <p class="lead">Here is the problem in plain words.</p>
+      <div class="callout fact">
+        <div class="ctitle">The problem (POJ 1321)</div>
+        <p>You get a chessboard that fits in an <code>n × n</code> box (<code>n ≤ 8</code>). Not every square is part of the board: <code>#</code> marks a real square, and <code>.</code> marks a hole where nothing can go. Place <code>k</code> <b>identical</b> pieces (<code>k ≤ n</code>) on real squares so that <b>no two pieces share a row or a column</b>. Count all the different ways to do it.</p>
+      </div>
+      <p>If you play chess, you'll recognise these pieces: they behave exactly like <b>rooks</b> (♜), which attack along rows and columns. So the question really is: <i>how many ways can k rooks sit on this broken board without attacking each other?</i></p>
+      <p>Let's try the smallest example. The board is 2 × 2 with only two real squares, and we want to place <b>k = 1</b> piece:</p>
+      <div class="boards">
+        <figure><div class="board mini" style="grid-template-columns:repeat(2,1fr);"><div class="sq l"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq l"></div></div><figcaption>The board: <code>#.</code> / <code>.#</code></figcaption></figure>
+        <figure><div class="board mini" style="grid-template-columns:repeat(2,1fr);"><div class="sq l"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq l"><span class="rook">&#x265C;</span></div></div><figcaption>Way 1</figcaption></figure>
+        <figure><div class="board mini" style="grid-template-columns:repeat(2,1fr);"><div class="sq l"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq l"></div></div><figcaption>Way 2</figcaption></figure>
+      </div>
+      <p>The striped squares are holes. With one piece there are two real squares to choose from, so the answer is <b>2</b>.</p>
+      <p>Now a 4 × 4 castle with <b>k = 4</b> guards. Every row and every column must get exactly one guard, and the real squares form a diagonal line:</p>
+      <div class="boards">
+        <figure><div class="board small" style="grid-template-columns:repeat(4,1fr);"><div class="sq hole"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq hole"></div></div><figcaption>The board</figcaption></figure>
+        <figure><div class="board small" style="grid-template-columns:repeat(4,1fr);"><div class="sq hole"></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq d"><span class="rook">&#x265C;</span></div><div class="sq hole"></div><div class="sq hole"></div><div class="sq hole"></div></div><figcaption>The only way</figcaption></figure>
+      </div>
+      <p>Each row has just one real square, so there's no choice at all: the answer is <b>1</b>.</p>
+      <div class="callout tip">
+        <div class="ctitle">"Identical" matters</div>
+        <p>The pieces all look the same, so swapping two of them does <b>not</b> make a new arrangement. Only <i>which squares</i> are used matters. Keep this in mind, because it shapes how our program searches.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Reading the board</h2></div>
+      <p class="lead">Contest problems give their data as plain text. Each test case starts with a line <code>n k</code>, followed by <code>n</code> lines of the board. A line <code>-1 -1</code> means "no more tests".</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sample input</div>
+<pre class="diff"><code><span class="ln">2 1</span><span class="ln">#.</span><span class="ln">.#</span><span class="ln">4 4</span><span class="ln">...#</span><span class="ln">..#.</span><span class="ln">.#..</span><span class="ln">#...</span><span class="ln">-1 -1</span></code></pre>
+      </div>
+      <p>Expected output: <code>2</code> and <code>1</code>, matching what we found by hand. In Python, the board becomes a list of strings, so <code>board[row][col]</code> tells us what's on any square:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>read_board.py</div>
+<pre><code>lines = [<span class="st">"2 1"</span>, <span class="st">"#."</span>, <span class="st">".#"</span>]
+n, k = <span class="fn">map</span>(<span class="fn">int</span>, lines[<span class="nu">0</span>].split())
+board = lines[<span class="nu">1</span>:<span class="nu">1</span> + n]
+
+<span class="fn">print</span>(n, k)          <span class="cm"># 2 1</span>
+<span class="fn">print</span>(board)         <span class="cm"># ['#.', '.#']</span>
+<span class="fn">print</span>(board[<span class="nu">0</span>][<span class="nu">1</span>])   <span class="cm"># .   (row 0, column 1 is a hole)</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Thinking row by row</h2></div>
+      <p class="lead">Two pieces can never share a row, so each row holds <b>at most one</b> piece. That gives us a neat plan: walk down the board one row at a time and make one decision per row.</p>
+      <div class="recipe">
+        <div class="step"><div class="k">Option A</div><div class="t">Skip this row</div><div class="d">Put no piece here and move to the next row. We need this because k can be smaller than n.</div></div>
+        <div class="step"><div class="k">Option B</div><div class="t">Place one piece</div><div class="d">Pick a column that is a real square (<code>#</code>) and not used by another piece yet.</div></div>
+        <div class="step"><div class="k">Stop when…</div><div class="t">k pieces placed</div><div class="d">That's one valid arrangement: count it! If we run out of rows first, it's a dead end.</div></div>
+      </div>
+      <p>To remember which columns are taken, we keep a list <code>cols_used</code> of <code>True</code>/<code>False</code> values. This is the <b>backtracking</b> recipe again: <b>Choose</b> a column → <b>Explore</b> the next row → <b>Un-choose</b> the column, so other branches can use it.</p>
+      <p>Here is the whole search tree for the first sample (<code>#.</code> / <code>.#</code>, k = 1). <code>dfs(row, placed)</code> means "we are at this row and have placed this many pieces":</p>
+      <div class="tree">
+        <svg viewBox="0 0 800 250" role="img" aria-label="Search tree for sample 1: two successful leaves and one dead end">
+          <line x1="400" y1="34" x2="230" y2="114"/><line x1="400" y1="34" x2="600" y2="114"/>
+          <line x1="230" y1="114" x2="110" y2="204"/><line x1="230" y1="114" x2="350" y2="204"/>
+          <text class="elabel" x="270" y="66" text-anchor="middle">skip row 0</text>
+          <text class="elabel" x="540" y="66" text-anchor="middle">piece at (0, 0)</text>
+          <text class="elabel" x="125" y="156" text-anchor="middle">skip row 1</text>
+          <text class="elabel" x="345" y="156" text-anchor="middle">piece at (1, 1)</text>
+          <rect x="330" y="16" width="140" height="36" rx="8"/><text x="400" y="40" text-anchor="middle">dfs(0, 0)</text>
+          <rect x="160" y="96" width="140" height="36" rx="8"/><text x="230" y="120" text-anchor="middle">dfs(1, 0)</text>
+          <rect class="ok" x="510" y="96" width="180" height="36" rx="8"/><text x="600" y="120" text-anchor="middle">dfs(1, 1) ✔</text>
+          <rect class="r2" x="20" y="186" width="180" height="36" rx="8"/><text x="110" y="210" text-anchor="middle">dfs(2, 0) ✗</text>
+          <rect class="ok" x="260" y="186" width="180" height="36" rx="8"/><text x="350" y="210" text-anchor="middle">dfs(2, 1) ✔</text>
+        </svg>
+        <div class="legend"><span><span class="swatch" style="background:var(--clue-soft);border-color:var(--clue)"></span>k pieces placed → count +1</span><span><span class="swatch s2"></span>ran out of rows → dead end</span></div>
+      </div>
+      <details>
+        <summary>Quick quiz: why do we always go to the <i>next</i> row, and never come back to an earlier one?</summary>
+        <div class="reveal"><p>Because the pieces are identical. If we were allowed to place a piece in row 1 and <i>then</i> go back to row 0, we would build the same set of squares in a different order and count it twice. Moving strictly downward means every arrangement is built in exactly one way, so it's counted exactly once.</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Bug detective: fixing the sample solution</h2></div>
+      <p class="lead">Here is the solution code we were given. The idea is exactly right, but if you type it in, <b>Python refuses to run it</b>. Put on your detective hat: the highlighted lines hide five bugs.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>original.py (as given, does NOT run)</div>
+<pre class="diff"><code><span class="ln">while True:</span><span class="ln">n, k = map(int, input().split())</span><span class="ln bug">if (n, k) = (-1, -1): break</span><span class="ln">board = [input() for _ in range(n)]</span><span class="ln">ans = 0</span><span class="ln">cols_used = [False] * n</span><span class="ln">def dfs(row, placed):</span><span class="ln bug">nonlocal ans # look this up - useful for</span><span class="ln"># recursion</span><span class="ln bug">if placed = k:</span><span class="ln">ans += 1</span><span class="ln">return</span><span class="ln bug">if row = n: return</span><span class="ln">dfs(row + 1, placed)</span><span class="ln">for col in range(n):</span><span class="ln bug">if board[row][col] = '.' or cols_used[col]:</span><span class="ln">continue</span><span class="ln bug">col_used[i] = True</span><span class="ln">dfs(row + 1, placed + 1)</span><span class="ln bug">col_used[i] = False</span><span class="ln">dfs(0, 0)</span><span class="ln">print(ans)</span></code></pre>
+      </div>
+      <ol class="bugs">
+        <li><b><code>=</code> instead of <code>==</code>.</b> In Python, <code>=</code> <i>stores</i> a value and <code>==</code> <i>compares</i> two values. Four lines use <code>=</code> where they mean "is equal to?": <code>(n, k) = (-1, -1)</code>, <code>placed = k</code>, <code>row = n</code> and <code>board[row][col] = '.'</code>.<span class="err">SyntaxError: invalid syntax</span></li>
+        <li><b><code>nonlocal</code> with nothing to point to.</b> <code>nonlocal ans</code> means "use the <code>ans</code> of the function I'm inside". But <code>dfs</code> is not inside another function here, it's at the top level of the program, so Python can't find that <code>ans</code>. The fix is to wrap the search in a function <code>solve(n, k, board)</code>.<span class="err">SyntaxError: no binding for nonlocal 'ans' found</span></li>
+        <li><b>A misspelled name.</b> The list is created as <code>cols_used</code>, but later written as <code>col_used</code> (no "s").<span class="err">NameError: name 'col_used' is not defined</span></li>
+        <li><b>The wrong loop variable.</b> The loop variable is <code>col</code>, but the code says <code>[i]</code>. There is no <code>i</code> anywhere! It should be <code>cols_used[col]</code>.</li>
+        <li><b>Lost indentation.</b> Python uses indentation to know which lines belong inside <code>while</code>, <code>def</code>, <code>if</code> and <code>for</code>. Without it the code can't even start. (This usually happens when code is copied from a web page or chat.)<span class="err">IndentationError: expected an indented block after 'while' statement on line 1</span></li>
+      </ol>
+      <p>Here is the repaired program. The logic is the same as the original. We just moved the search into <code>solve()</code> and fixed every bug:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>chessboard.py (fixed)</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve</span>(n, k, board):
+    ans = <span class="nu">0</span>
+    cols_used = [<span class="kw">False</span>] * n               <span class="cm"># which columns already have a piece</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row, placed):
+        <span class="kw">nonlocal</span> ans                       <span class="cm"># ✅ ans belongs to solve()</span>
+        <span class="kw">if</span> placed == k:                    <span class="cm"># ✅ == compares</span>
+            ans += <span class="nu">1</span>                        <span class="cm"># k pieces placed: one more way!</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:                       <span class="cm"># ran out of rows: dead end</span>
+            <span class="kw">return</span>
+        dfs(row + <span class="nu">1</span>, placed)                <span class="cm"># option A: skip this row</span>
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):                <span class="cm"># option B: a piece in this row</span>
+            <span class="kw">if</span> board[row][col] == <span class="st">'.'</span> <span class="kw">or</span> cols_used[col]:
+                <span class="kw">continue</span>                    <span class="cm"># a hole, or the column is taken</span>
+            cols_used[col] = <span class="kw">True</span>          <span class="cm"># choose  ✅ cols_used[col]</span>
+            dfs(row + <span class="nu">1</span>, placed + <span class="nu">1</span>)        <span class="cm"># explore</span>
+            cols_used[col] = <span class="kw">False</span>         <span class="cm"># un-choose</span>
+
+    dfs(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> ans
+
+<span class="kw">while</span> <span class="kw">True</span>:
+    n, k = <span class="fn">map</span>(<span class="fn">int</span>, <span class="fn">input</span>().split())
+    <span class="kw">if</span> (n, k) == (-<span class="nu">1</span>, -<span class="nu">1</span>):
+        <span class="kw">break</span>
+    board = [<span class="fn">input</span>() <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+    <span class="fn">print</span>(solve(n, k, board))
+
+<span class="cm"># with the sample input above, this prints:</span>
+<span class="cm"># 2</span>
+<span class="cm"># 1</span></code></pre>
+      </div>
+      <div class="callout warn">
+        <div class="ctitle">Bonus trap: blank lines in the input</div>
+        <p>Some judges put an empty line between test cases. Then <code>input().split()</code> returns an empty list and the program crashes with <code>ValueError: not enough values to unpack</code>. A safer way is to read <b>all</b> the input at once and walk through it word by word, because <code>split()</code> ignores blank lines completely:</p>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>robust_input.py (replaces the while-loop)</div>
+<pre><code><span class="kw">import</span> sys
+
+<span class="kw">def</span> <span class="fn">main</span>():
+    data = sys.stdin.read().split()    <span class="cm"># every word of the input, blank lines ignored</span>
+    pos = <span class="nu">0</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        n, k = <span class="fn">int</span>(data[pos]), <span class="fn">int</span>(data[pos + <span class="nu">1</span>])
+        pos += <span class="nu">2</span>
+        <span class="kw">if</span> n == -<span class="nu">1</span> <span class="kw">and</span> k == -<span class="nu">1</span>:
+            <span class="kw">break</span>
+        board = data[pos:pos + n]        <span class="cm"># the next n words are the board rows</span>
+        pos += n
+        <span class="fn">print</span>(solve(n, k, board))
+
+main()
+<span class="cm"># 2</span>
+<span class="cm"># 1</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Following the thread</h2></div>
+      <p class="lead">Let's watch the fixed program run on the first sample, call by call. This is exactly the tree from Level 3.</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>#</th><th>call</th><th>what happens</th><th>cols_used</th><th>ans</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>dfs(0, 0)</td><td class="left">not done yet → first try option A: skip row 0</td><td>[F, F]</td><td>0</td></tr>
+            <tr><td>2</td><td>dfs(1, 0)</td><td class="left">skip row 1 as well</td><td>[F, F]</td><td>0</td></tr>
+            <tr><td>3</td><td>dfs(2, 0)</td><td class="left">row == n but only 0 pieces → <b>dead end</b>, return</td><td>[F, F]</td><td class="even">0</td></tr>
+            <tr><td>–</td><td>back in dfs(1, 0)</td><td class="left">col 0 is <code>.</code> → skip. col 1 is <code>#</code> → <b>choose</b> it</td><td>[F, <b>T</b>]</td><td>0</td></tr>
+            <tr><td>4</td><td>dfs(2, 1)</td><td class="left">placed == k → <b>count it!</b></td><td>[F, T]</td><td class="odd">1</td></tr>
+            <tr><td>–</td><td>back in dfs(1, 0)</td><td class="left"><b>un-choose</b> col 1. Loop over, return</td><td>[F, <b>F</b>]</td><td>1</td></tr>
+            <tr><td>–</td><td>back in dfs(0, 0)</td><td class="left">option B: col 0 is <code>#</code> → <b>choose</b> it</td><td>[<b>T</b>, F]</td><td>1</td></tr>
+            <tr><td>5</td><td>dfs(1, 1)</td><td class="left">placed == k → <b>count it!</b> (no need to look at row 1)</td><td>[T, F]</td><td class="odd">2</td></tr>
+            <tr><td>–</td><td>back in dfs(0, 0)</td><td class="left"><b>un-choose</b> col 0. col 1 is <code>.</code> → skip. Done!</td><td>[<b>F</b>, F]</td><td class="odd">2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Five calls in total, and the answer is <b>2</b>. Notice step 5: the check <code>placed == k</code> comes <b>before</b> <code>row == n</code>, so we count a finished arrangement as soon as it's complete, even if rows are left over.</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Build your own castle</h2></div>
+      <p class="lead">Now it's your turn to design boards. The widget runs the same <code>solve()</code> search in your browser, counts every arrangement, and lets you flip through them one by one.</p>
+      <div class="widget" id="castleWidget">
+        <h3>The castle designer</h3>
+        <div class="hint"><b>Click any square</b> to turn it into a hole (striped) or back into a real square. Change <b>k</b> to place more or fewer guards. Then use ◀ ▶ to see each arrangement.</div>
+        <div class="controls">
+          <button class="btn ghost" id="pS1" type="button">Sample 1</button>
+          <button class="btn ghost" id="pS2" type="button">Sample 2</button>
+          <button class="btn ghost" id="pFull" type="button">Full board</button>
+          <button class="btn ghost" id="pRand" type="button">Random castle</button>
+        </div>
+        <div class="field-row" style="justify-content:center;">
+          <div class="field"><label for="inSize">board size n (2–8)</label><input id="inSize" type="number" min="2" max="8" value="4"></div>
+          <div class="field"><label for="inK">pieces k</label><input id="inK" type="number" min="1" max="8" value="2"></div>
+        </div>
+        <div id="cBoard"></div>
+        <div class="controls">
+          <button class="btn ghost" id="cPrev" type="button">&#x25C0;</button>
+          <button class="btn ghost" id="cNext" type="button">&#x25B6;</button>
+        </div>
+        <div class="log" id="cLog"></div>
+        <div class="answer-line" id="cStats"></div>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">Challenges</div>
+        <ul>
+          <li>Can you design a 4 × 4 castle where k = 4 has <b>exactly 2</b> arrangements?</li>
+          <li>On the full 4 × 4 board, how does the count change from k = 1 to k = 4?</li>
+          <li>Make a board with lots of real squares that still has <b>0</b> arrangements for k = 3. (Hint: put all the real squares in just two rows or two columns.)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Pruning: don't chase impossible dreams</h2></div>
+      <p class="lead">Imagine we still need to place 5 pieces, but only 3 rows are left. Since each row holds at most one piece, this can <b>never</b> work. Yet our program keeps exploring anyway!</p>
+      <p>One extra line fixes that: if <code>placed + (rows left) &lt; k</code>, give up right away. Let's count how many times <code>dfs</code> is called, with and without that line, on a full 8 × 8 board with k = 8:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>pruning.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_counted</span>(n, k, board, prune):
+    ans = calls = <span class="nu">0</span>
+    cols_used = [<span class="kw">False</span>] * n
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row, placed):
+        <span class="kw">nonlocal</span> ans, calls
+        calls += <span class="nu">1</span>
+        <span class="kw">if</span> placed == k:
+            ans += <span class="nu">1</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span>
+        <span class="kw">if</span> prune <span class="kw">and</span> placed + (n - row) &lt; k:
+            <span class="kw">return</span>                     <span class="cm"># ✂ not enough rows left</span>
+        dfs(row + <span class="nu">1</span>, placed)
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'.'</span> <span class="kw">or</span> cols_used[col]:
+                <span class="kw">continue</span>
+            cols_used[col] = <span class="kw">True</span>
+            dfs(row + <span class="nu">1</span>, placed + <span class="nu">1</span>)
+            cols_used[col] = <span class="kw">False</span>
+
+    dfs(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> ans, calls
+
+full = [<span class="st">"#"</span> * <span class="nu">8</span>] * <span class="nu">8</span>
+<span class="fn">print</span>(solve_counted(<span class="nu">8</span>, <span class="nu">8</span>, full, prune=<span class="kw">False</span>))   <span class="cm"># (40320, 1952457)</span>
+<span class="fn">print</span>(solve_counted(<span class="nu">8</span>, <span class="nu">8</span>, full, prune=<span class="kw">True</span>))    <span class="cm"># (40320, 178882)</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat slow"><div class="num">1,952,457</div><div class="lbl">calls without pruning</div></div>
+        <div class="stat fast"><div class="num">178,882</div><div class="lbl">calls with one line of pruning: about <b>11× less work</b>, same answer 40,320</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">Why so much?</div>
+        <p>When k = n, every row <i>must</i> get a piece, so the "skip this row" branch is always hopeless. Without pruning, the program wanders down every one of those skip branches until it hits the bottom. The pruning check notices immediately and turns back.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Big numbers, and why we still need to search</h2></div>
+      <p class="lead">On a <b>full</b> board (no holes) we can actually count with a formula. Let's see where it comes from.</p>
+      <p>Take a full n × n board and k = n. Row 0 has n columns to choose from, row 1 has n − 1 (one column is taken), row 2 has n − 2… So the count is n × (n − 1) × … × 1 = <b>n!</b> ("n factorial").</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>n</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr></thead>
+          <tbody><tr><td>n!</td><td>1</td><td>2</td><td>6</td><td>24</td><td>120</td><td>720</td><td>5,040</td><td class="odd">40,320</td></tr></tbody>
+        </table>
+      </div>
+      <p>For smaller k, there's a formula too: choose k of the n rows, choose k of the n columns, then match them up in k! ways. On the full 8 × 8 board with k = 4 that's 70 × 70 × 24 = <b>117,600</b>.</p>
+      <div class="callout warn">
+        <div class="ctitle">But holes break every formula</div>
+        <p>As soon as the board has holes, the neat multiplication stops working, because different rows have different free columns. That's exactly why the problem asks us to <b>search</b>. With <code>n ≤ 8</code>, backtracking is fast enough. For bigger boards, programmers combine it with <a href="dynamic_programming_en.html">dynamic programming</a>: they remember "row + used columns + pieces placed" so no situation is solved twice. You'll build that in practice problem 8!</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9: QUIZ ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">CHECKPOINT</span><h2>Quick concept quiz</h2></div>
+      <p class="lead">Try to answer in your head before you peek.</p>
+      <details>
+        <summary>Q1. What goes wrong if we delete the line <code>dfs(row + 1, placed)</code> (the "skip this row" option)?</summary>
+        <div class="reveal"><p>Then every row we visit <i>must</i> get a piece. That only works when k = n. For sample 1 (k = 1), the program would place a piece in row 0 and stop, and it would never find the arrangement that uses only row 1. It would print <b>1</b> instead of 2.</p></div>
+      </details>
+      <details>
+        <summary>Q2. What if we forget <code>cols_used[col] = False</code> (the un-choose step)?</summary>
+        <div class="reveal"><p>Columns stay "taken" forever after their first use, even after we've backed out of that branch. Later branches wrongly think those columns are blocked, so many valid arrangements are never found and the count comes out <b>too small</b>.</p></div>
+      </details>
+      <details>
+        <summary>Q3. Why does <code>if placed == k</code> come before <code>if row == n</code>?</summary>
+        <div class="reveal"><p>If the last piece is placed in the last row, we call <code>dfs(n, k)</code>. Both conditions are true there, and we want to <b>count</b> it, not throw it away as a dead end. Checking <code>placed == k</code> first also lets us stop early as soon as all k pieces are down, without walking through the leftover rows.</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 10: PRACTICE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">TRAINING GROUND</span><h2>Practice problems</h2></div>
+      <p class="lead">Eight problems, from warm-up ★ to boss level ★★★. Some solutions reuse <code>solve()</code> from Level 4. Paste it above your code when you try them. Only open a solution after a real try!</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. Trace sample 2 by hand <span class="stars">★</span></h3>
+        <p>For the board <code>...#</code> / <code>..#.</code> / <code>.#..</code> / <code>#...</code> with k = 4, follow the search on paper. Which "skip this row" branches die, and why is the answer 1? Then check with <code>solve()</code>.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Each row has exactly one <code>#</code>, and k = 4 = n. So skipping <i>any</i> row means there aren't enough rows left for 4 pieces. Every skip branch eventually reaches <code>row == n</code> with fewer than 4 pieces.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_sample2.py</div>
+<pre><code>board = [<span class="st">"...#"</span>, <span class="st">"..#."</span>, <span class="st">".#.."</span>, <span class="st">"#..."</span>]
+<span class="fn">print</span>(solve(<span class="nu">4</span>, <span class="nu">4</span>, board))   <span class="cm"># 1  → pieces at (0,3), (1,2), (2,1), (3,0)</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. The full 4 × 4 castle <span class="stars">★</span></h3>
+        <p>On a 4 × 4 board with no holes, how many ways are there to place k = 4 pieces? And k = 2? Predict first with the formulas from Level 8, then check with <code>solve()</code>.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>k = 4: 4! = 24. k = 2: choose 2 rows (6 ways) × choose 2 columns (6 ways) × match them (2 ways).</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_full_board.py</div>
+<pre><code>full = [<span class="st">"####"</span>] * <span class="nu">4</span>
+<span class="fn">print</span>(solve(<span class="nu">4</span>, <span class="nu">4</span>, full))   <span class="cm"># 24</span>
+<span class="fn">print</span>(solve(<span class="nu">4</span>, <span class="nu">2</span>, full))   <span class="cm"># 72  (= 6 × 6 × 2)</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. Show me the boards <span class="stars">★★</span></h3>
+        <p>Instead of only counting, print every arrangement as a picture, with <code>O</code> for a piece and an empty line between pictures. (Check: sample 1 prints two pictures.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Keep a list <code>pieces</code> of <code>(row, col)</code> pairs. <code>append</code> when you choose and <code>pop</code> when you un-choose. When <code>len(pieces) == k</code>, draw the board.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_show_all.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">show_all</span>(n, k, board):
+    cols_used = [<span class="kw">False</span>] * n
+    pieces = []                              <span class="cm"># (row, col) of every piece</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row):
+        <span class="kw">if</span> <span class="fn">len</span>(pieces) == k:
+            <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(n):
+                line = <span class="fn">list</span>(board[r])
+                <span class="kw">for</span> pr, pc <span class="kw">in</span> pieces:
+                    <span class="kw">if</span> pr == r:
+                        line[pc] = <span class="st">"O"</span>
+                <span class="fn">print</span>(<span class="st">""</span>.join(line))
+            <span class="fn">print</span>()
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span>
+        dfs(row + <span class="nu">1</span>)
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'.'</span> <span class="kw">or</span> cols_used[col]:
+                <span class="kw">continue</span>
+            cols_used[col] = <span class="kw">True</span>; pieces.append((row, col))
+            dfs(row + <span class="nu">1</span>)
+            pieces.pop(); cols_used[col] = <span class="kw">False</span>
+
+    dfs(<span class="nu">0</span>)
+
+show_all(<span class="nu">2</span>, <span class="nu">1</span>, [<span class="st">"#."</span>, <span class="st">".#"</span>])
+<span class="cm"># #.</span>
+<span class="cm"># .O</span>
+<span class="cm">#</span>
+<span class="cm"># O.</span>
+<span class="cm"># .#</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. Measure the pruning <span class="stars">★★</span></h3>
+        <p>Use <code>solve_counted</code> from Level 7 on the full 8 × 8 board with k = 4 and with k = 6. When does pruning help a lot, and when only a little? Why?</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Pruning only fires when the rows left aren't enough. With a small k there are almost always enough rows, so it rarely fires.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_measure.py</div>
+<pre><code>full = [<span class="st">"#"</span> * <span class="nu">8</span>] * <span class="nu">8</span>
+<span class="kw">for</span> k <span class="kw">in</span> (<span class="nu">4</span>, <span class="nu">6</span>, <span class="nu">8</span>):
+    _, slow = solve_counted(<span class="nu">8</span>, k, full, prune=<span class="kw">False</span>)
+    _, fast = solve_counted(<span class="nu">8</span>, k, full, prune=<span class="kw">True</span>)
+    <span class="fn">print</span>(k, slow, fast)
+<span class="cm"># 4 164937 155846     ← barely helps: there are almost always enough rows</span>
+<span class="cm"># 6 1387977 963612</span>
+<span class="cm"># 8 1952457 178882    ← huge help: every skip is hopeless</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. Colourful guards <span class="stars">★★</span></h3>
+        <p>What if the k pieces are all <b>different</b> (red, blue, green…)? Now swapping two pieces <i>does</i> make a new arrangement. Count them for a full 3 × 3 board with k = 2. (Check: 18 identical → 36 colourful.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Each identical arrangement can be coloured in k! different ways, so you don't need a new search, just a multiplication.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_colours.py</div>
+<pre><code><span class="kw">import</span> math
+
+board = [<span class="st">"###"</span>] * <span class="nu">3</span>
+same = solve(<span class="nu">3</span>, <span class="nu">2</span>, board)
+<span class="fn">print</span>(same)                        <span class="cm"># 18</span>
+<span class="fn">print</span>(same * math.factorial(<span class="nu">2</span>))   <span class="cm"># 36</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. Queens in the castle <span class="stars">★★★</span></h3>
+        <p>Upgrade the pieces to <b>queens</b>: now two pieces may not share a row, a column <i>or a diagonal</i>. Count the arrangements on a shaped board. (Check: full 8 × 8 with k = 8 → 92, the famous 8-queens answer. Sample 1 with k = 2 → 0.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Remember where each piece is. Two squares <code>(r1, c1)</code> and <code>(r2, c2)</code> are on the same diagonal when <code>abs(r1 - r2) == abs(c1 - c2)</code>.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_queens.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_queens</span>(n, k, board):
+    ans = <span class="nu">0</span>
+    cols_used = [<span class="kw">False</span>] * n
+    pieces = []
+
+    <span class="kw">def</span> <span class="fn">diagonal_free</span>(r, c):
+        <span class="kw">return</span> <span class="fn">all</span>(<span class="fn">abs</span>(pr - r) != <span class="fn">abs</span>(pc - c) <span class="kw">for</span> pr, pc <span class="kw">in</span> pieces)
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row, placed):
+        <span class="kw">nonlocal</span> ans
+        <span class="kw">if</span> placed == k:
+            ans += <span class="nu">1</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span>
+        dfs(row + <span class="nu">1</span>, placed)
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'.'</span> <span class="kw">or</span> cols_used[col] <span class="kw">or</span> <span class="kw">not</span> diagonal_free(row, col):
+                <span class="kw">continue</span>
+            cols_used[col] = <span class="kw">True</span>; pieces.append((row, col))
+            dfs(row + <span class="nu">1</span>, placed + <span class="nu">1</span>)
+            pieces.pop(); cols_used[col] = <span class="kw">False</span>
+
+    dfs(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> ans
+
+<span class="fn">print</span>(solve_queens(<span class="nu">8</span>, <span class="nu">8</span>, [<span class="st">"#"</span> * <span class="nu">8</span>] * <span class="nu">8</span>))   <span class="cm"># 92</span>
+<span class="fn">print</span>(solve_queens(<span class="nu">2</span>, <span class="nu">2</span>, [<span class="st">"#."</span>, <span class="st">".#"</span>]))    <span class="cm"># 0   (the two squares share a diagonal)</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. Columns as bits <span class="stars">★★★</span></h3>
+        <p>Replace the <code>cols_used</code> list with a single integer <code>used</code>, where bit <code>c</code> is 1 when column <code>c</code> is taken. Bonus: why don't you need an "un-choose" line any more?</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Column <code>c</code> is taken if <code>used &amp; (1 &lt;&lt; c)</code> is not zero. Pass <code>used | (1 &lt;&lt; c)</code> into the next call. That's a <i>new</i> number, and your own <code>used</code> is never changed, just like <code>code + letter</code> in the backtracking lesson.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_bits.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_bits</span>(n, k, board):
+    ans = <span class="nu">0</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(row, placed, used):
+        <span class="kw">nonlocal</span> ans
+        <span class="kw">if</span> placed == k:
+            ans += <span class="nu">1</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span>
+        dfs(row + <span class="nu">1</span>, placed, used)
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'#'</span> <span class="kw">and</span> <span class="kw">not</span> used &amp; (<span class="nu">1</span> &lt;&lt; col):
+                dfs(row + <span class="nu">1</span>, placed + <span class="nu">1</span>, used | (<span class="nu">1</span> &lt;&lt; col))   <span class="cm"># new number: nothing to undo</span>
+
+    dfs(<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> ans
+
+<span class="fn">print</span>(solve_bits(<span class="nu">2</span>, <span class="nu">1</span>, [<span class="st">"#."</span>, <span class="st">".#"</span>]))                      <span class="cm"># 2</span>
+<span class="fn">print</span>(solve_bits(<span class="nu">4</span>, <span class="nu">4</span>, [<span class="st">"...#"</span>, <span class="st">"..#."</span>, <span class="st">".#.."</span>, <span class="st">"#..."</span>]))   <span class="cm"># 1</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. Remember, don't repeat (DP) <span class="stars">★★★</span></h3>
+        <p>Turn the search into a function <code>ways(row, placed, used)</code> that <b>returns</b> the number of arrangements for the rest of the board, and add <code>@lru_cache</code> so repeated situations are only solved once. Test it against <code>solve_bits</code> (from problem 7) on 300 random boards.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Same three cases as before: return 1 if <code>placed == k</code>, return 0 if <code>row == n</code>, otherwise add up the "skip" branch and every legal "place" branch. The answer only depends on <code>(row, placed, used)</code>, which is why caching works.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_memo.py</div>
+<pre><code><span class="kw">import</span> random
+<span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+<span class="kw">def</span> <span class="fn">solve_memo</span>(n, k, board):
+    <span class="fn">@lru_cache</span>(maxsize=<span class="kw">None</span>)
+    <span class="kw">def</span> <span class="fn">ways</span>(row, placed, used):
+        <span class="kw">if</span> placed == k:
+            <span class="kw">return</span> <span class="nu">1</span>
+        <span class="kw">if</span> row == n:
+            <span class="kw">return</span> <span class="nu">0</span>
+        total = ways(row + <span class="nu">1</span>, placed, used)                   <span class="cm"># skip this row</span>
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> board[row][col] == <span class="st">'#'</span> <span class="kw">and</span> <span class="kw">not</span> used &amp; (<span class="nu">1</span> &lt;&lt; col):
+                total += ways(row + <span class="nu">1</span>, placed + <span class="nu">1</span>, used | (<span class="nu">1</span> &lt;&lt; col))
+        <span class="kw">return</span> total
+    <span class="kw">return</span> ways(<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>)
+
+random.seed(<span class="nu">2026</span>)
+ok = <span class="kw">True</span>
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">300</span>):
+    n = random.randint(<span class="nu">1</span>, <span class="nu">6</span>)
+    k = random.randint(<span class="nu">1</span>, n)
+    board = [<span class="st">""</span>.join(random.choice(<span class="st">"#."</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+    ok = ok <span class="kw">and</span> solve_memo(n, k, board) == solve_bits(n, k, board)
+<span class="fn">print</span>(ok)                                   <span class="cm"># True</span>
+<span class="fn">print</span>(solve_memo(<span class="nu">8</span>, <span class="nu">8</span>, [<span class="st">"#"</span> * <span class="nu">8</span>] * <span class="nu">8</span>))      <span class="cm"># 40320</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">Case closed!</div>
+        <p>You turned a broken piece of code into a working solution, understood every line of it, made it faster with pruning, and even peeked at a DP upgrade. The same skills (reading the problem carefully, thinking one decision at a time, and testing your code on the samples) will carry you through many more contest problems.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>POJ 1321 "Chessboard Problem": count the ways to place k identical pieces on a shaped board with no two in the same row or column, using row-by-row backtracking. For the general technique, see <a href="Backtracking_en.html">Backtracking</a>, and for the "remember instead of repeat" upgrade, see <a href="dynamic_programming_en.html">Dynamic Programming</a>.</p>
+    <p><a href="index.html">&#x2190; Back to all explainers</a> &middot; <a href="chessboard_zh.html">中文版</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    total: function(t, calls){ return 'Arrangements: <b>' + t + '</b> &middot; dfs calls: <b>' + calls + '</b>'; },
+    showing: function(i, t, capped){ return 'Arrangement <b>' + i + '</b> of ' + t + (capped ? ' (only the first ' + capped + ' can be viewed)' : ''); },
+    none: 'No way to place the pieces on this board. Try a smaller k or add squares.',
+    bad: 'Board size n must be 2–8, and k must be 1–n.'
+  };
+
+  /* ---------- Castle widget (mirrors solve() in chessboard.py) ---------- */
+  var MAX_SHOW = 5000;
+  var n = 4, k = 2, board = [], arrangements = [], total = 0, calls = 0, view = 0;
+  var boardEl = document.getElementById('cBoard'), logEl = document.getElementById('cLog'), statsEl = document.getElementById('cStats');
+
+  function search(){
+    var colsUsed = [], pieces = [];
+    for (var i = 0; i < n; i++) colsUsed.push(false);
+    total = 0; calls = 0; arrangements = [];
+    function dfs(row, placed){
+      calls++;
+      if (placed === k){
+        total++;
+        if (arrangements.length < MAX_SHOW) arrangements.push(pieces.slice());
+        return;
+      }
+      if (row === n) return;
+      dfs(row + 1, placed);                       // option A: skip this row
+      for (var col = 0; col < n; col++){           // option B: a piece in this row
+        if (board[row][col] === '.' || colsUsed[col]) continue;
+        colsUsed[col] = true; pieces.push(col + row * 8);
+        dfs(row + 1, placed + 1);
+        pieces.pop(); colsUsed[col] = false;
+      }
+    }
+    dfs(0, 0);
+    view = 0;
+  }
+
+  function draw(){
+    var on = {};
+    var cur = arrangements[view] || [];
+    for (var i = 0; i < cur.length; i++) on[cur[i]] = true;
+    var html = '<div class="board clickable" style="grid-template-columns:repeat(' + n + ',1fr);">';
+    for (var r = 0; r < n; r++){
+      for (var c = 0; c < n; c++){
+        var hole = board[r][c] === '.';
+        var cls = 'sq ' + (hole ? 'hole' : ((r + c) % 2 === 0 ? 'l' : 'd'));
+        html += '<div class="' + cls + '" data-r="' + r + '" data-c="' + c + '">' + (on[c + r * 8] ? '<span class="rook">&#x265C;</span>' : '') + '</div>';
+      }
+    }
+    html += '</div>';
+    boardEl.innerHTML = html;
+    statsEl.innerHTML = T.total(total, calls);
+    if (total === 0) logEl.innerHTML = T.none;
+    else logEl.innerHTML = T.showing(view + 1, total, total > MAX_SHOW ? MAX_SHOW : 0);
+  }
+
+  function update(){
+    var newN = parseInt(document.getElementById('inSize').value, 10);
+    var newK = parseInt(document.getElementById('inK').value, 10);
+    if (isNaN(newN) || isNaN(newK) || newN < 2 || newN > 8 || newK < 1 || newK > newN){
+      logEl.innerHTML = T.bad; return;
+    }
+    if (newN !== n){ n = newN; board = fullBoard(n); }
+    k = newK;
+    search(); draw();
+  }
+
+  function fullBoard(size){
+    var b = [];
+    for (var r = 0; r < size; r++){ var row = []; for (var c = 0; c < size; c++) row.push('#'); b.push(row); }
+    return b;
+  }
+  function load(rows, kk){
+    n = rows.length; board = [];
+    for (var r = 0; r < n; r++) board.push(rows[r].split(''));
+    document.getElementById('inSize').value = n;
+    document.getElementById('inK').value = kk;
+    k = kk; search(); draw();
+  }
+
+  boardEl.addEventListener('click', function(e){
+    var sq = e.target.closest('.sq');
+    if (!sq) return;
+    var r = +sq.getAttribute('data-r'), c = +sq.getAttribute('data-c');
+    board[r][c] = board[r][c] === '#' ? '.' : '#';
+    search(); draw();
+  });
+  document.getElementById('cPrev').addEventListener('click', function(){ if (arrangements.length){ view = (view - 1 + arrangements.length) % arrangements.length; draw(); } });
+  document.getElementById('cNext').addEventListener('click', function(){ if (arrangements.length){ view = (view + 1) % arrangements.length; draw(); } });
+  document.getElementById('inSize').addEventListener('change', update);
+  document.getElementById('inK').addEventListener('change', update);
+  document.getElementById('pS1').addEventListener('click', function(){ load(['#.', '.#'], 1); });
+  document.getElementById('pS2').addEventListener('click', function(){ load(['...#', '..#.', '.#..', '#...'], 4); });
+  document.getElementById('pFull').addEventListener('click', function(){
+    var size = parseInt(document.getElementById('inSize').value, 10);
+    if (isNaN(size) || size < 2 || size > 8) size = 4;
+    var rows = []; for (var r = 0; r < size; r++){ var s = ''; for (var c = 0; c < size; c++) s += '#'; rows.push(s); }
+    load(rows, size);
+  });
+  document.getElementById('pRand').addEventListener('click', function(){
+    var size = 4 + Math.floor(Math.random() * 3), rows = [];
+    for (var r = 0; r < size; r++){ var s = ''; for (var c = 0; c < size; c++) s += Math.random() < 0.65 ? '#' : '.'; rows.push(s); }
+    load(rows, 2 + Math.floor(Math.random() * (size - 2)));
+  });
+
+  load(['#..#', '.##.', '##.#', '.#.#'], 2);
+})();
+</script>
+</body>
+</html>
