@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Maze Explorer's Golden Thread: Backtracking, Explained for Real Humans</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="Backtracking_zh.html">中文 &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Algorithms &middot; Skill Explainer</div>
+      <h1>The Maze Explorer's Golden Thread: <em>Backtracking</em></h1>
+      <p class="sub">How do you escape a maze you've never seen, place eight queens so none can attack each other, or solve a Sudoku without guessing wildly? You try a move. If it leads nowhere, you <b>step back</b> and try the next one. That simple habit is called <b>backtracking</b>, and it's one of the most useful tools a programmer has.</p>
+      <div class="stampbar">
+        <span class="stamp hot">Ages 13+</span>
+        <span class="stamp">Python</span>
+        <span class="stamp">2 interactive widgets</span>
+        <span class="stamp">8 practice problems</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>Lost in the labyrinth</h2></div>
+      <p class="lead">An old Greek legend tells of Theseus, a hero who had to walk into a giant maze called the Labyrinth. Before he went in, his friend Ariadne gave him a ball of golden thread.</p>
+      <p>Theseus tied one end to the entrance and unrolled the thread as he walked. Every time he hit a <b>dead end</b>, he didn't panic. He just followed the thread <b>back</b> to the last fork and tried a passage he hadn't tried yet. Eventually, he found the way through.</p>
+      <p>Here's a maze for you. Start at <b>S</b> and find <b>E</b>. Black squares are walls.</p>
+      <div class="dpgrid" style="grid-template-columns:repeat(7,minmax(0,54px));justify-content:center;">
+        <div class="dpcell start">S</div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell goal">E</div>
+      </div>
+      <p>Trace it with your finger. Did you take a wrong turn? What did you do? You went <i>back</i> to the last place where you had a choice and tried something else. Congratulations, you just did backtracking!</p>
+      <div class="callout tip">
+        <div class="ctitle">The golden rule of backtracking</div>
+        <p><b>Choose</b> a move &rarr; <b>Explore</b> where it leads &rarr; if it's a dead end, <b>Un-choose</b> it (step back) and try the next move.</p>
+      </div>
+      <div class="recipe">
+        <div class="step"><div class="k">Choose</div><div class="t">Make one move</div><div class="d">Pick a passage, a letter, a number, a square.</div></div>
+        <div class="step"><div class="k">Explore</div><div class="t">See where it goes</div><div class="d">Keep making moves from the new position.</div></div>
+        <div class="step"><div class="k">Un-choose</div><div class="t">Step back</div><div class="d">Dead end or finished? Undo the move, so you can try the next one.</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">Smarter than "try everything"</div>
+        <p>A clumsy explorer might write down <i>every possible full route</i> first and then check each one. Backtracking is smarter: the moment a route hits a wall, it gives up on that route right there, along with every route that would have started the same way.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>The secret code tree</h2></div>
+      <p class="lead">A treasure chest has a 3-letter lock. Each letter can only be <b>A</b> or <b>B</b>. Let's list every possible code so we can try them all.</p>
+      <p>Think of it as a tree of choices. At the top you haven't chosen anything. Each level down you choose one more letter, and each <b>leaf</b> at the bottom is one finished code:</p>
+
+      <div class="tree">
+        <svg viewBox="0 0 800 260" role="img" aria-label="Decision tree: each level chooses A or B; the 8 leaves are AAA to BBB">
+          <line x1="400" y1="30" x2="200" y2="95"/><line x1="400" y1="30" x2="600" y2="95"/>
+          <line x1="200" y1="95" x2="100" y2="160"/><line x1="200" y1="95" x2="300" y2="160"/>
+          <line x1="600" y1="95" x2="500" y2="160"/><line x1="600" y1="95" x2="700" y2="160"/>
+          <line x1="100" y1="160" x2="50" y2="225"/><line x1="100" y1="160" x2="150" y2="225"/>
+          <line x1="300" y1="160" x2="250" y2="225"/><line x1="300" y1="160" x2="350" y2="225"/>
+          <line x1="500" y1="160" x2="450" y2="225"/><line x1="500" y1="160" x2="550" y2="225"/>
+          <line x1="700" y1="160" x2="650" y2="225"/><line x1="700" y1="160" x2="750" y2="225"/>
+          <rect x="365" y="14" width="70" height="32" rx="8"/><text x="400" y="36" text-anchor="middle">start</text>
+          <rect x="170" y="79" width="60" height="32" rx="8"/><text x="200" y="101" text-anchor="middle">A</text>
+          <rect x="570" y="79" width="60" height="32" rx="8"/><text x="600" y="101" text-anchor="middle">B</text>
+          <rect x="70" y="144" width="60" height="32" rx="8"/><text x="100" y="166" text-anchor="middle">AA</text>
+          <rect x="270" y="144" width="60" height="32" rx="8"/><text x="300" y="166" text-anchor="middle">AB</text>
+          <rect x="470" y="144" width="60" height="32" rx="8"/><text x="500" y="166" text-anchor="middle">BA</text>
+          <rect x="670" y="144" width="60" height="32" rx="8"/><text x="700" y="166" text-anchor="middle">BB</text>
+          <rect class="r3" x="22" y="209" width="56" height="32" rx="8"/><text x="50" y="231" text-anchor="middle">AAA</text>
+          <rect class="r3" x="122" y="209" width="56" height="32" rx="8"/><text x="150" y="231" text-anchor="middle">AAB</text>
+          <rect class="r3" x="222" y="209" width="56" height="32" rx="8"/><text x="250" y="231" text-anchor="middle">ABA</text>
+          <rect class="r3" x="322" y="209" width="56" height="32" rx="8"/><text x="350" y="231" text-anchor="middle">ABB</text>
+          <rect class="r3" x="422" y="209" width="56" height="32" rx="8"/><text x="450" y="231" text-anchor="middle">BAA</text>
+          <rect class="r3" x="522" y="209" width="56" height="32" rx="8"/><text x="550" y="231" text-anchor="middle">BAB</text>
+          <rect class="r3" x="622" y="209" width="56" height="32" rx="8"/><text x="650" y="231" text-anchor="middle">BBA</text>
+          <rect class="r3" x="722" y="209" width="56" height="32" rx="8"/><text x="750" y="231" text-anchor="middle">BBB</text>
+        </svg>
+        <div class="legend"><span>Each level = one choice</span><span><span class="swatch s3"></span>Each leaf = one finished code (8 in total)</span></div>
+      </div>
+
+      <p>Backtracking walks this tree like an explorer: go down the left branch as far as possible, then step back up and try the next branch. In Python, "go down one level" is just a function calling itself:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>codes.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">make_codes</span>(code, length):
+    <span class="kw">if</span> <span class="fn">len</span>(code) == length:          <span class="cm"># reached a leaf: the code is finished</span>
+        <span class="fn">print</span>(code, end=<span class="st">" "</span>)
+        <span class="kw">return</span>                        <span class="cm"># step back up the tree</span>
+    <span class="kw">for</span> letter <span class="kw">in</span> <span class="st">"AB"</span>:              <span class="cm"># try each choice at this level</span>
+        make_codes(code + letter, length)
+
+make_codes(<span class="st">""</span>, <span class="nu">3</span>)
+<span class="cm"># AAA AAB ABA ABB BAA BAB BBA BBB</span></code></pre>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">Where is the "un-choose" here?</div>
+        <p><code>code + letter</code> builds a <i>brand-new</i> string, so the old <code>code</code> is never changed. When the call returns, we're automatically "back" where we were. In the next level we'll use a list instead, and then we'll have to undo our moves ourselves.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>The backtracking recipe</h2></div>
+      <p class="lead">Almost every backtracking program in the world has the same shape. Learn this one skeleton and you can solve hundreds of puzzles.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>template (the shape, not a real program)</div>
+<pre><code><span class="kw">def</span> <span class="fn">backtrack</span>(path):
+    <span class="kw">if</span> is_complete(path):          <span class="cm"># 1. finished?</span>
+        save(path)
+        <span class="kw">return</span>
+    <span class="kw">for</span> choice <span class="kw">in</span> choices(path):    <span class="cm"># 2. try every possible next move</span>
+        <span class="kw">if</span> <span class="kw">not</span> allowed(choice):
+            <span class="kw">continue</span>                  <span class="cm">#    skip moves that break the rules</span>
+        path.append(choice)          <span class="cm"># 3. CHOOSE</span>
+        backtrack(path)              <span class="cm"># 4. EXPLORE</span>
+        path.pop()                   <span class="cm"># 5. UN-CHOOSE</span></code></pre>
+      </div>
+      <div class="annot">
+        <div class="annot-row"><div class="annot-code">if is_complete(path):</div><div class="annot-note"><span><b>Goal check.</b> Are we at a leaf of the tree? Then save the answer.</span></div></div>
+        <div class="annot-row"><div class="annot-code">for choice in choices(path):</div><div class="annot-note"><span><b>Branches.</b> Each possible next move is one branch of the tree.</span></div></div>
+        <div class="annot-row"><div class="annot-code">path.append(choice)</div><div class="annot-note"><span><b>Choose.</b> Walk down that branch.</span></div></div>
+        <div class="annot-row"><div class="annot-code">backtrack(path)</div><div class="annot-note"><span><b>Explore.</b> Let the same function handle everything below.</span></div></div>
+        <div class="annot-row"><div class="annot-code">path.pop()</div><div class="annot-note"><span><b>Un-choose.</b> Roll the thread back up, so the next branch starts clean.</span></div></div>
+      </div>
+
+      <h3>Example: every way to line up 3 friends</h3>
+      <p>Friends 1, 2 and 3 want a photo. How many different orders can they stand in? These orders are called <b>permutations</b>. A friend can't appear twice, so we keep a <code>used</code> list to remember who is already in the line.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>permutations.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">permutations</span>(nums):
+    results = []
+    path = []
+    used = [<span class="kw">False</span>] * <span class="fn">len</span>(nums)
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>():
+        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(nums):
+            results.append(path[:])          <span class="cm"># save a COPY of the line-up</span>
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):
+            <span class="kw">if</span> used[i]:
+                <span class="kw">continue</span>                     <span class="cm"># already in the photo</span>
+            path.append(nums[i]); used[i] = <span class="kw">True</span>     <span class="cm"># choose</span>
+            backtrack()                                  <span class="cm"># explore</span>
+            path.pop(); used[i] = <span class="kw">False</span>             <span class="cm"># un-choose</span>
+
+    backtrack()
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(permutations([<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>]))
+<span class="cm"># [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]</span></code></pre>
+      </div>
+      <p>Let's follow the thread for the first few moves:</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>step</th><th>action</th><th>path after</th><th>note</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>choose 1</td><td>[1]</td><td class="even">–</td></tr>
+            <tr><td>2</td><td>choose 2</td><td>[1, 2]</td><td class="even">–</td></tr>
+            <tr><td>3</td><td>choose 3</td><td>[1, 2, 3]</td><td class="odd">full → save!</td></tr>
+            <tr><td>4</td><td>un-choose 3</td><td>[1, 2]</td><td class="even">no other friend left to try</td></tr>
+            <tr><td>5</td><td>un-choose 2</td><td>[1]</td><td class="even">next, try 3 in 2nd place</td></tr>
+            <tr><td>6</td><td>choose 3</td><td>[1, 3]</td><td class="even">–</td></tr>
+            <tr><td>7</td><td>choose 2</td><td>[1, 3, 2]</td><td class="odd">full → save!</td></tr>
+            <tr><td>8</td><td>un-choose 2</td><td>[1, 3]</td><td class="even">–</td></tr>
+            <tr><td>9</td><td>un-choose 3</td><td>[1]</td><td class="even">–</td></tr>
+            <tr><td>10</td><td>un-choose 1</td><td>[ ]</td><td class="even">now try 2 in 1st place…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <div class="ctitle">Two classic bugs</div>
+        <ul>
+          <li><b>Forgetting <code>path.pop()</code>.</b> The old choices never get removed, so the path keeps growing and the results are nonsense.</li>
+          <li><b>Saving <code>path</code> instead of <code>path[:]</code>.</b> <code>path</code> is <i>one</i> list that keeps changing. If you save the list itself, every saved answer turns into the same (eventually empty) list. <code>path[:]</code> saves a snapshot.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Pick or skip: building every pizza</h2></div>
+      <p class="lead">The pizza shop has three toppings: cheese, ham and olive. How many different pizzas can you order (including a plain one with no toppings)?</p>
+      <p>This time the order doesn't matter. For each topping there are only two choices: <b>pick it</b> or <b>skip it</b>. That gives every item exactly two branches:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>subsets.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">subsets</span>(items):
+    results = []
+    path = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(i):
+        <span class="kw">if</span> i == <span class="fn">len</span>(items):            <span class="cm"># decided about every topping</span>
+            results.append(path[:])
+            <span class="kw">return</span>
+        path.append(items[i])           <span class="cm"># branch 1: PICK item i</span>
+        backtrack(i + <span class="nu">1</span>)
+        path.pop()                      <span class="cm"># un-choose</span>
+        backtrack(i + <span class="nu">1</span>)                <span class="cm"># branch 2: SKIP item i</span>
+
+    backtrack(<span class="nu">0</span>)
+    <span class="kw">return</span> results
+
+pizzas = subsets([<span class="st">"cheese"</span>, <span class="st">"ham"</span>, <span class="st">"olive"</span>])
+<span class="fn">print</span>(<span class="fn">len</span>(pizzas))   <span class="cm"># 8</span>
+<span class="fn">print</span>(pizzas)
+<span class="cm"># [['cheese', 'ham', 'olive'], ['cheese', 'ham'], ['cheese', 'olive'], ['cheese'],</span>
+<span class="cm">#  ['ham', 'olive'], ['ham'], ['olive'], []]</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat fast"><div class="num">2 × 2 × 2 = 8</div><div class="lbl">3 toppings, 2 choices each</div></div>
+        <div class="stat slow"><div class="num">2<sup>20</sup> = 1,048,576</div><div class="lbl">20 toppings: over a million pizzas! The tree grows <b>very</b> fast.</div></div>
+      </div>
+      <details>
+        <summary>Quick quiz: permutations vs. subsets, what's the difference?</summary>
+        <div class="reveal"><p><b>Permutations</b> care about <i>order</i> and use every item: [1, 2, 3] and [3, 2, 1] are different photos. <b>Subsets</b> ignore order and can leave items out: {cheese, ham} is the same pizza as {ham, cheese}. With 3 items there are 3 × 2 × 1 = 6 permutations, but 2 × 2 × 2 = 8 subsets.</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Pruning: chop off dead branches early</h2></div>
+      <p class="lead">Trees get huge fast. The secret weapon of backtracking is <b>pruning</b>: the moment you know a branch can't possibly work, stop walking down it.</p>
+      <p>You have number cards <code>1, 2, 3, …, 12</code>. Which groups of cards (each card used at most once) add up to exactly <b>10</b>?</p>
+      <p>Suppose you've picked 4 and 5 (total 9) and next you're thinking about card 7. That makes 16, which is already over 10, and adding more cards can only make it bigger. So <b>there's no point exploring further</b>. And because the cards are sorted, cards 8, 9, 10… are hopeless too, so we can <code>break</code> out of the loop completely.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>card_sums.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">find_sums</span>(cards, target, prune):
+    results, path = [], []
+    calls = <span class="nu">0</span>
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start, total):
+        <span class="kw">nonlocal</span> calls
+        calls += <span class="nu">1</span>
+        <span class="kw">if</span> total == target:
+            results.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(cards)):
+            <span class="kw">if</span> prune <span class="kw">and</span> total + cards[i] &gt; target:
+                <span class="kw">break</span>               <span class="cm"># ✂ too big, and every later card is bigger</span>
+            path.append(cards[i])
+            backtrack(i + <span class="nu">1</span>, total + cards[i])
+            path.pop()
+
+    backtrack(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> results, calls
+
+cards = <span class="fn">list</span>(<span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">13</span>))
+<span class="fn">print</span>(find_sums(cards, <span class="nu">10</span>, prune=<span class="kw">False</span>)[<span class="nu">1</span>])   <span class="cm"># 3374 calls</span>
+answers, calls = find_sums(cards, <span class="nu">10</span>, prune=<span class="kw">True</span>)
+<span class="fn">print</span>(calls)     <span class="cm"># 43 calls</span>
+<span class="fn">print</span>(answers)
+<span class="cm"># [[1, 2, 3, 4], [1, 2, 7], [1, 3, 6], [1, 4, 5], [1, 9],</span>
+<span class="cm">#  [2, 3, 5], [2, 8], [3, 7], [4, 6], [10]]</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat slow"><div class="num">3,374</div><div class="lbl">calls without pruning</div></div>
+        <div class="stat fast"><div class="num">43</div><div class="lbl">calls with one line of pruning: about <b>78× less work</b>, same 10 answers</div></div>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">Think like a gardener</div>
+        <p>Good backtracking is mostly about asking, as early as possible: <i>"Can this branch still lead to an answer?"</i> If not, snip it off. The earlier you prune, the more of the tree you never have to visit.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>The N-Queens puzzle</h2></div>
+      <p class="lead">In chess, a queen attacks every square in her row, her column, and both diagonals. Can you put <b>8 queens</b> on an 8 × 8 board so that <b>no two queens attack each other</b>?</p>
+      <p>Trying every way to drop 8 queens on 64 squares gives over <b>4 billion</b> arrangements. Backtracking is much smarter:</p>
+      <ul>
+        <li>Put exactly <b>one queen per row</b>, starting from the top. That handles row attacks for free.</li>
+        <li>In each row, try the columns from left to right, and skip any square that is attacked by a queen already on the board.</li>
+        <li>If a row has <b>no safe square</b>, that's a dead end. Pick up the queen in the row above and move it to its next safe square.</li>
+      </ul>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>queens.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_queens</span>(n):
+    solutions = []
+    cols = []                  <span class="cm"># cols[r] = column of the queen in row r</span>
+
+    <span class="kw">def</span> <span class="fn">safe</span>(r, c):
+        <span class="kw">for</span> pr, pc <span class="kw">in</span> <span class="fn">enumerate</span>(cols):
+            <span class="kw">if</span> pc == c <span class="kw">or</span> <span class="fn">abs</span>(pc - c) == <span class="fn">abs</span>(pr - r):
+                <span class="kw">return</span> <span class="kw">False</span>   <span class="cm"># same column, or same diagonal</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(r):
+        <span class="kw">if</span> r == n:             <span class="cm"># a queen in every row!</span>
+            solutions.append(cols[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> safe(r, c):
+                cols.append(c)     <span class="cm"># choose: place a queen</span>
+                backtrack(r + <span class="nu">1</span>)   <span class="cm"># explore the next row</span>
+                cols.pop()         <span class="cm"># un-choose: pick it back up</span>
+
+    backtrack(<span class="nu">0</span>)
+    <span class="kw">return</span> solutions
+
+<span class="fn">print</span>(solve_queens(<span class="nu">4</span>))         <span class="cm"># [[1, 3, 0, 2], [2, 0, 3, 1]]</span>
+<span class="fn">print</span>(<span class="fn">len</span>(solve_queens(<span class="nu">8</span>)))    <span class="cm"># 92</span></code></pre>
+      </div>
+      <p>The diagonal test is a neat trick: two squares are on the same diagonal exactly when they are as many columns apart as they are rows apart.</p>
+
+      <div class="widget" id="queenWidget">
+        <h3>Watch it think: the queen placer</h3>
+        <div class="hint">Choose a board size and step through the search. A <b style="color:#2f9e6a">green</b> outline means a queen was just placed, and a <b style="color:#d24b43">red</b> outline means it was just picked back up (backtracking!). Use <b>Next solution</b> to skip ahead.</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">board size N (4–8)</label><input id="inN" type="number" min="4" max="8" value="4"></div>
+          <button class="btn" id="qReset" type="button">New board</button>
+        </div>
+        <div class="controls">
+          <button class="btn ghost" id="qBack" type="button">&#x25C0; Back</button>
+          <button class="btn ghost" id="qStep" type="button">Step &#x25B6;</button>
+          <button class="btn" id="qPlay" type="button">&#x25B6; Play</button>
+          <button class="btn ghost" id="qNext" type="button">Next solution &#x23ED;</button>
+        </div>
+        <div id="qBoard"></div>
+        <div class="log" id="qLog"></div>
+        <div class="answer-line" id="qStats"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Back to the labyrinth: a maze-solving robot</h2></div>
+      <p class="lead">Now let's teach a computer to do what Theseus did with the maze from Level 1.</p>
+      <p>From each square the robot tries to move <b>right, down, left, up</b>, in that order. It drops a breadcrumb (<code>*</code>) on every square it visits, so it never walks in circles. The list <code>path</code> is our golden thread: we <code>append</code> a square when we step on it and <code>pop</code> it when that square turns out to be a dead end.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>maze.py</div>
+<pre><code>maze = [<span class="st">"S.#...."</span>,
+        <span class="st">".##.##."</span>,
+        <span class="st">"...#..."</span>,
+        <span class="st">"#.#..#."</span>,
+        <span class="st">"..#.#.."</span>,
+        <span class="st">"#...#.E"</span>]
+
+<span class="kw">def</span> <span class="fn">solve_maze</span>(maze):
+    rows, cols = <span class="fn">len</span>(maze), <span class="fn">len</span>(maze[<span class="nu">0</span>])
+    grid = [<span class="fn">list</span>(row) <span class="kw">for</span> row <span class="kw">in</span> maze]
+    path = []                                   <span class="cm"># the golden thread</span>
+
+    <span class="kw">def</span> <span class="fn">explore</span>(r, c):
+        <span class="kw">if</span> <span class="kw">not</span> (<span class="nu">0</span> &lt;= r &lt; rows <span class="kw">and</span> <span class="nu">0</span> &lt;= c &lt; cols) <span class="kw">or</span> grid[r][c] <span class="kw">in</span> <span class="st">"#*"</span>:
+            <span class="kw">return</span> <span class="kw">False</span>                        <span class="cm"># outside, wall, or already visited</span>
+        path.append((r, c))                     <span class="cm"># choose: step onto this square</span>
+        <span class="kw">if</span> maze[r][c] == <span class="st">"E"</span>:
+            <span class="kw">return</span> <span class="kw">True</span>                         <span class="cm"># found the exit!</span>
+        grid[r][c] = <span class="st">"*"</span>                        <span class="cm"># drop a breadcrumb</span>
+        <span class="kw">for</span> dr, dc <span class="kw">in</span> [(<span class="nu">0</span>, <span class="nu">1</span>), (<span class="nu">1</span>, <span class="nu">0</span>), (<span class="nu">0</span>, -<span class="nu">1</span>), (-<span class="nu">1</span>, <span class="nu">0</span>)]:  <span class="cm"># right, down, left, up</span>
+            <span class="kw">if</span> explore(r + dr, c + dc):         <span class="cm"># explore</span>
+                <span class="kw">return</span> <span class="kw">True</span>
+        path.pop()                              <span class="cm"># un-choose: dead end, roll back the thread</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="kw">return</span> path <span class="kw">if</span> explore(<span class="nu">0</span>, <span class="nu">0</span>) <span class="kw">else</span> <span class="kw">None</span>
+
+route = solve_maze(maze)
+<span class="fn">print</span>(<span class="fn">len</span>(route))   <span class="cm"># 18  (squares on the route, from S to E)</span>
+<span class="fn">print</span>(route[:<span class="nu">4</span>])   <span class="cm"># [(0, 0), (1, 0), (2, 0), (2, 1)]</span></code></pre>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">Why don't we wipe the breadcrumbs when we back up?</div>
+        <p>A square that led to a dead end will <i>still</i> lead to a dead end if we come back to it later, so leaving the breadcrumb saves time. (If we wanted to list <b>every</b> different route, we would have to erase it while backing up, just like <code>path.pop()</code>.)</p>
+      </div>
+
+      <div class="widget" id="mazeWidget">
+        <h3>Try it: build your own maze</h3>
+        <div class="hint"><b>Click any square</b> to add or remove a wall, and the robot instantly re-solves the maze. Can you build a maze with lots of dead ends? Can you trap the robot completely?</div>
+        <div class="controls">
+          <button class="btn ghost" id="mReset" type="button">Original maze</button>
+          <button class="btn ghost" id="mClear" type="button">Remove all walls</button>
+        </div>
+        <div id="mGrid"></div>
+        <div class="legend-row"><span><span class="swatch" style="background:var(--clue-soft);border-color:var(--clue)"></span>route</span><span><span class="swatch" style="background:var(--alert-soft);border-color:var(--alert)"></span>explored, then backtracked</span><span><span class="swatch" style="background:var(--ink);border-color:var(--ink)"></span>wall</span></div>
+        <div class="answer-line" id="mStats"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Boss level: the Sudoku solver</h2></div>
+      <p class="lead">In a 4 × 4 Sudoku, every row, every column and every 2 × 2 box must contain the digits 1, 2, 3 and 4 exactly once.</p>
+      <p>The plan is pure backtracking: find the first empty square, try 1, 2, 3, 4 there, and keep any digit that doesn't break a rule. Move on to the next empty square. If a square has <b>no</b> legal digit, an earlier guess was wrong, so erase it (set it back to 0) and try the next digit there.</p>
+      <div class="pair"><div class="sudoku"><div class="given">1</div><div></div><div></div><div></div><div></div><div></div><div class="given">3</div><div></div><div></div><div class="given">4</div><div></div><div></div><div></div><div></div><div></div><div class="given">2</div></div><div class="arrow">&#x2192;</div><div class="sudoku"><div class="given">1</div><div class="filled">3</div><div class="filled">2</div><div class="filled">4</div><div class="filled">4</div><div class="filled">2</div><div class="given">3</div><div class="filled">1</div><div class="filled">2</div><div class="given">4</div><div class="filled">1</div><div class="filled">3</div><div class="filled">3</div><div class="filled">1</div><div class="filled">4</div><div class="given">2</div></div></div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>mini_sudoku.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">can_place</span>(board, r, c, d):
+    <span class="kw">if</span> d <span class="kw">in</span> board[r]:
+        <span class="kw">return</span> <span class="kw">False</span>                                  <span class="cm"># already in this row</span>
+    <span class="kw">if</span> <span class="fn">any</span>(board[i][c] == d <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>)):
+        <span class="kw">return</span> <span class="kw">False</span>                                  <span class="cm"># already in this column</span>
+    br, bc = r // <span class="nu">2</span> * <span class="nu">2</span>, c // <span class="nu">2</span> * <span class="nu">2</span>                    <span class="cm"># top-left of the 2×2 box</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(br, br + <span class="nu">2</span>):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(bc, bc + <span class="nu">2</span>):
+            <span class="kw">if</span> board[i][j] == d:
+                <span class="kw">return</span> <span class="kw">False</span>                          <span class="cm"># already in this box</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="kw">def</span> <span class="fn">solve</span>(board):
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>):
+            <span class="kw">if</span> board[r][c] == <span class="nu">0</span>:                        <span class="cm"># first empty square</span>
+                <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">5</span>):
+                    <span class="kw">if</span> can_place(board, r, c, d):
+                        board[r][c] = d                  <span class="cm"># choose</span>
+                        <span class="kw">if</span> solve(board):               <span class="cm"># explore</span>
+                            <span class="kw">return</span> <span class="kw">True</span>
+                        board[r][c] = <span class="nu">0</span>                  <span class="cm"># un-choose</span>
+                <span class="kw">return</span> <span class="kw">False</span>                             <span class="cm"># nothing fits: backtrack</span>
+    <span class="kw">return</span> <span class="kw">True</span>                                       <span class="cm"># no empty squares left: solved!</span>
+
+board = [[<span class="nu">1</span>, <span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>],
+         [<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">3</span>, <span class="nu">0</span>],
+         [<span class="nu">0</span>, <span class="nu">4</span>, <span class="nu">0</span>, <span class="nu">0</span>],
+         [<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">2</span>]]
+solve(board)
+<span class="kw">for</span> row <span class="kw">in</span> board:
+    <span class="fn">print</span>(row)
+<span class="cm"># [1, 3, 2, 4]</span>
+<span class="cm"># [4, 2, 3, 1]</span>
+<span class="cm"># [2, 4, 1, 3]</span>
+<span class="cm"># [3, 1, 4, 2]</span></code></pre>
+      </div>
+      <p>The exact same idea solves a full 9 × 9 newspaper Sudoku. You'll build that yourself in practice problem 8!</p>
+
+      <div class="callout tip">
+        <div class="ctitle">How to spot a backtracking problem</div>
+        <ul>
+          <li>It asks you to <b>list all</b> the answers ("all orders", "all groups", "all codes"), or to find <b>any one</b> arrangement that obeys some rules.</li>
+          <li>You build the answer <b>one piece at a time</b> (a letter, a queen, a digit, a step).</li>
+          <li>You can tell early that a partial answer is already broken, so <b>pruning</b> is possible.</li>
+        </ul>
+        <p>Then reach for the recipe: <b>Choose → Explore → Un-choose</b>, plus a goal check and a pruning check.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>method</th><th>idea</th><th>best for</th></tr></thead>
+          <tbody>
+            <tr><td>Brute force</td><td class="left">Build every complete option, then check each one</td><td class="left">tiny problems</td></tr>
+            <tr><td>Backtracking</td><td class="left">Build step by step and quit a branch as soon as it breaks a rule</td><td class="left">puzzles, "list all", "find an arrangement"</td></tr>
+            <tr><td>Dynamic programming</td><td class="left">Remember answers to repeated sub-problems</td><td class="left">"how many ways" / "best value" with overlapping sub-problems</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9: QUIZ ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">CHECKPOINT</span><h2>Quick concept quiz</h2></div>
+      <p class="lead">Try to answer in your head before you peek.</p>
+      <details>
+        <summary>Q1. In permutations.py, what happens if you delete the line <code>path.pop(); used[i] = False</code>?</summary>
+        <div class="reveal"><p>The first line-up [1, 2, 3] is found, but then nothing is ever un-chosen: all friends stay "used" and the path never shrinks. No other branch can be explored, so you get just <b>one</b> answer instead of six. Un-choosing is what lets the explorer try the <i>next</i> branch.</p></div>
+      </details>
+      <details>
+        <summary>Q2. Why did pruning make the card-sum search about 78 times faster?</summary>
+        <div class="reveal"><p>Without pruning, the program keeps adding cards even after the total is already over 10, and it explores every group that starts that way. With pruning, a hopeless branch is cut off the moment the total would go over 10. Since the cards are sorted, the whole rest of the loop is skipped too. Thousands of useless branches are never visited.</p></div>
+      </details>
+      <details>
+        <summary>Q3. The N-Queens program places one queen per row. Why don't we need to check rows in <code>safe()</code>?</summary>
+        <div class="reveal"><p>Because of how we build the answer: row <code>r</code> gets exactly one queen, and then we move on to row <code>r + 1</code>. Two queens can never share a row, so we only have to check columns and diagonals. Choosing a clever way to build the answer is a form of pruning too!</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 10: PRACTICE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">TRAINING GROUND</span><h2>Practice problems</h2></div>
+      <p class="lead">Eight problems, from warm-up ★ to boss level ★★★. For each one, first ask yourself: <i>What is one choice? When is the answer complete? When can I prune?</i> Open the hint if you're stuck, and only open the solution after a real try!</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. Binary codes <span class="stars">★</span></h3>
+        <p>List every string of length <code>n</code> made only of <code>0</code> and <code>1</code>. (Check: <code>n = 3</code> → 8 strings, from <code>000</code> to <code>111</code>.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>It's exactly the A/B lock from Level 2, with 0 and 1 instead of A and B.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_binary.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">binary_strings</span>(n):
+    results = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(s):
+        <span class="kw">if</span> <span class="fn">len</span>(s) == n:
+            results.append(s)
+            <span class="kw">return</span>
+        backtrack(s + <span class="st">"0"</span>)
+        backtrack(s + <span class="st">"1"</span>)
+    backtrack(<span class="st">""</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(binary_strings(<span class="nu">3</span>))
+<span class="cm"># ['000', '001', '010', '011', '100', '101', '110', '111']</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. Shouty passwords <span class="stars">★</span></h3>
+        <p>Given a password like <code>"a1b"</code>, list every version you get by writing each letter in lower case or upper case. Digits stay the same. (Check: <code>"a1b"</code> → <code>a1b, a1B, A1b, A1B</code>.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Go through the characters one by one. A letter gives <b>two</b> branches (<code>lower()</code> and <code>upper()</code>), and a digit gives just one.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_letter_case.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">letter_cases</span>(word):
+    results = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(i, path):
+        <span class="kw">if</span> i == <span class="fn">len</span>(word):
+            results.append(path)
+            <span class="kw">return</span>
+        ch = word[i]
+        <span class="kw">if</span> ch.isalpha():
+            backtrack(i + <span class="nu">1</span>, path + ch.lower())
+            backtrack(i + <span class="nu">1</span>, path + ch.upper())
+        <span class="kw">else</span>:
+            backtrack(i + <span class="nu">1</span>, path + ch)
+    backtrack(<span class="nu">0</span>, <span class="st">""</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(letter_cases(<span class="st">"a1b"</span>))   <span class="cm"># ['a1b', 'a1B', 'A1b', 'A1B']</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. Balanced brackets <span class="stars">★★</span></h3>
+        <p>List every valid way to arrange <code>n</code> pairs of brackets. "Valid" means every <code>(</code> is closed by a matching <code>)</code> later on. (Check: <code>n = 3</code> → 5 ways: <code>((())) (()()) (())() ()(()) ()()()</code>.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Count how many <code>(</code> and <code>)</code> you've used. You may add <code>(</code> while you have fewer than <code>n</code> of them. You may add <code>)</code> only if fewer are closed than opened. That rule <b>prunes</b> every invalid branch before it even starts!</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_brackets.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">parentheses</span>(n):
+    results = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(s, opened, closed):
+        <span class="kw">if</span> <span class="fn">len</span>(s) == <span class="nu">2</span> * n:
+            results.append(s)
+            <span class="kw">return</span>
+        <span class="kw">if</span> opened &lt; n:
+            backtrack(s + <span class="st">"("</span>, opened + <span class="nu">1</span>, closed)
+        <span class="kw">if</span> closed &lt; opened:
+            backtrack(s + <span class="st">")"</span>, opened, closed + <span class="nu">1</span>)
+    backtrack(<span class="st">""</span>, <span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(parentheses(<span class="nu">3</span>))
+<span class="cm"># ['((()))', '(()())', '(())()', '()(())', '()()()']</span>
+<span class="fn">print</span>(<span class="fn">len</span>(parentheses(<span class="nu">4</span>)))   <span class="cm"># 14</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. Exact change, no repeats <span class="stars">★★</span></h3>
+        <p>You have coins <code>[10, 1, 2, 7, 6, 1, 5]</code>, and each coin can be used at most once. Find every <b>different</b> group that adds up to 8. Note there are two 1-coins, but <code>[1, 7]</code> should only be listed once. (Check: <code>[[1, 1, 6], [1, 2, 5], [1, 7], [2, 6]]</code>.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Start from the card-sum code in Level 5, and sort the coins first. To avoid duplicates: inside the loop, if <code>coins[i] == coins[i-1]</code> and <code>i &gt; start</code>, skip it. You already tried that same value in this position.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_exact_change.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">combo_sum_once</span>(cards, target):
+    cards = <span class="fn">sorted</span>(cards)
+    results, path = [], []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start, total):
+        <span class="kw">if</span> total == target:
+            results.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(cards)):
+            <span class="kw">if</span> i &gt; start <span class="kw">and</span> cards[i] == cards[i - <span class="nu">1</span>]:
+                <span class="kw">continue</span>                   <span class="cm"># same value already tried here</span>
+            <span class="kw">if</span> total + cards[i] &gt; target:
+                <span class="kw">break</span>                      <span class="cm"># prune</span>
+            path.append(cards[i])
+            backtrack(i + <span class="nu">1</span>, total + cards[i])
+            path.pop()
+    backtrack(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(combo_sum_once([<span class="nu">10</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">7</span>, <span class="nu">6</span>, <span class="nu">1</span>, <span class="nu">5</span>], <span class="nu">8</span>))
+<span class="cm"># [[1, 1, 6], [1, 2, 5], [1, 7], [2, 6]]</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. Old-school phone texting <span class="stars">★★</span></h3>
+        <p>On old phones, each digit key has letters: 2 = abc, 3 = def, 4 = ghi, 5 = jkl, 6 = mno, 7 = pqrs, 8 = tuv, 9 = wxyz. List every letter combination a number could spell. (Check: <code>"23"</code> → 9 combos: <code>ad, ae, af, bd, …, cf</code>.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Put the keys in a dictionary. Position <code>i</code> of the answer has one branch for each letter on key <code>digits[i]</code>.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_phone.py</div>
+<pre><code>KEYS = {<span class="st">"2"</span>: <span class="st">"abc"</span>, <span class="st">"3"</span>: <span class="st">"def"</span>, <span class="st">"4"</span>: <span class="st">"ghi"</span>, <span class="st">"5"</span>: <span class="st">"jkl"</span>,
+        <span class="st">"6"</span>: <span class="st">"mno"</span>, <span class="st">"7"</span>: <span class="st">"pqrs"</span>, <span class="st">"8"</span>: <span class="st">"tuv"</span>, <span class="st">"9"</span>: <span class="st">"wxyz"</span>}
+
+<span class="kw">def</span> <span class="fn">phone_words</span>(digits):
+    <span class="kw">if</span> <span class="kw">not</span> digits:
+        <span class="kw">return</span> []
+    results = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(i, path):
+        <span class="kw">if</span> i == <span class="fn">len</span>(digits):
+            results.append(path)
+            <span class="kw">return</span>
+        <span class="kw">for</span> letter <span class="kw">in</span> KEYS[digits[i]]:
+            backtrack(i + <span class="nu">1</span>, path + letter)
+    backtrack(<span class="nu">0</span>, <span class="st">""</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(phone_words(<span class="st">"23"</span>))
+<span class="cm"># ['ad', 'ae', 'af', 'bd', 'be', 'bf', 'cd', 'ce', 'cf']</span>
+<span class="fn">print</span>(<span class="fn">len</span>(phone_words(<span class="st">"79"</span>)))   <span class="cm"># 16</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. Word hunt <span class="stars">★★★</span></h3>
+        <p>In a grid of letters, can you spell a word by moving from square to square <b>up, down, left or right</b>, without using the same square twice? (Check, with the grid below: <code>"ABCCED"</code> → True, <code>"SEE"</code> → True, <code>"ABCB"</code> → False.)</p>
+        <p style="font-family:var(--font-mono);text-align:center;">A B C E<br>S F C S<br>A D E E</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Try starting from every square. While exploring, temporarily replace the current letter with <code>"#"</code> so you can't reuse it, and <b>put the letter back</b> when you return. That's the un-choose step!</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_word_search.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">word_search</span>(board, word):
+    rows, cols = <span class="fn">len</span>(board), <span class="fn">len</span>(board[<span class="nu">0</span>])
+    <span class="kw">def</span> <span class="fn">backtrack</span>(r, c, i):
+        <span class="kw">if</span> i == <span class="fn">len</span>(word):
+            <span class="kw">return</span> <span class="kw">True</span>                     <span class="cm"># every letter matched</span>
+        <span class="kw">if</span> <span class="kw">not</span> (<span class="nu">0</span> &lt;= r &lt; rows <span class="kw">and</span> <span class="nu">0</span> &lt;= c &lt; cols) <span class="kw">or</span> board[r][c] != word[i]:
+            <span class="kw">return</span> <span class="kw">False</span>
+        saved = board[r][c]
+        board[r][c] = <span class="st">"#"</span>                  <span class="cm"># choose: mark as used</span>
+        found = (backtrack(r + <span class="nu">1</span>, c, i + <span class="nu">1</span>) <span class="kw">or</span> backtrack(r - <span class="nu">1</span>, c, i + <span class="nu">1</span>) <span class="kw">or</span>
+                 backtrack(r, c + <span class="nu">1</span>, i + <span class="nu">1</span>) <span class="kw">or</span> backtrack(r, c - <span class="nu">1</span>, i + <span class="nu">1</span>))
+        board[r][c] = saved                <span class="cm"># un-choose: put the letter back</span>
+        <span class="kw">return</span> found
+    <span class="kw">return</span> <span class="fn">any</span>(backtrack(r, c, <span class="nu">0</span>) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols))
+
+grid = [<span class="fn">list</span>(<span class="st">"ABCE"</span>), <span class="fn">list</span>(<span class="st">"SFCS"</span>), <span class="fn">list</span>(<span class="st">"ADEE"</span>)]
+<span class="fn">print</span>(word_search(grid, <span class="st">"ABCCED"</span>))   <span class="cm"># True</span>
+<span class="fn">print</span>(word_search(grid, <span class="st">"SEE"</span>))      <span class="cm"># True</span>
+<span class="fn">print</span>(word_search(grid, <span class="st">"ABCB"</span>))     <span class="cm"># False</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. Faster queens <span class="stars">★★★</span></h3>
+        <p>Our <code>safe()</code> function loops over every queen already on the board. Make the N-Queens counter faster by checking a square in <b>one step</b>, and count the solutions for <code>n = 8</code> and <code>n = 10</code>. (Check: 92 and 724.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Keep three sets: used columns, used "↘" diagonals and used "↙" diagonals. Every square on a ↘ diagonal has the same <code>r - c</code>, and every square on a ↙ diagonal has the same <code>r + c</code>.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_fast_queens.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">count_queens</span>(n):
+    cols, diag1, diag2 = <span class="fn">set</span>(), <span class="fn">set</span>(), <span class="fn">set</span>()
+    <span class="kw">def</span> <span class="fn">backtrack</span>(r):
+        <span class="kw">if</span> r == n:
+            <span class="kw">return</span> <span class="nu">1</span>
+        total = <span class="nu">0</span>
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> c <span class="kw">in</span> cols <span class="kw">or</span> (r - c) <span class="kw">in</span> diag1 <span class="kw">or</span> (r + c) <span class="kw">in</span> diag2:
+                <span class="kw">continue</span>
+            cols.add(c); diag1.add(r - c); diag2.add(r + c)            <span class="cm"># choose</span>
+            total += backtrack(r + <span class="nu">1</span>)                                 <span class="cm"># explore</span>
+            cols.remove(c); diag1.remove(r - c); diag2.remove(r + c)   <span class="cm"># un-choose</span>
+        <span class="kw">return</span> total
+    <span class="kw">return</span> backtrack(<span class="nu">0</span>)
+
+<span class="fn">print</span>(count_queens(<span class="nu">8</span>))    <span class="cm"># 92</span>
+<span class="fn">print</span>(count_queens(<span class="nu">10</span>))   <span class="cm"># 724</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. The real Sudoku <span class="stars">★★★</span></h3>
+        <p>Upgrade the Level 8 solver to a full 9 × 9 Sudoku, with 3 × 3 boxes and digits 1–9, and solve this puzzle (<code>.</code> = empty). (Check: the first row of the answer is <code>534678912</code>.)</p>
+        <p style="font-family:var(--font-mono);text-align:center;line-height:1.5;">53..7....<br>6..195...<br>.98....6.<br>8...6...3<br>4..8.3..1<br>7...2...6<br>.6....28.<br>...419..5<br>....8..79</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Only three things change: the loops go to 9, the digits go from 1 to 9, and the box corner is <code>r // 3 * 3</code>, <code>c // 3 * 3</code>. Turn each text row into a list of numbers with <code>0</code> for <code>.</code>.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_sudoku.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_sudoku</span>(board):
+    <span class="kw">def</span> <span class="fn">ok</span>(r, c, d):
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+            <span class="kw">if</span> board[r][i] == d <span class="kw">or</span> board[i][c] == d:
+                <span class="kw">return</span> <span class="kw">False</span>
+        br, bc = r // <span class="nu">3</span> * <span class="nu">3</span>, c // <span class="nu">3</span> * <span class="nu">3</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(br, br + <span class="nu">3</span>):
+            <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(bc, bc + <span class="nu">3</span>):
+                <span class="kw">if</span> board[i][j] == d:
+                    <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+            <span class="kw">if</span> board[r][c] == <span class="nu">0</span>:
+                <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>):
+                    <span class="kw">if</span> ok(r, c, d):
+                        board[r][c] = d
+                        <span class="kw">if</span> solve_sudoku(board):
+                            <span class="kw">return</span> <span class="kw">True</span>
+                        board[r][c] = <span class="nu">0</span>
+                <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+puzzle = [<span class="st">"53..7...."</span>, <span class="st">"6..195..."</span>, <span class="st">".98....6."</span>, <span class="st">"8...6...3"</span>, <span class="st">"4..8.3..1"</span>,
+          <span class="st">"7...2...6"</span>, <span class="st">".6....28."</span>, <span class="st">"...419..5"</span>, <span class="st">"....8..79"</span>]
+board = [[<span class="nu">0</span> <span class="kw">if</span> ch == <span class="st">"."</span> <span class="kw">else</span> <span class="fn">int</span>(ch) <span class="kw">for</span> ch <span class="kw">in</span> row] <span class="kw">for</span> row <span class="kw">in</span> puzzle]
+solve_sudoku(board)
+<span class="fn">print</span>(<span class="st">""</span>.join(<span class="fn">map</span>(<span class="fn">str</span>, board[<span class="nu">0</span>])))   <span class="cm"># 534678912</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">You found your way out!</div>
+        <p>You now know the explorer's secret: <b>choose, explore, un-choose</b>, and snip off hopeless branches early. Next time you face a puzzle with too many possibilities, picture Theseus with his golden thread and ask: <i>"What's my next choice, and how do I step back if it fails?"</i></p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Backtracking: build an answer one choice at a time, and the moment a choice leads nowhere, undo it and try the next one. When the same sub-problems keep repeating, its cousin <a href="dynamic_programming_en.html">Dynamic Programming</a> can remember them instead.</p>
+    <p><a href="index.html">&#x2190; Back to all explainers</a> &middot; <a href="Backtracking_zh.html">中文版</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    start: 'Empty board. Press <b>Step</b> or <b>Play</b>.',
+    place: function(r, c){ return 'Place a queen in row ' + r + ', column ' + c + '.'; },
+    remove: function(r, c){ return '<span class="back">Backtrack:</span> pick up the queen from row ' + r + ', column ' + c + '.'; },
+    solution: function(k){ return '<span class="ok">Solution #' + k + ' found!</span> No two queens attack each other.'; },
+    done: function(k){ return 'Search finished: every branch explored. ' + k + ' solution' + (k === 1 ? '' : 's') + ' in total.'; },
+    stats: function(i, total, q, k){ return 'Step <b>' + i + '</b> / ' + total + ' &middot; queens on board: <b>' + q + '</b> &middot; solutions found: <b>' + k + '</b>'; },
+    play: '&#x25B6; Play', pause: '&#x23F8; Pause',
+    badN: 'Board size must be a whole number from 4 to 8.',
+    route: function(len, dead){ return 'Route found: <b>' + len + '</b> squares from S to E &middot; squares explored and backtracked: <b>' + dead + '</b>'; },
+    noRoute: function(dead){ return '<b>No route!</b> The robot explored ' + dead + ' squares and backtracked all the way to the start.'; }
+  };
+
+  /* ---------- N-Queens widget (mirrors solve_queens in queens.py) ---------- */
+  function queenEvents(n){
+    var ev = [], cols = [], found = 0;
+    function safe(r, c){
+      for (var pr = 0; pr < cols.length; pr++){
+        var pc = cols[pr];
+        if (pc === c || Math.abs(pc - c) === Math.abs(pr - r)) return false;
+      }
+      return true;
+    }
+    function backtrack(r){
+      if (r === n){ found++; ev.push({ t: 'sol', cols: cols.slice(), k: found }); return; }
+      for (var c = 0; c < n; c++){
+        if (safe(r, c)){
+          cols.push(c); ev.push({ t: 'place', r: r, c: c, cols: cols.slice(), k: found });
+          backtrack(r + 1);
+          cols.pop(); ev.push({ t: 'remove', r: r, c: c, cols: cols.slice(), k: found });
+        }
+      }
+    }
+    backtrack(0);
+    ev.push({ t: 'done', cols: [], k: found });
+    return ev;
+  }
+
+  var qN = 4, qEv = [], qIdx = 0, qTimer = null;
+  var qBoard = document.getElementById('qBoard'), qLog = document.getElementById('qLog'), qStats = document.getElementById('qStats'), qPlay = document.getElementById('qPlay');
+
+  function drawQueens(){
+    var e = qIdx > 0 ? qEv[qIdx - 1] : { t: 'start', cols: [], k: 0 };
+    var html = '<div class="board" style="grid-template-columns:repeat(' + qN + ',1fr);">';
+    for (var r = 0; r < qN; r++){
+      for (var c = 0; c < qN; c++){
+        var cls = 'sq ' + ((r + c) % 2 === 0 ? 'l' : 'd');
+        var has = e.cols[r] === c;
+        if (e.t === 'sol' && has) cls += ' win';
+        if (e.t === 'place' && e.r === r && e.c === c) cls += ' new';
+        var gone = e.t === 'remove' && e.r === r && e.c === c;
+        if (gone) cls += ' gone';
+        html += '<div class="' + cls + '">' + (has ? '&#x265B;' : gone ? '<span>&#x265B;</span>' : '') + '</div>';
+      }
+    }
+    html += '</div>';
+    qBoard.innerHTML = html;
+    var msg = T.start;
+    if (e.t === 'place') msg = T.place(e.r + 1, e.c + 1);
+    else if (e.t === 'remove') msg = T.remove(e.r + 1, e.c + 1);
+    else if (e.t === 'sol') msg = T.solution(e.k);
+    else if (e.t === 'done') msg = T.done(e.k);
+    qLog.innerHTML = msg;
+    qStats.innerHTML = T.stats(qIdx, qEv.length, e.cols.length, e.k);
+  }
+
+  function stopPlay(){ if (qTimer){ clearInterval(qTimer); qTimer = null; } qPlay.innerHTML = T.play; }
+  function stepQ(d){ qIdx = Math.max(0, Math.min(qEv.length, qIdx + d)); drawQueens(); if (qIdx >= qEv.length) stopPlay(); }
+
+  function resetQ(){
+    stopPlay();
+    var n = parseInt(document.getElementById('inN').value, 10);
+    if (isNaN(n) || n < 4 || n > 8){ qLog.innerHTML = '<span class="back">' + T.badN + '</span>'; return; }
+    qN = n; qEv = queenEvents(n); qIdx = 0; drawQueens();
+  }
+
+  document.getElementById('qReset').addEventListener('click', resetQ);
+  document.getElementById('qStep').addEventListener('click', function(){ stopPlay(); stepQ(1); });
+  document.getElementById('qBack').addEventListener('click', function(){ stopPlay(); stepQ(-1); });
+  document.getElementById('qNext').addEventListener('click', function(){
+    stopPlay();
+    for (var i = qIdx; i < qEv.length; i++){
+      if (qEv[i].t === 'sol' || qEv[i].t === 'done'){ qIdx = i + 1; break; }
+    }
+    drawQueens();
+  });
+  qPlay.addEventListener('click', function(){
+    if (qTimer){ stopPlay(); return; }
+    if (qIdx >= qEv.length) qIdx = 0;
+    qPlay.innerHTML = T.pause;
+    qTimer = setInterval(function(){ stepQ(1); }, qN <= 5 ? 350 : 120);
+  });
+  resetQ();
+
+  /* ---------- Maze widget (mirrors solve_maze in maze.py) ---------- */
+  var MAZE0 = ['S.#....', '.##.##.', '...#...', '#.#..#.', '..#.#..', '#...#.E'];
+  var maze;
+
+  function loadMaze(rows){
+    maze = [];
+    for (var r = 0; r < rows.length; r++) maze.push(rows[r].split(''));
+  }
+
+  function solveMaze(){
+    var R = maze.length, C = maze[0].length, seen = [], path = [];
+    for (var r = 0; r < R; r++){ seen.push([]); for (var c = 0; c < C; c++) seen[r].push(false); }
+    var dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];       // right, down, left, up
+    function explore(r, c){
+      if (r < 0 || r >= R || c < 0 || c >= C || maze[r][c] === '#' || seen[r][c]) return false;
+      path.push([r, c]);
+      if (maze[r][c] === 'E') return true;
+      seen[r][c] = true;
+      for (var k = 0; k < 4; k++){
+        if (explore(r + dirs[k][0], c + dirs[k][1])) return true;
+      }
+      path.pop();
+      return false;
+    }
+    var ok = explore(0, 0);
+    return { ok: ok, path: path, seen: seen };
+  }
+
+  function drawMaze(){
+    var res = solveMaze(), R = maze.length, C = maze[0].length;
+    var onPath = {}, dead = 0;
+    for (var i = 0; i < res.path.length; i++) onPath[res.path[i][0] + ',' + res.path[i][1]] = true;
+    var html = '<div class="dpgrid clickable" style="grid-template-columns:repeat(' + C + ',minmax(0,54px));justify-content:center;">';
+    for (var r = 0; r < R; r++){
+      for (var c = 0; c < C; c++){
+        var ch = maze[r][c], key = r + ',' + c, cls = 'dpcell', txt = '';
+        if (ch === '#') cls += ' wall';
+        else if (ch === 'S'){ cls += ' start'; txt = 'S'; }
+        else if (ch === 'E'){ cls += ' goal'; txt = 'E'; }
+        else if (res.ok && onPath[key]){ cls += ' path'; txt = '&#x2022;'; }
+        else if (res.seen[r][c]){ cls += ' dead'; txt = '&#x2715;'; }
+        if (ch !== '#' && ch !== 'S' && ch !== 'E' && res.seen[r][c] && !(res.ok && onPath[key])) dead++;
+        html += '<div class="' + cls + '" data-r="' + r + '" data-c="' + c + '">' + txt + '</div>';
+      }
+    }
+    html += '</div>';
+    document.getElementById('mGrid').innerHTML = html;
+    document.getElementById('mStats').innerHTML = res.ok ? T.route(res.path.length, dead) : T.noRoute(dead + 1);
+  }
+
+  document.getElementById('mGrid').addEventListener('click', function(e){
+    var cell = e.target.closest('.dpcell');
+    if (!cell) return;
+    var r = +cell.getAttribute('data-r'), c = +cell.getAttribute('data-c');
+    if (maze[r][c] === 'S' || maze[r][c] === 'E') return;
+    maze[r][c] = maze[r][c] === '#' ? '.' : '#';
+    drawMaze();
+  });
+  document.getElementById('mReset').addEventListener('click', function(){ loadMaze(MAZE0); drawMaze(); });
+  document.getElementById('mClear').addEventListener('click', function(){
+    for (var r = 0; r < maze.length; r++) for (var c = 0; c < maze[r].length; c++) if (maze[r][c] === '#') maze[r][c] = '.';
+    drawMaze();
+  });
+  loadMaze(MAZE0);
+  drawMaze();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>迷宫探险家的金线：回溯算法，讲给真正的人听</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="Backtracking_en.html">English &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">算法 &middot; 技能讲解</div>
+      <h1>迷宫探险家的金线：<em>回溯算法</em></h1>
+      <p class="sub">怎样走出一座从没见过的迷宫？怎样在棋盘上放 8 个皇后，让她们谁也吃不到谁？怎样不靠瞎猜解出一道数独？先试一步，如果走不通，就<b>退回来</b>换下一步试试。这个简单的习惯叫作<b>回溯（Backtracking）</b>，是程序员手里最好用的工具之一。</p>
+      <div class="stampbar">
+        <span class="stamp hot">适合 13 岁+</span>
+        <span class="stamp">Python</span>
+        <span class="stamp">2 个互动小工具</span>
+        <span class="stamp">8 道练习题</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第 1 关</span><h2>迷失在迷宫里</h2></div>
+      <p class="lead">古希腊有个传说：英雄忒修斯要走进一座叫"拉比林斯"的巨大迷宫。出发前，他的朋友阿里阿德涅送给他一团金线。</p>
+      <p>忒修斯把线的一头系在入口，一边走一边放线。每当碰到<b>死胡同</b>，他一点也不慌，只是顺着线<b>退回</b>上一个岔路口，换一条还没走过的路。最后，他终于走了出去。</p>
+      <p>这里有一座迷宫：从 <b>S</b> 出发，找到 <b>E</b>。黑色格子是墙。</p>
+      <div class="dpgrid" style="grid-template-columns:repeat(7,minmax(0,54px));justify-content:center;">
+        <div class="dpcell start">S</div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell"></div><div class="dpcell wall"></div><div class="dpcell"></div><div class="dpcell goal">E</div>
+      </div>
+      <p>用手指走一走。走错路了吗？你是怎么做的？你<i>退回</i>到上一个可以选择的地方，换了条路。恭喜你，你刚刚就用了回溯！</p>
+      <div class="callout tip">
+        <div class="ctitle">回溯的黄金法则</div>
+        <p><b>做选择</b> &rarr; <b>往下走</b> &rarr; 如果是死路，就<b>撤销选择</b>（退一步），再试下一个选择。</p>
+      </div>
+      <div class="recipe">
+        <div class="step"><div class="k">做选择</div><div class="t">走一步</div><div class="d">选一条通道、一个字母、一个数字、一个格子。</div></div>
+        <div class="step"><div class="k">往下走</div><div class="t">看看会到哪</div><div class="d">从新位置继续往下做选择。</div></div>
+        <div class="step"><div class="k">撤销选择</div><div class="t">退一步</div><div class="d">走到死路或者已经完成？撤销这一步，才能试下一个选择。</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">比"全部试一遍"聪明</div>
+        <p>笨拙的探险家可能会先把<i>每一条完整路线</i>都写出来，再一条条检查。回溯更聪明：一条路刚撞墙，就立刻放弃它，连同所有以同样方式开头的路线也一起放弃。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第 2 关</span><h2>密码锁的选择树</h2></div>
+      <p class="lead">一个宝箱上有 3 位字母密码锁，每一位只能是 <b>A</b> 或 <b>B</b>。我们把所有可能的密码都列出来，一个个去试。</p>
+      <p>把它想象成一棵"选择树"：最顶上什么都还没选，每往下一层就多选一个字母，最底下的每一片<b>叶子</b>就是一个完整的密码：</p>
+
+      <div class="tree">
+        <svg viewBox="0 0 800 260" role="img" aria-label="选择树：每一层选 A 或 B，8 片叶子从 AAA 到 BBB">
+          <line x1="400" y1="30" x2="200" y2="95"/><line x1="400" y1="30" x2="600" y2="95"/>
+          <line x1="200" y1="95" x2="100" y2="160"/><line x1="200" y1="95" x2="300" y2="160"/>
+          <line x1="600" y1="95" x2="500" y2="160"/><line x1="600" y1="95" x2="700" y2="160"/>
+          <line x1="100" y1="160" x2="50" y2="225"/><line x1="100" y1="160" x2="150" y2="225"/>
+          <line x1="300" y1="160" x2="250" y2="225"/><line x1="300" y1="160" x2="350" y2="225"/>
+          <line x1="500" y1="160" x2="450" y2="225"/><line x1="500" y1="160" x2="550" y2="225"/>
+          <line x1="700" y1="160" x2="650" y2="225"/><line x1="700" y1="160" x2="750" y2="225"/>
+          <rect x="365" y="14" width="70" height="32" rx="8"/><text x="400" y="36" text-anchor="middle">开始</text>
+          <rect x="170" y="79" width="60" height="32" rx="8"/><text x="200" y="101" text-anchor="middle">A</text>
+          <rect x="570" y="79" width="60" height="32" rx="8"/><text x="600" y="101" text-anchor="middle">B</text>
+          <rect x="70" y="144" width="60" height="32" rx="8"/><text x="100" y="166" text-anchor="middle">AA</text>
+          <rect x="270" y="144" width="60" height="32" rx="8"/><text x="300" y="166" text-anchor="middle">AB</text>
+          <rect x="470" y="144" width="60" height="32" rx="8"/><text x="500" y="166" text-anchor="middle">BA</text>
+          <rect x="670" y="144" width="60" height="32" rx="8"/><text x="700" y="166" text-anchor="middle">BB</text>
+          <rect class="r3" x="22" y="209" width="56" height="32" rx="8"/><text x="50" y="231" text-anchor="middle">AAA</text>
+          <rect class="r3" x="122" y="209" width="56" height="32" rx="8"/><text x="150" y="231" text-anchor="middle">AAB</text>
+          <rect class="r3" x="222" y="209" width="56" height="32" rx="8"/><text x="250" y="231" text-anchor="middle">ABA</text>
+          <rect class="r3" x="322" y="209" width="56" height="32" rx="8"/><text x="350" y="231" text-anchor="middle">ABB</text>
+          <rect class="r3" x="422" y="209" width="56" height="32" rx="8"/><text x="450" y="231" text-anchor="middle">BAA</text>
+          <rect class="r3" x="522" y="209" width="56" height="32" rx="8"/><text x="550" y="231" text-anchor="middle">BAB</text>
+          <rect class="r3" x="622" y="209" width="56" height="32" rx="8"/><text x="650" y="231" text-anchor="middle">BBA</text>
+          <rect class="r3" x="722" y="209" width="56" height="32" rx="8"/><text x="750" y="231" text-anchor="middle">BBB</text>
+        </svg>
+        <div class="legend"><span>每一层 = 一次选择</span><span><span class="swatch s3"></span>每片叶子 = 一个完整密码（共 8 个）</span></div>
+      </div>
+
+      <p>回溯就像探险家一样走这棵树：先沿着左边的树枝一直走到底，再退回上一层，试下一根树枝。在 Python 里，"往下走一层"就是函数调用它自己：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>codes.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">make_codes</span>(code, length):
+    <span class="kw">if</span> <span class="fn">len</span>(code) == length:          <span class="cm"># 到达叶子：密码完成了</span>
+        <span class="fn">print</span>(code, end=<span class="st">" "</span>)
+        <span class="kw">return</span>                        <span class="cm"># 退回上一层</span>
+    <span class="kw">for</span> letter <span class="kw">in</span> <span class="st">"AB"</span>:              <span class="cm"># 这一层的每个选择都试一遍</span>
+        make_codes(code + letter, length)
+
+make_codes(<span class="st">""</span>, <span class="nu">3</span>)
+<span class="cm"># AAA AAB ABA ABB BAA BAB BBA BBB</span></code></pre>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">"撤销选择"在哪里？</div>
+        <p><code>code + letter</code> 会生成一个<i>全新的</i>字符串，原来的 <code>code</code> 根本没被改动。所以函数返回时，我们自动就"退回"了原处。下一关我们会改用列表，那时就得自己动手撤销了。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第 3 关</span><h2>回溯的万能模板</h2></div>
+      <p class="lead">世界上几乎所有回溯程序都长一个样。学会这一个骨架，就能解几百道谜题。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>template（模板骨架，不是可运行程序）</div>
+<pre><code><span class="kw">def</span> <span class="fn">backtrack</span>(path):
+    <span class="kw">if</span> is_complete(path):          <span class="cm"># 1. 完成了吗？</span>
+        save(path)
+        <span class="kw">return</span>
+    <span class="kw">for</span> choice <span class="kw">in</span> choices(path):    <span class="cm"># 2. 把每个可能的下一步都试一遍</span>
+        <span class="kw">if</span> <span class="kw">not</span> allowed(choice):
+            <span class="kw">continue</span>                  <span class="cm">#    违反规则的就跳过</span>
+        path.append(choice)          <span class="cm"># 3. 做选择</span>
+        backtrack(path)              <span class="cm"># 4. 往下走</span>
+        path.pop()                   <span class="cm"># 5. 撤销选择</span></code></pre>
+      </div>
+      <div class="annot">
+        <div class="annot-row"><div class="annot-code">if is_complete(path):</div><div class="annot-note"><span><b>终点检查。</b>到达树的叶子了吗？那就保存答案。</span></div></div>
+        <div class="annot-row"><div class="annot-code">for choice in choices(path):</div><div class="annot-note"><span><b>分支。</b>每个可能的下一步，就是树上的一根树枝。</span></div></div>
+        <div class="annot-row"><div class="annot-code">path.append(choice)</div><div class="annot-note"><span><b>做选择。</b>沿着这根树枝往下走。</span></div></div>
+        <div class="annot-row"><div class="annot-code">backtrack(path)</div><div class="annot-note"><span><b>往下走。</b>下面的事交给同一个函数处理。</span></div></div>
+        <div class="annot-row"><div class="annot-code">path.pop()</div><div class="annot-note"><span><b>撤销选择。</b>把金线收回来，下一根树枝才能干干净净地开始。</span></div></div>
+      </div>
+
+      <h3>例子：3 个好朋友有几种排队方法</h3>
+      <p>1、2、3 号三个朋友要拍合照，他们可以按多少种不同的顺序站？这些顺序叫作<b>排列（permutation）</b>。同一个人不能出现两次，所以我们用一个 <code>used</code> 列表记住谁已经站进队里了。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>permutations.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">permutations</span>(nums):
+    results = []
+    path = []
+    used = [<span class="kw">False</span>] * <span class="fn">len</span>(nums)
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>():
+        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(nums):
+            results.append(path[:])          <span class="cm"># 保存队伍的一份"副本"</span>
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):
+            <span class="kw">if</span> used[i]:
+                <span class="kw">continue</span>                     <span class="cm"># 已经在照片里了</span>
+            path.append(nums[i]); used[i] = <span class="kw">True</span>     <span class="cm"># 做选择</span>
+            backtrack()                                  <span class="cm"># 往下走</span>
+            path.pop(); used[i] = <span class="kw">False</span>             <span class="cm"># 撤销选择</span>
+
+    backtrack()
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(permutations([<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>]))
+<span class="cm"># [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]</span></code></pre>
+      </div>
+      <p>我们顺着金线看看最开始的几步：</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>步骤</th><th>动作</th><th>之后的 path</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>选 1</td><td>[1]</td><td class="even">–</td></tr>
+            <tr><td>2</td><td>选 2</td><td>[1, 2]</td><td class="even">–</td></tr>
+            <tr><td>3</td><td>选 3</td><td>[1, 2, 3]</td><td class="odd">站满了 → 保存！</td></tr>
+            <tr><td>4</td><td>撤销 3</td><td>[1, 2]</td><td class="even">没有别的朋友可试了</td></tr>
+            <tr><td>5</td><td>撤销 2</td><td>[1]</td><td class="even">接下来让 3 站第 2 位</td></tr>
+            <tr><td>6</td><td>选 3</td><td>[1, 3]</td><td class="even">–</td></tr>
+            <tr><td>7</td><td>选 2</td><td>[1, 3, 2]</td><td class="odd">站满了 → 保存！</td></tr>
+            <tr><td>8</td><td>撤销 2</td><td>[1, 3]</td><td class="even">–</td></tr>
+            <tr><td>9</td><td>撤销 3</td><td>[1]</td><td class="even">–</td></tr>
+            <tr><td>10</td><td>撤销 1</td><td>[ ]</td><td class="even">现在让 2 站第 1 位……</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <div class="ctitle">两个经典 bug</div>
+        <ul>
+          <li><b>忘了写 <code>path.pop()</code>。</b>旧的选择永远不会被拿掉，path 越变越长，结果一团糟。</li>
+          <li><b>保存了 <code>path</code> 而不是 <code>path[:]</code>。</b><code>path</code> 是<i>同一个</i>一直在变的列表。直接保存它，所有保存的答案最后都会变成同一个（最后还是空的）列表。<code>path[:]</code> 才是拍了一张快照。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第 4 关</span><h2>选还是不选：做出所有披萨</h2></div>
+      <p class="lead">披萨店有三种配料：芝士（cheese）、火腿（ham）、橄榄（olive）。你一共能点出多少种不同的披萨（包括什么都不加的原味）？</p>
+      <p>这次顺序无所谓。每种配料只有两个选择：<b>选它</b>或<b>不选</b>。所以每样东西正好有两根树枝：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>subsets.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">subsets</span>(items):
+    results = []
+    path = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(i):
+        <span class="kw">if</span> i == <span class="fn">len</span>(items):            <span class="cm"># 每种配料都决定好了</span>
+            results.append(path[:])
+            <span class="kw">return</span>
+        path.append(items[i])           <span class="cm"># 树枝 1：选第 i 种</span>
+        backtrack(i + <span class="nu">1</span>)
+        path.pop()                      <span class="cm"># 撤销选择</span>
+        backtrack(i + <span class="nu">1</span>)                <span class="cm"># 树枝 2：不选第 i 种</span>
+
+    backtrack(<span class="nu">0</span>)
+    <span class="kw">return</span> results
+
+pizzas = subsets([<span class="st">"cheese"</span>, <span class="st">"ham"</span>, <span class="st">"olive"</span>])
+<span class="fn">print</span>(<span class="fn">len</span>(pizzas))   <span class="cm"># 8</span>
+<span class="fn">print</span>(pizzas)
+<span class="cm"># [['cheese', 'ham', 'olive'], ['cheese', 'ham'], ['cheese', 'olive'], ['cheese'],</span>
+<span class="cm">#  ['ham', 'olive'], ['ham'], ['olive'], []]</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat fast"><div class="num">2 × 2 × 2 = 8</div><div class="lbl">3 种配料，每种 2 个选择</div></div>
+        <div class="stat slow"><div class="num">2<sup>20</sup> = 1,048,576</div><div class="lbl">20 种配料就有一百多万种披萨！这棵树长得<b>非常</b>快。</div></div>
+      </div>
+      <details>
+        <summary>小测验：排列和子集有什么区别？</summary>
+        <div class="reveal"><p><b>排列</b>在乎<i>顺序</i>，而且每样东西都要用上：[1, 2, 3] 和 [3, 2, 1] 是两张不同的照片。<b>子集</b>不管顺序，还可以不选某些东西：{芝士, 火腿} 和 {火腿, 芝士} 是同一个披萨。3 样东西有 3 × 2 × 1 = 6 种排列，却有 2 × 2 × 2 = 8 个子集。</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第 5 关</span><h2>剪枝：早早剪掉死树枝</h2></div>
+      <p class="lead">选择树长得飞快。回溯的秘密武器叫<b>剪枝（pruning）</b>：一旦确定某根树枝不可能成功，就别再往下走了。</p>
+      <p>你有数字卡片 <code>1, 2, 3, …, 12</code>。哪些卡片组合（每张最多用一次）加起来正好等于 <b>10</b>？</p>
+      <p>假设你已经选了 4 和 5（总和 9），接下来考虑卡片 7。加上它就是 16，已经超过 10 了，再加卡片只会更大。所以<b>根本没必要继续往下找</b>。而且卡片是从小到大排好的，8、9、10……也都没希望，我们可以直接 <code>break</code> 跳出整个循环。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>card_sums.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">find_sums</span>(cards, target, prune):
+    results, path = [], []
+    calls = <span class="nu">0</span>
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start, total):
+        <span class="kw">nonlocal</span> calls
+        calls += <span class="nu">1</span>
+        <span class="kw">if</span> total == target:
+            results.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(cards)):
+            <span class="kw">if</span> prune <span class="kw">and</span> total + cards[i] &gt; target:
+                <span class="kw">break</span>               <span class="cm"># ✂ 太大了，后面的卡片只会更大</span>
+            path.append(cards[i])
+            backtrack(i + <span class="nu">1</span>, total + cards[i])
+            path.pop()
+
+    backtrack(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> results, calls
+
+cards = <span class="fn">list</span>(<span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">13</span>))
+<span class="fn">print</span>(find_sums(cards, <span class="nu">10</span>, prune=<span class="kw">False</span>)[<span class="nu">1</span>])   <span class="cm"># 3374 次调用</span>
+answers, calls = find_sums(cards, <span class="nu">10</span>, prune=<span class="kw">True</span>)
+<span class="fn">print</span>(calls)     <span class="cm"># 43 次调用</span>
+<span class="fn">print</span>(answers)
+<span class="cm"># [[1, 2, 3, 4], [1, 2, 7], [1, 3, 6], [1, 4, 5], [1, 9],</span>
+<span class="cm">#  [2, 3, 5], [2, 8], [3, 7], [4, 6], [10]]</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat slow"><div class="num">3,374</div><div class="lbl">不剪枝时的调用次数</div></div>
+        <div class="stat fast"><div class="num">43</div><div class="lbl">只加一行剪枝：工作量少了约 <b>78 倍</b>，答案还是那 10 组</div></div>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">像园丁一样思考</div>
+        <p>好的回溯，关键在于尽早问自己：<i>"这根树枝还有可能通向答案吗？"</i>不可能，就剪掉。剪得越早，树上需要走的地方就越少。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第 6 关</span><h2>N 皇后问题</h2></div>
+      <p class="lead">国际象棋里，皇后能攻击她所在的整行、整列和两条斜线上的所有格子。你能在 8 × 8 的棋盘上放 <b>8 个皇后</b>，让<b>任意两个皇后都互相攻击不到</b>吗？</p>
+      <p>把 8 个皇后随便往 64 个格子里放，有超过 <b>40 亿</b>种放法。回溯聪明得多：</p>
+      <ul>
+        <li>从最上面开始，<b>每一行恰好放一个皇后</b>，这样同一行的攻击就自动避免了。</li>
+        <li>每一行从左到右试每一列，跳过被已有皇后攻击到的格子。</li>
+        <li>如果某一行<b>没有安全的格子</b>，那就是死路：把上一行的皇后拿起来，挪到它的下一个安全格子。</li>
+      </ul>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>queens.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_queens</span>(n):
+    solutions = []
+    cols = []                  <span class="cm"># cols[r] = 第 r 行皇后所在的列</span>
+
+    <span class="kw">def</span> <span class="fn">safe</span>(r, c):
+        <span class="kw">for</span> pr, pc <span class="kw">in</span> <span class="fn">enumerate</span>(cols):
+            <span class="kw">if</span> pc == c <span class="kw">or</span> <span class="fn">abs</span>(pc - c) == <span class="fn">abs</span>(pr - r):
+                <span class="kw">return</span> <span class="kw">False</span>   <span class="cm"># 同一列，或者同一条斜线</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(r):
+        <span class="kw">if</span> r == n:             <span class="cm"># 每一行都有皇后了！</span>
+            solutions.append(cols[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> safe(r, c):
+                cols.append(c)     <span class="cm"># 做选择：放下皇后</span>
+                backtrack(r + <span class="nu">1</span>)   <span class="cm"># 往下走：去下一行</span>
+                cols.pop()         <span class="cm"># 撤销选择：把皇后拿起来</span>
+
+    backtrack(<span class="nu">0</span>)
+    <span class="kw">return</span> solutions
+
+<span class="fn">print</span>(solve_queens(<span class="nu">4</span>))         <span class="cm"># [[1, 3, 0, 2], [2, 0, 3, 1]]</span>
+<span class="fn">print</span>(<span class="fn">len</span>(solve_queens(<span class="nu">8</span>)))    <span class="cm"># 92</span></code></pre>
+      </div>
+      <p>斜线判断有个小窍门：两个格子在同一条斜线上，当且仅当它们相差的列数等于相差的行数。</p>
+
+      <div class="widget" id="queenWidget">
+        <h3>看它怎么思考：皇后摆放器</h3>
+        <div class="hint">选一个棋盘大小，一步步观看搜索过程。<b style="color:#2f9e6a">绿框</b>表示刚放下一个皇后，<b style="color:#d24b43">红框</b>表示刚把它拿起来（这就是回溯！）。用<b>下一个解</b>可以快进。</div>
+        <div class="field-row">
+          <div class="field"><label for="inN">棋盘大小 N（4–8）</label><input id="inN" type="number" min="4" max="8" value="4"></div>
+          <button class="btn" id="qReset" type="button">新棋盘</button>
+        </div>
+        <div class="controls">
+          <button class="btn ghost" id="qBack" type="button">&#x25C0; 后退</button>
+          <button class="btn ghost" id="qStep" type="button">单步 &#x25B6;</button>
+          <button class="btn" id="qPlay" type="button">&#x25B6; 播放</button>
+          <button class="btn ghost" id="qNext" type="button">下一个解 &#x23ED;</button>
+        </div>
+        <div id="qBoard"></div>
+        <div class="log" id="qLog"></div>
+        <div class="answer-line" id="qStats"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第 7 关</span><h2>回到迷宫：走迷宫的机器人</h2></div>
+      <p class="lead">现在让电脑像忒修斯一样，走出第 1 关的那座迷宫。</p>
+      <p>在每个格子上，机器人按<b>右、下、左、上</b>的顺序尝试移动。它会在走过的每个格子上留下面包屑（<code>*</code>），这样就不会原地兜圈子。列表 <code>path</code> 就是我们的金线：踏上一个格子就 <code>append</code>，发现它是死路就 <code>pop</code>。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>maze.py</div>
+<pre><code>maze = [<span class="st">"S.#...."</span>,
+        <span class="st">".##.##."</span>,
+        <span class="st">"...#..."</span>,
+        <span class="st">"#.#..#."</span>,
+        <span class="st">"..#.#.."</span>,
+        <span class="st">"#...#.E"</span>]
+
+<span class="kw">def</span> <span class="fn">solve_maze</span>(maze):
+    rows, cols = <span class="fn">len</span>(maze), <span class="fn">len</span>(maze[<span class="nu">0</span>])
+    grid = [<span class="fn">list</span>(row) <span class="kw">for</span> row <span class="kw">in</span> maze]
+    path = []                                   <span class="cm"># 金线</span>
+
+    <span class="kw">def</span> <span class="fn">explore</span>(r, c):
+        <span class="kw">if</span> <span class="kw">not</span> (<span class="nu">0</span> &lt;= r &lt; rows <span class="kw">and</span> <span class="nu">0</span> &lt;= c &lt; cols) <span class="kw">or</span> grid[r][c] <span class="kw">in</span> <span class="st">"#*"</span>:
+            <span class="kw">return</span> <span class="kw">False</span>                        <span class="cm"># 出界、撞墙或者已经来过</span>
+        path.append((r, c))                     <span class="cm"># 做选择：踏上这个格子</span>
+        <span class="kw">if</span> maze[r][c] == <span class="st">"E"</span>:
+            <span class="kw">return</span> <span class="kw">True</span>                         <span class="cm"># 找到出口了！</span>
+        grid[r][c] = <span class="st">"*"</span>                        <span class="cm"># 留下面包屑</span>
+        <span class="kw">for</span> dr, dc <span class="kw">in</span> [(<span class="nu">0</span>, <span class="nu">1</span>), (<span class="nu">1</span>, <span class="nu">0</span>), (<span class="nu">0</span>, -<span class="nu">1</span>), (-<span class="nu">1</span>, <span class="nu">0</span>)]:  <span class="cm"># 右、下、左、上</span>
+            <span class="kw">if</span> explore(r + dr, c + dc):         <span class="cm"># 往下走</span>
+                <span class="kw">return</span> <span class="kw">True</span>
+        path.pop()                              <span class="cm"># 撤销选择：死路，收回金线</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="kw">return</span> path <span class="kw">if</span> explore(<span class="nu">0</span>, <span class="nu">0</span>) <span class="kw">else</span> <span class="kw">None</span>
+
+route = solve_maze(maze)
+<span class="fn">print</span>(<span class="fn">len</span>(route))   <span class="cm"># 18  (从 S 到 E 路线上的格子数)</span>
+<span class="fn">print</span>(route[:<span class="nu">4</span>])   <span class="cm"># [(0, 0), (1, 0), (2, 0), (2, 1)]</span></code></pre>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">退回来的时候，为什么不擦掉面包屑？</div>
+        <p>一个通向死路的格子，以后再走到它也<i>还是</i>死路，所以留着面包屑能节省时间。（如果我们想列出<b>所有</b>不同的路线，那就得在退回时擦掉它，就像 <code>path.pop()</code> 一样。）</p>
+      </div>
+
+      <div class="widget" id="mazeWidget">
+        <h3>动手试试：设计你自己的迷宫</h3>
+        <div class="hint"><b>点击任意格子</b>就能加墙或拆墙，机器人会马上重新解一遍。你能设计出有很多死路的迷宫吗？能把机器人完全困住吗？</div>
+        <div class="controls">
+          <button class="btn ghost" id="mReset" type="button">原始迷宫</button>
+          <button class="btn ghost" id="mClear" type="button">拆掉所有墙</button>
+        </div>
+        <div id="mGrid"></div>
+        <div class="legend-row"><span><span class="swatch" style="background:var(--clue-soft);border-color:var(--clue)"></span>路线</span><span><span class="swatch" style="background:var(--alert-soft);border-color:var(--alert)"></span>走过又退回</span><span><span class="swatch" style="background:var(--ink);border-color:var(--ink)"></span>墙</span></div>
+        <div class="answer-line" id="mStats"></div>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第 8 关</span><h2>Boss 关：数独求解器</h2></div>
+      <p class="lead">在 4 × 4 的数独里，每一行、每一列、每个 2 × 2 的小宫格，都必须正好包含 1、2、3、4 各一次。</p>
+      <p>方法就是纯粹的回溯：找到第一个空格，依次试 1、2、3、4，留下不违反规则的数字，然后去下一个空格。如果某个空格<b>一个</b>数字都放不了，说明前面某个猜测错了，就把它擦掉（改回 0），在那里试下一个数字。</p>
+      <div class="pair"><div class="sudoku"><div class="given">1</div><div></div><div></div><div></div><div></div><div></div><div class="given">3</div><div></div><div></div><div class="given">4</div><div></div><div></div><div></div><div></div><div></div><div class="given">2</div></div><div class="arrow">&#x2192;</div><div class="sudoku"><div class="given">1</div><div class="filled">3</div><div class="filled">2</div><div class="filled">4</div><div class="filled">4</div><div class="filled">2</div><div class="given">3</div><div class="filled">1</div><div class="filled">2</div><div class="given">4</div><div class="filled">1</div><div class="filled">3</div><div class="filled">3</div><div class="filled">1</div><div class="filled">4</div><div class="given">2</div></div></div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>mini_sudoku.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">can_place</span>(board, r, c, d):
+    <span class="kw">if</span> d <span class="kw">in</span> board[r]:
+        <span class="kw">return</span> <span class="kw">False</span>                                  <span class="cm"># 这一行已经有了</span>
+    <span class="kw">if</span> <span class="fn">any</span>(board[i][c] == d <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>)):
+        <span class="kw">return</span> <span class="kw">False</span>                                  <span class="cm"># 这一列已经有了</span>
+    br, bc = r // <span class="nu">2</span> * <span class="nu">2</span>, c // <span class="nu">2</span> * <span class="nu">2</span>                    <span class="cm"># 2×2 宫格的左上角</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(br, br + <span class="nu">2</span>):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(bc, bc + <span class="nu">2</span>):
+            <span class="kw">if</span> board[i][j] == d:
+                <span class="kw">return</span> <span class="kw">False</span>                          <span class="cm"># 这个宫格已经有了</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="kw">def</span> <span class="fn">solve</span>(board):
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>):
+            <span class="kw">if</span> board[r][c] == <span class="nu">0</span>:                        <span class="cm"># 第一个空格</span>
+                <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">5</span>):
+                    <span class="kw">if</span> can_place(board, r, c, d):
+                        board[r][c] = d                  <span class="cm"># 做选择</span>
+                        <span class="kw">if</span> solve(board):               <span class="cm"># 往下走</span>
+                            <span class="kw">return</span> <span class="kw">True</span>
+                        board[r][c] = <span class="nu">0</span>                  <span class="cm"># 撤销选择</span>
+                <span class="kw">return</span> <span class="kw">False</span>                             <span class="cm"># 什么都放不了：回溯</span>
+    <span class="kw">return</span> <span class="kw">True</span>                                       <span class="cm"># 没有空格了：解出来了！</span>
+
+board = [[<span class="nu">1</span>, <span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>],
+         [<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">3</span>, <span class="nu">0</span>],
+         [<span class="nu">0</span>, <span class="nu">4</span>, <span class="nu">0</span>, <span class="nu">0</span>],
+         [<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">2</span>]]
+solve(board)
+<span class="kw">for</span> row <span class="kw">in</span> board:
+    <span class="fn">print</span>(row)
+<span class="cm"># [1, 3, 2, 4]</span>
+<span class="cm"># [4, 2, 3, 1]</span>
+<span class="cm"># [2, 4, 1, 3]</span>
+<span class="cm"># [3, 1, 4, 2]</span></code></pre>
+      </div>
+      <p>同样的思路，也能解出报纸上完整的 9 × 9 数独。练习题第 8 题就让你自己来做！</p>
+
+      <div class="callout tip">
+        <div class="ctitle">怎样一眼认出回溯题</div>
+        <ul>
+          <li>题目要你<b>列出所有</b>答案（"所有顺序""所有组合""所有密码"），或者找出<b>任意一种</b>满足规则的摆法。</li>
+          <li>答案是<b>一块一块</b>拼出来的（一个字母、一个皇后、一个数字、一步路）。</li>
+          <li>拼到一半就能看出它已经不行了，也就是可以<b>剪枝</b>。</li>
+        </ul>
+        <p>看到这些信号，就拿出模板：<b>做选择 → 往下走 → 撤销选择</b>，再加上终点检查和剪枝检查。</p>
+      </div>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>方法</th><th>思路</th><th>适合</th></tr></thead>
+          <tbody>
+            <tr><td>暴力枚举</td><td class="left">先造出每一个完整方案，再逐个检查</td><td class="left">很小的问题</td></tr>
+            <tr><td>回溯</td><td class="left">一步步搭建，一旦违反规则就立刻放弃这根树枝</td><td class="left">谜题、"列出所有"、"找一种摆法"</td></tr>
+            <tr><td>动态规划</td><td class="left">记住重复出现的子问题的答案</td><td class="left">子问题会重叠的"有多少种"/"最优值"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9: QUIZ ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">检查站</span><h2>概念小测验</h2></div>
+      <p class="lead">先在脑子里想好答案，再点开看。</p>
+      <details>
+        <summary>Q1. 在 permutations.py 里，如果删掉 <code>path.pop(); used[i] = False</code> 这一行会怎样？</summary>
+        <div class="reveal"><p>第一个队伍 [1, 2, 3] 能找到，但之后什么都不会被撤销：所有朋友都一直是"已使用"，path 也不会变短。别的树枝都走不了，所以你只能得到<b>一个</b>答案，而不是六个。正是"撤销选择"让探险家能去试<i>下一根</i>树枝。</p></div>
+      </details>
+      <details>
+        <summary>Q2. 为什么剪枝让卡片求和快了大约 78 倍？</summary>
+        <div class="reveal"><p>不剪枝时，总和已经超过 10 了，程序还在继续加卡片，并且把所有以这种方式开头的组合都走一遍。剪枝后，一旦总和会超过 10，这根没希望的树枝就被立刻剪掉。因为卡片是排好序的，循环剩下的部分也一起跳过。成千上万根没用的树枝根本不会被访问。</p></div>
+      </details>
+      <details>
+        <summary>Q3. N 皇后程序每行只放一个皇后。为什么 <code>safe()</code> 里不用检查行？</summary>
+        <div class="reveal"><p>这是由我们搭建答案的方式决定的：第 <code>r</code> 行只放一个皇后，然后就去第 <code>r + 1</code> 行。两个皇后永远不可能在同一行，所以只需检查列和斜线。选一种聪明的搭建方式，本身也是一种剪枝！</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 10: PRACTICE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">训练场</span><h2>练习题</h2></div>
+      <p class="lead">八道题，从热身 ★ 到 Boss 级 ★★★。每道题先问自己：<i>一次选择是什么？什么时候答案算完成？什么时候可以剪枝？</i>卡住了就看提示，认真尝试过之后再看答案！</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. 二进制密码 <span class="stars">★</span></h3>
+        <p>列出所有长度为 <code>n</code>、只由 <code>0</code> 和 <code>1</code> 组成的字符串。（检验：<code>n = 3</code> → 8 个，从 <code>000</code> 到 <code>111</code>。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>这就是第 2 关的 A/B 密码锁，只是把 A、B 换成了 0、1。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_binary.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">binary_strings</span>(n):
+    results = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(s):
+        <span class="kw">if</span> <span class="fn">len</span>(s) == n:
+            results.append(s)
+            <span class="kw">return</span>
+        backtrack(s + <span class="st">"0"</span>)
+        backtrack(s + <span class="st">"1"</span>)
+    backtrack(<span class="st">""</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(binary_strings(<span class="nu">3</span>))
+<span class="cm"># ['000', '001', '010', '011', '100', '101', '110', '111']</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. 大小写密码 <span class="stars">★</span></h3>
+        <p>给一个像 <code>"a1b"</code> 这样的密码，把每个字母写成小写或大写，列出所有可能的版本，数字保持不变。（检验：<code>"a1b"</code> → <code>a1b, a1B, A1b, A1B</code>。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>逐个字符处理。字母有<b>两根</b>树枝（<code>lower()</code> 和 <code>upper()</code>），数字只有一根。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_letter_case.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">letter_cases</span>(word):
+    results = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(i, path):
+        <span class="kw">if</span> i == <span class="fn">len</span>(word):
+            results.append(path)
+            <span class="kw">return</span>
+        ch = word[i]
+        <span class="kw">if</span> ch.isalpha():
+            backtrack(i + <span class="nu">1</span>, path + ch.lower())
+            backtrack(i + <span class="nu">1</span>, path + ch.upper())
+        <span class="kw">else</span>:
+            backtrack(i + <span class="nu">1</span>, path + ch)
+    backtrack(<span class="nu">0</span>, <span class="st">""</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(letter_cases(<span class="st">"a1b"</span>))   <span class="cm"># ['a1b', 'a1B', 'A1b', 'A1B']</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. 配对的括号 <span class="stars">★★</span></h3>
+        <p>列出 <code>n</code> 对括号所有合法的排列方式。"合法"指每个 <code>(</code> 后面都有一个 <code>)</code> 和它配对。（检验：<code>n = 3</code> → 5 种：<code>((())) (()()) (())() ()(()) ()()()</code>。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>记住已经用了多少个 <code>(</code> 和 <code>)</code>。只要 <code>(</code> 不到 <code>n</code> 个，就可以加 <code>(</code>；只有已关闭的少于已打开的，才能加 <code>)</code>。这条规则会在每根不合法的树枝开始之前就把它<b>剪掉</b>！</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_brackets.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">parentheses</span>(n):
+    results = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(s, opened, closed):
+        <span class="kw">if</span> <span class="fn">len</span>(s) == <span class="nu">2</span> * n:
+            results.append(s)
+            <span class="kw">return</span>
+        <span class="kw">if</span> opened &lt; n:
+            backtrack(s + <span class="st">"("</span>, opened + <span class="nu">1</span>, closed)
+        <span class="kw">if</span> closed &lt; opened:
+            backtrack(s + <span class="st">")"</span>, opened, closed + <span class="nu">1</span>)
+    backtrack(<span class="st">""</span>, <span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(parentheses(<span class="nu">3</span>))
+<span class="cm"># ['((()))', '(()())', '(())()', '()(())', '()()()']</span>
+<span class="fn">print</span>(<span class="fn">len</span>(parentheses(<span class="nu">4</span>)))   <span class="cm"># 14</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. 不重复地凑零钱 <span class="stars">★★</span></h3>
+        <p>你有硬币 <code>[10, 1, 2, 7, 6, 1, 5]</code>，每枚最多用一次。找出所有加起来等于 8 的<b>不同</b>组合。注意有两枚 1，但 <code>[1, 7]</code> 只能列一次。（检验：<code>[[1, 1, 6], [1, 2, 5], [1, 7], [2, 6]]</code>。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>从第 5 关的卡片求和代码改起，先把硬币排序。去重的办法：在循环里，如果 <code>i &gt; start</code> 并且 <code>coins[i] == coins[i-1]</code>，就跳过，因为同样的数值在这个位置已经试过了。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_exact_change.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">combo_sum_once</span>(cards, target):
+    cards = <span class="fn">sorted</span>(cards)
+    results, path = [], []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start, total):
+        <span class="kw">if</span> total == target:
+            results.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(cards)):
+            <span class="kw">if</span> i &gt; start <span class="kw">and</span> cards[i] == cards[i - <span class="nu">1</span>]:
+                <span class="kw">continue</span>                   <span class="cm"># 同样的数值在这里已经试过</span>
+            <span class="kw">if</span> total + cards[i] &gt; target:
+                <span class="kw">break</span>                      <span class="cm"># 剪枝</span>
+            path.append(cards[i])
+            backtrack(i + <span class="nu">1</span>, total + cards[i])
+            path.pop()
+    backtrack(<span class="nu">0</span>, <span class="nu">0</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(combo_sum_once([<span class="nu">10</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">7</span>, <span class="nu">6</span>, <span class="nu">1</span>, <span class="nu">5</span>], <span class="nu">8</span>))
+<span class="cm"># [[1, 1, 6], [1, 2, 5], [1, 7], [2, 6]]</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. 老式手机打字 <span class="stars">★★</span></h3>
+        <p>老式手机的每个数字键上都有字母：2 = abc，3 = def，4 = ghi，5 = jkl，6 = mno，7 = pqrs，8 = tuv，9 = wxyz。列出一串数字能拼出的所有字母组合。（检验：<code>"23"</code> → 9 种：<code>ad, ae, af, bd, …, cf</code>。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>把按键放进字典。答案的第 <code>i</code> 位，按键 <code>digits[i]</code> 上的每个字母各是一根树枝。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_phone.py</div>
+<pre><code>KEYS = {<span class="st">"2"</span>: <span class="st">"abc"</span>, <span class="st">"3"</span>: <span class="st">"def"</span>, <span class="st">"4"</span>: <span class="st">"ghi"</span>, <span class="st">"5"</span>: <span class="st">"jkl"</span>,
+        <span class="st">"6"</span>: <span class="st">"mno"</span>, <span class="st">"7"</span>: <span class="st">"pqrs"</span>, <span class="st">"8"</span>: <span class="st">"tuv"</span>, <span class="st">"9"</span>: <span class="st">"wxyz"</span>}
+
+<span class="kw">def</span> <span class="fn">phone_words</span>(digits):
+    <span class="kw">if</span> <span class="kw">not</span> digits:
+        <span class="kw">return</span> []
+    results = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(i, path):
+        <span class="kw">if</span> i == <span class="fn">len</span>(digits):
+            results.append(path)
+            <span class="kw">return</span>
+        <span class="kw">for</span> letter <span class="kw">in</span> KEYS[digits[i]]:
+            backtrack(i + <span class="nu">1</span>, path + letter)
+    backtrack(<span class="nu">0</span>, <span class="st">""</span>)
+    <span class="kw">return</span> results
+
+<span class="fn">print</span>(phone_words(<span class="st">"23"</span>))
+<span class="cm"># ['ad', 'ae', 'af', 'bd', 'be', 'bf', 'cd', 'ce', 'cf']</span>
+<span class="fn">print</span>(<span class="fn">len</span>(phone_words(<span class="st">"79"</span>)))   <span class="cm"># 16</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. 字母寻宝 <span class="stars">★★★</span></h3>
+        <p>在一个字母方阵里，能否从一个格子出发，<b>上下左右</b>移动拼出一个单词，并且同一个格子不能用两次？（用下面的方阵检验：<code>"ABCCED"</code> → True，<code>"SEE"</code> → True，<code>"ABCB"</code> → False。）</p>
+        <p style="font-family:var(--font-mono);text-align:center;">A B C E<br>S F C S<br>A D E E</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>从每个格子都试着出发。探索时先把当前字母临时换成 <code>"#"</code>，防止重复使用；返回时<b>再把字母放回去</b>。这就是"撤销选择"！</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_word_search.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">word_search</span>(board, word):
+    rows, cols = <span class="fn">len</span>(board), <span class="fn">len</span>(board[<span class="nu">0</span>])
+    <span class="kw">def</span> <span class="fn">backtrack</span>(r, c, i):
+        <span class="kw">if</span> i == <span class="fn">len</span>(word):
+            <span class="kw">return</span> <span class="kw">True</span>                     <span class="cm"># 每个字母都匹配上了</span>
+        <span class="kw">if</span> <span class="kw">not</span> (<span class="nu">0</span> &lt;= r &lt; rows <span class="kw">and</span> <span class="nu">0</span> &lt;= c &lt; cols) <span class="kw">or</span> board[r][c] != word[i]:
+            <span class="kw">return</span> <span class="kw">False</span>
+        saved = board[r][c]
+        board[r][c] = <span class="st">"#"</span>                  <span class="cm"># 做选择：标记为已使用</span>
+        found = (backtrack(r + <span class="nu">1</span>, c, i + <span class="nu">1</span>) <span class="kw">or</span> backtrack(r - <span class="nu">1</span>, c, i + <span class="nu">1</span>) <span class="kw">or</span>
+                 backtrack(r, c + <span class="nu">1</span>, i + <span class="nu">1</span>) <span class="kw">or</span> backtrack(r, c - <span class="nu">1</span>, i + <span class="nu">1</span>))
+        board[r][c] = saved                <span class="cm"># 撤销选择：把字母放回去</span>
+        <span class="kw">return</span> found
+    <span class="kw">return</span> <span class="fn">any</span>(backtrack(r, c, <span class="nu">0</span>) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols))
+
+grid = [<span class="fn">list</span>(<span class="st">"ABCE"</span>), <span class="fn">list</span>(<span class="st">"SFCS"</span>), <span class="fn">list</span>(<span class="st">"ADEE"</span>)]
+<span class="fn">print</span>(word_search(grid, <span class="st">"ABCCED"</span>))   <span class="cm"># True</span>
+<span class="fn">print</span>(word_search(grid, <span class="st">"SEE"</span>))      <span class="cm"># True</span>
+<span class="fn">print</span>(word_search(grid, <span class="st">"ABCB"</span>))     <span class="cm"># False</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. 更快的皇后 <span class="stars">★★★</span></h3>
+        <p>我们的 <code>safe()</code> 要把棋盘上已有的皇后挨个检查一遍。改进 N 皇后计数程序，让它<b>一步</b>就能判断一个格子是否安全，并数出 <code>n = 8</code> 和 <code>n = 10</code> 的解的个数。（检验：92 和 724。）</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>用三个集合：已占用的列、已占用的"↘"斜线、已占用的"↙"斜线。同一条 ↘ 斜线上的格子 <code>r - c</code> 都相同，同一条 ↙ 斜线上的格子 <code>r + c</code> 都相同。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_fast_queens.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">count_queens</span>(n):
+    cols, diag1, diag2 = <span class="fn">set</span>(), <span class="fn">set</span>(), <span class="fn">set</span>()
+    <span class="kw">def</span> <span class="fn">backtrack</span>(r):
+        <span class="kw">if</span> r == n:
+            <span class="kw">return</span> <span class="nu">1</span>
+        total = <span class="nu">0</span>
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> c <span class="kw">in</span> cols <span class="kw">or</span> (r - c) <span class="kw">in</span> diag1 <span class="kw">or</span> (r + c) <span class="kw">in</span> diag2:
+                <span class="kw">continue</span>
+            cols.add(c); diag1.add(r - c); diag2.add(r + c)            <span class="cm"># 做选择</span>
+            total += backtrack(r + <span class="nu">1</span>)                                 <span class="cm"># 往下走</span>
+            cols.remove(c); diag1.remove(r - c); diag2.remove(r + c)   <span class="cm"># 撤销选择</span>
+        <span class="kw">return</span> total
+    <span class="kw">return</span> backtrack(<span class="nu">0</span>)
+
+<span class="fn">print</span>(count_queens(<span class="nu">8</span>))    <span class="cm"># 92</span>
+<span class="fn">print</span>(count_queens(<span class="nu">10</span>))   <span class="cm"># 724</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. 真正的数独 <span class="stars">★★★</span></h3>
+        <p>把第 8 关的求解器升级成完整的 9 × 9 数独（3 × 3 宫格，数字 1–9），解出下面这道题（<code>.</code> = 空格）。（检验：答案的第一行是 <code>534678912</code>。）</p>
+        <p style="font-family:var(--font-mono);text-align:center;line-height:1.5;">53..7....<br>6..195...<br>.98....6.<br>8...6...3<br>4..8.3..1<br>7...2...6<br>.6....28.<br>...419..5<br>....8..79</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>只需改三处：循环到 9，数字从 1 到 9，宫格左上角改成 <code>r // 3 * 3</code>、<code>c // 3 * 3</code>。把每行文字转成数字列表，<code>.</code> 用 <code>0</code> 表示。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_sudoku.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_sudoku</span>(board):
+    <span class="kw">def</span> <span class="fn">ok</span>(r, c, d):
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+            <span class="kw">if</span> board[r][i] == d <span class="kw">or</span> board[i][c] == d:
+                <span class="kw">return</span> <span class="kw">False</span>
+        br, bc = r // <span class="nu">3</span> * <span class="nu">3</span>, c // <span class="nu">3</span> * <span class="nu">3</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(br, br + <span class="nu">3</span>):
+            <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(bc, bc + <span class="nu">3</span>):
+                <span class="kw">if</span> board[i][j] == d:
+                    <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+            <span class="kw">if</span> board[r][c] == <span class="nu">0</span>:
+                <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>):
+                    <span class="kw">if</span> ok(r, c, d):
+                        board[r][c] = d
+                        <span class="kw">if</span> solve_sudoku(board):
+                            <span class="kw">return</span> <span class="kw">True</span>
+                        board[r][c] = <span class="nu">0</span>
+                <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+puzzle = [<span class="st">"53..7...."</span>, <span class="st">"6..195..."</span>, <span class="st">".98....6."</span>, <span class="st">"8...6...3"</span>, <span class="st">"4..8.3..1"</span>,
+          <span class="st">"7...2...6"</span>, <span class="st">".6....28."</span>, <span class="st">"...419..5"</span>, <span class="st">"....8..79"</span>]
+board = [[<span class="nu">0</span> <span class="kw">if</span> ch == <span class="st">"."</span> <span class="kw">else</span> <span class="fn">int</span>(ch) <span class="kw">for</span> ch <span class="kw">in</span> row] <span class="kw">for</span> row <span class="kw">in</span> puzzle]
+solve_sudoku(board)
+<span class="fn">print</span>(<span class="st">""</span>.join(<span class="fn">map</span>(<span class="fn">str</span>, board[<span class="nu">0</span>])))   <span class="cm"># 534678912</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">你走出迷宫了！</div>
+        <p>现在你已经掌握了探险家的秘诀：<b>做选择、往下走、撤销选择</b>，再早早剪掉没希望的树枝。下次碰到可能性多得数不清的谜题，想想手握金线的忒修斯，问问自己：<i>"我的下一个选择是什么？如果失败了，我该怎么退回来？"</i></p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>回溯：一次做一个选择，一旦发现走不通，就撤销它，换下一个选择。如果同样的子问题反复出现，它的表亲<a href="dynamic_programming_zh.html">动态规划</a>可以把答案记下来。</p>
+    <p><a href="index_cn.html">&#x2190; 返回全部讲解</a> &middot; <a href="Backtracking_en.html">English version</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    start: '空棋盘。点<b>单步</b>或<b>播放</b>开始。',
+    place: function(r, c){ return '在第 ' + r + ' 行、第 ' + c + ' 列放下一个皇后。'; },
+    remove: function(r, c){ return '<span class="back">回溯：</span>把第 ' + r + ' 行、第 ' + c + ' 列的皇后拿起来。'; },
+    solution: function(k){ return '<span class="ok">找到第 ' + k + ' 个解！</span>任意两个皇后都互不攻击。'; },
+    done: function(k){ return '搜索结束：所有树枝都走完了，一共 ' + k + ' 个解。'; },
+    stats: function(i, total, q, k){ return '第 <b>' + i + '</b> / ' + total + ' 步 &middot; 棋盘上的皇后：<b>' + q + '</b> &middot; 已找到的解：<b>' + k + '</b>'; },
+    play: '&#x25B6; 播放', pause: '&#x23F8; 暂停',
+    badN: '棋盘大小必须是 4 到 8 之间的整数。',
+    route: function(len, dead){ return '找到路线：从 S 到 E 共 <b>' + len + '</b> 个格子 &middot; 走过又退回的格子：<b>' + dead + '</b>'; },
+    noRoute: function(dead){ return '<b>没有路线！</b>机器人探索了 ' + dead + ' 个格子，一路退回到了起点。'; }
+  };
+
+  /* ---------- N-Queens widget (mirrors solve_queens in queens.py) ---------- */
+  function queenEvents(n){
+    var ev = [], cols = [], found = 0;
+    function safe(r, c){
+      for (var pr = 0; pr < cols.length; pr++){
+        var pc = cols[pr];
+        if (pc === c || Math.abs(pc - c) === Math.abs(pr - r)) return false;
+      }
+      return true;
+    }
+    function backtrack(r){
+      if (r === n){ found++; ev.push({ t: 'sol', cols: cols.slice(), k: found }); return; }
+      for (var c = 0; c < n; c++){
+        if (safe(r, c)){
+          cols.push(c); ev.push({ t: 'place', r: r, c: c, cols: cols.slice(), k: found });
+          backtrack(r + 1);
+          cols.pop(); ev.push({ t: 'remove', r: r, c: c, cols: cols.slice(), k: found });
+        }
+      }
+    }
+    backtrack(0);
+    ev.push({ t: 'done', cols: [], k: found });
+    return ev;
+  }
+
+  var qN = 4, qEv = [], qIdx = 0, qTimer = null;
+  var qBoard = document.getElementById('qBoard'), qLog = document.getElementById('qLog'), qStats = document.getElementById('qStats'), qPlay = document.getElementById('qPlay');
+
+  function drawQueens(){
+    var e = qIdx > 0 ? qEv[qIdx - 1] : { t: 'start', cols: [], k: 0 };
+    var html = '<div class="board" style="grid-template-columns:repeat(' + qN + ',1fr);">';
+    for (var r = 0; r < qN; r++){
+      for (var c = 0; c < qN; c++){
+        var cls = 'sq ' + ((r + c) % 2 === 0 ? 'l' : 'd');
+        var has = e.cols[r] === c;
+        if (e.t === 'sol' && has) cls += ' win';
+        if (e.t === 'place' && e.r === r && e.c === c) cls += ' new';
+        var gone = e.t === 'remove' && e.r === r && e.c === c;
+        if (gone) cls += ' gone';
+        html += '<div class="' + cls + '">' + (has ? '&#x265B;' : gone ? '<span>&#x265B;</span>' : '') + '</div>';
+      }
+    }
+    html += '</div>';
+    qBoard.innerHTML = html;
+    var msg = T.start;
+    if (e.t === 'place') msg = T.place(e.r + 1, e.c + 1);
+    else if (e.t === 'remove') msg = T.remove(e.r + 1, e.c + 1);
+    else if (e.t === 'sol') msg = T.solution(e.k);
+    else if (e.t === 'done') msg = T.done(e.k);
+    qLog.innerHTML = msg;
+    qStats.innerHTML = T.stats(qIdx, qEv.length, e.cols.length, e.k);
+  }
+
+  function stopPlay(){ if (qTimer){ clearInterval(qTimer); qTimer = null; } qPlay.innerHTML = T.play; }
+  function stepQ(d){ qIdx = Math.max(0, Math.min(qEv.length, qIdx + d)); drawQueens(); if (qIdx >= qEv.length) stopPlay(); }
+
+  function resetQ(){
+    stopPlay();
+    var n = parseInt(document.getElementById('inN').value, 10);
+    if (isNaN(n) || n < 4 || n > 8){ qLog.innerHTML = '<span class="back">' + T.badN + '</span>'; return; }
+    qN = n; qEv = queenEvents(n); qIdx = 0; drawQueens();
+  }
+
+  document.getElementById('qReset').addEventListener('click', resetQ);
+  document.getElementById('qStep').addEventListener('click', function(){ stopPlay(); stepQ(1); });
+  document.getElementById('qBack').addEventListener('click', function(){ stopPlay(); stepQ(-1); });
+  document.getElementById('qNext').addEventListener('click', function(){
+    stopPlay();
+    for (var i = qIdx; i < qEv.length; i++){
+      if (qEv[i].t === 'sol' || qEv[i].t === 'done'){ qIdx = i + 1; break; }
+    }
+    drawQueens();
+  });
+  qPlay.addEventListener('click', function(){
+    if (qTimer){ stopPlay(); return; }
+    if (qIdx >= qEv.length) qIdx = 0;
+    qPlay.innerHTML = T.pause;
+    qTimer = setInterval(function(){ stepQ(1); }, qN <= 5 ? 350 : 120);
+  });
+  resetQ();
+
+  /* ---------- Maze widget (mirrors solve_maze in maze.py) ---------- */
+  var MAZE0 = ['S.#....', '.##.##.', '...#...', '#.#..#.', '..#.#..', '#...#.E'];
+  var maze;
+
+  function loadMaze(rows){
+    maze = [];
+    for (var r = 0; r < rows.length; r++) maze.push(rows[r].split(''));
+  }
+
+  function solveMaze(){
+    var R = maze.length, C = maze[0].length, seen = [], path = [];
+    for (var r = 0; r < R; r++){ seen.push([]); for (var c = 0; c < C; c++) seen[r].push(false); }
+    var dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];       // right, down, left, up
+    function explore(r, c){
+      if (r < 0 || r >= R || c < 0 || c >= C || maze[r][c] === '#' || seen[r][c]) return false;
+      path.push([r, c]);
+      if (maze[r][c] === 'E') return true;
+      seen[r][c] = true;
+      for (var k = 0; k < 4; k++){
+        if (explore(r + dirs[k][0], c + dirs[k][1])) return true;
+      }
+      path.pop();
+      return false;
+    }
+    var ok = explore(0, 0);
+    return { ok: ok, path: path, seen: seen };
+  }
+
+  function drawMaze(){
+    var res = solveMaze(), R = maze.length, C = maze[0].length;
+    var onPath = {}, dead = 0;
+    for (var i = 0; i < res.path.length; i++) onPath[res.path[i][0] + ',' + res.path[i][1]] = true;
+    var html = '<div class="dpgrid clickable" style="grid-template-columns:repeat(' + C + ',minmax(0,54px));justify-content:center;">';
+    for (var r = 0; r < R; r++){
+      for (var c = 0; c < C; c++){
+        var ch = maze[r][c], key = r + ',' + c, cls = 'dpcell', txt = '';
+        if (ch === '#') cls += ' wall';
+        else if (ch === 'S'){ cls += ' start'; txt = 'S'; }
+        else if (ch === 'E'){ cls += ' goal'; txt = 'E'; }
+        else if (res.ok && onPath[key]){ cls += ' path'; txt = '&#x2022;'; }
+        else if (res.seen[r][c]){ cls += ' dead'; txt = '&#x2715;'; }
+        if (ch !== '#' && ch !== 'S' && ch !== 'E' && res.seen[r][c] && !(res.ok && onPath[key])) dead++;
+        html += '<div class="' + cls + '" data-r="' + r + '" data-c="' + c + '">' + txt + '</div>';
+      }
+    }
+    html += '</div>';
+    document.getElementById('mGrid').innerHTML = html;
+    document.getElementById('mStats').innerHTML = res.ok ? T.route(res.path.length, dead) : T.noRoute(dead + 1);
+  }
+
+  document.getElementById('mGrid').addEventListener('click', function(e){
+    var cell = e.target.closest('.dpcell');
+    if (!cell) return;
+    var r = +cell.getAttribute('data-r'), c = +cell.getAttribute('data-c');
+    if (maze[r][c] === 'S' || maze[r][c] === 'E') return;
+    maze[r][c] = maze[r][c] === '#' ? '.' : '#';
+    drawMaze();
+  });
+  document.getElementById('mReset').addEventListener('click', function(){ loadMaze(MAZE0); drawMaze(); });
+  document.getElementById('mClear').addEventListener('click', function(){
+    for (var r = 0; r < maze.length; r++) for (var c = 0; c < maze[r].length; c++) if (maze[r][c] === '#') maze[r][c] = '.';
+    drawMaze();
+  });
+  loadMaze(MAZE0);
+  drawMaze();
+})();
+</script>
+</body>
+</html>
