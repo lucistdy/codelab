@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哈密顿的环球旅行：正十二面体上的哈密顿回路</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+
+  /* ---------- Graph drawings (map, Petersen, cube, game) ---------- */
+  .gsvg{display:block;width:100%;max-width:440px;height:auto;margin:0 auto;touch-action:manipulation;}
+  .gsvg.small{max-width:300px;}
+  .gfig{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:22px 0;}
+  .gfig figcaption, .gcap{font-size:13px;color:var(--ink-soft);text-align:center;margin-top:6px;}
+  .g-edge{stroke:var(--line);stroke-width:5;stroke-linecap:round;}
+  .g-edge.on{stroke:var(--accent);stroke-width:7;}
+  .g-edge.close{stroke:var(--clue);stroke-width:7;}
+  .g-node circle{fill:var(--paper-raised);stroke:var(--ink-soft);stroke-width:2.5;}
+  .g-node text{fill:var(--ink);font-family:var(--font-mono);font-weight:800;font-size:15px;text-anchor:middle;dominant-baseline:central;pointer-events:none;}
+  .g-node text.num{font-size:10px;font-weight:600;fill:var(--ink-soft);}
+  .g-node.on circle{fill:var(--accent-soft);stroke:var(--accent);}
+  .g-node.start circle{fill:var(--clue-soft);stroke:var(--clue);stroke-width:3.5;}
+  .g-node.next circle{stroke:var(--clue);stroke-width:3.5;stroke-dasharray:5 3;}
+  .g-node.last circle{stroke-width:5;}
+  .g-node.win circle{fill:var(--clue-soft);stroke:var(--clue);}
+  .g-node.bad circle{fill:var(--alert-soft);stroke:var(--alert);}
+  #gameSvg .g-node{cursor:pointer;}
+  #gameSvg .g-node:hover circle{stroke:var(--accent);stroke-width:4;}
+
+  /* ---------- 3D dodecahedron ---------- */
+  .d3wrap{display:flex;justify-content:center;}
+  .d3svg{width:100%;max-width:380px;height:auto;cursor:grab;touch-action:none;user-select:none;}
+  .d3svg.dragging{cursor:grabbing;}
+  .e3{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;}
+  .e3.back{stroke:var(--ink-soft);opacity:.35;stroke-dasharray:5 5;}
+  .e3.trip{stroke:var(--accent);stroke-width:5;opacity:1;stroke-dasharray:none;}
+  .e3.trip.back{opacity:.45;}
+  .v3{fill:var(--ink);}
+  .v3.back{opacity:.3;}
+  .traveller{fill:var(--clue);stroke:var(--paper-raised);stroke-width:2.5;}
+  .status{font-family:var(--font-mono);font-size:14px;line-height:1.6;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;min-height:3.4em;word-break:break-word;}
+  .status b{color:var(--accent-strong);}
+  .status .ok{color:var(--clue);font-weight:800;}
+  .status .back{color:var(--alert);font-weight:700;}
+  .codechips{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:16px 0;}
+  .codechips span{font-family:var(--font-mono);font-weight:800;font-size:16px;width:30px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--line);background:var(--paper-raised);}
+  .codechips span.L{color:var(--code-fn);border-color:var(--code-fn);}
+  .codechips span.R{color:var(--code-nu);border-color:var(--code-nu);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="Regular_Dodecahedron_en.html">English &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">图论 &middot; 技能讲解</div>
+      <h1>哈密顿的环球旅行：<em>正十二面体上的哈密顿回路</em></h1>
+      <p class="sub">1857 年，爱尔兰数学家威廉·罗恩·哈密顿爵士发明了一个谜题，不久后伦敦的一家游戏公司把它当作玩具出售。它的棋盘是一个<b>正十二面体</b>：20 个顶点，每个代表一座城市。挑战是：<b>每座城市恰好去一次</b>，最后回到出发地。今天，这样的环游路线叫作<b>哈密顿回路</b>，它直通计算机科学里最大的未解之谜之一。</p>
+      <div class="stampbar">
+        <span class="stamp hot">适合 13 岁+</span>
+        <span class="stamp">图论</span>
+        <span class="stamp">3D 模型</span>
+        <span class="stamp">可玩的谜题</span>
+        <span class="stamp">8 道练习题</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第 1 关</span><h2>认识正十二面体</h2></div>
+      <p class="lead">"Dodeca" 在希腊语里是"十二"，"hedron" 是"面"。<b>正十二面体</b>由 <b>12 个完全相同的正五边形</b>组成，每个顶点处都有三个五边形相交。</p>
+      <p>拖动模型让它转起来。虚线是背面的棱。</p>
+      <div class="widget" id="solidWidget">
+        <div class="d3wrap"><svg class="d3svg" id="d3" viewBox="-190 -170 380 340" role="img" aria-label="一个旋转的正十二面体"></svg></div>
+        <div class="controls">
+          <button class="btn" id="d3Trip" type="button">显示一条哈密顿回路</button>
+          <button class="btn ghost" id="d3Spin" type="button">暂停旋转</button>
+        </div>
+        <div class="gcap" id="d3Cap">20 个顶点 &middot; 30 条棱 &middot; 12 个五边形面</div>
+      </div>
+      <p>正十二面体是仅有的<b>五种</b>完美正多面体之一，它们叫作<b>柏拉图立体</b>。每一种的所有面都是相同的正多边形，每个顶点看起来也都一模一样：</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>立体</th><th>面的形状</th><th>F（面）</th><th>V（顶点）</th><th>E（棱）</th></tr></thead>
+          <tbody>
+            <tr><td>正四面体</td><td>三角形</td><td>4</td><td>4</td><td>6</td></tr>
+            <tr><td>正方体</td><td>正方形</td><td>6</td><td>8</td><td>12</td></tr>
+            <tr><td>正八面体</td><td>三角形</td><td>8</td><td>6</td><td>12</td></tr>
+            <tr><td class="odd">正十二面体</td><td class="odd">五边形</td><td class="odd">12</td><td class="odd">20</td><td class="odd">30</td></tr>
+            <tr><td>正二十面体</td><td>三角形</td><td>20</td><td>12</td><td>30</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">一个神奇的公式</div>
+        <p>对每一种柏拉图立体，都有 <b>V − E + F = 2</b>。正十二面体：20 − 30 + 12 = 2。这就是<b>欧拉公式</b>，它对任何没有洞的立体都成立。练习题第 1 题会让你把五种都验证一遍。</p>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">不用数也能数出来</div>
+        <p>棱不必一条条去数。12 个五边形，每个 5 条边，一共 60 条，但每条棱被 2 个面共用，所以 60 ÷ 2 = <b>30 条棱</b>。同理，五边形的角一共有 12 × 5 = 60 个，立体的每个顶点处有 3 个角相交，所以 60 ÷ 3 = <b>20 个顶点</b>。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第 2 关</span><h2>把它压扁：从立体到地图</h2></div>
+      <p class="lead">想象正十二面体是橡皮做的。在正面戳一个洞，把洞口使劲撑大，再把整个东西压平。顶点和棱都保留下来，你就得到了一张<b>地图</b>。</p>
+      <figure class="gfig"><svg class="gsvg" viewBox="-230 -230 460 460" role="img" aria-label="graph"><line class="g-edge" data-a="0" data-b="1" x1="0.0" y1="-200.0" x2="190.2" y2="-61.8"/><line class="g-edge" data-a="0" data-b="5" x1="0.0" y1="-200.0" x2="0.0" y2="-140.0"/><line class="g-edge" data-a="6" data-b="15" x1="61.7" y1="-84.9" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="15" data-b="16" x1="32.3" y1="-44.5" x2="52.3" y2="17.0"/><line class="g-edge" data-a="1" data-b="2" x1="190.2" y1="-61.8" x2="117.6" y2="161.8"/><line class="g-edge" data-a="1" data-b="7" x1="190.2" y1="-61.8" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="8" data-b="16" x1="99.9" y1="32.4" x2="52.3" y2="17.0"/><line class="g-edge" data-a="16" data-b="17" x1="52.3" y1="17.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="2" data-b="3" x1="117.6" y1="161.8" x2="-117.6" y2="161.8"/><line class="g-edge" data-a="2" data-b="9" x1="117.6" y1="161.8" x2="82.3" y2="113.3"/><line class="g-edge" data-a="10" data-b="17" x1="0.0" y1="105.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="17" data-b="18" x1="0.0" y1="55.0" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="3" data-b="4" x1="-117.6" y1="161.8" x2="-190.2" y2="-61.8"/><line class="g-edge" data-a="3" data-b="11" x1="-117.6" y1="161.8" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="12" data-b="18" x1="-99.9" y1="32.4" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="18" data-b="19" x1="-52.3" y1="17.0" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="4" data-b="0" x1="-190.2" y1="-61.8" x2="0.0" y2="-200.0"/><line class="g-edge" data-a="4" data-b="13" x1="-190.2" y1="-61.8" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="14" data-b="19" x1="-61.7" y1="-84.9" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="19" data-b="15" x1="-32.3" y1="-44.5" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="5" data-b="6" x1="0.0" y1="-140.0" x2="61.7" y2="-84.9"/><line class="g-edge" data-a="6" data-b="7" x1="61.7" y1="-84.9" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="7" data-b="8" x1="133.1" y1="-43.3" x2="99.9" y2="32.4"/><line class="g-edge" data-a="8" data-b="9" x1="99.9" y1="32.4" x2="82.3" y2="113.3"/><line class="g-edge" data-a="9" data-b="10" x1="82.3" y1="113.3" x2="0.0" y2="105.0"/><line class="g-edge" data-a="10" data-b="11" x1="0.0" y1="105.0" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="11" data-b="12" x1="-82.3" y1="113.3" x2="-99.9" y2="32.4"/><line class="g-edge" data-a="12" data-b="13" x1="-99.9" y1="32.4" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="13" data-b="14" x1="-133.1" y1="-43.3" x2="-61.7" y2="-84.9"/><line class="g-edge" data-a="14" data-b="5" x1="-61.7" y1="-84.9" x2="0.0" y2="-140.0"/><g class="g-node" data-v="0"><circle cx="0.0" cy="-200.0" r="18"/><text x="0.0" y="-204.0">B</text><text class="num" x="0.0" y="-191.0">0</text></g><g class="g-node" data-v="1"><circle cx="190.2" cy="-61.8" r="18"/><text x="190.2" y="-65.8">C</text><text class="num" x="190.2" y="-52.8">1</text></g><g class="g-node" data-v="2"><circle cx="117.6" cy="161.8" r="18"/><text x="117.6" y="157.8">D</text><text class="num" x="117.6" y="170.8">2</text></g><g class="g-node" data-v="3"><circle cx="-117.6" cy="161.8" r="18"/><text x="-117.6" y="157.8">F</text><text class="num" x="-117.6" y="170.8">3</text></g><g class="g-node" data-v="4"><circle cx="-190.2" cy="-61.8" r="18"/><text x="-190.2" y="-65.8">G</text><text class="num" x="-190.2" y="-52.8">4</text></g><g class="g-node" data-v="5"><circle cx="0.0" cy="-140.0" r="18"/><text x="0.0" y="-144.0">H</text><text class="num" x="0.0" y="-131.0">5</text></g><g class="g-node" data-v="6"><circle cx="61.7" cy="-84.9" r="18"/><text x="61.7" y="-88.9">J</text><text class="num" x="61.7" y="-75.9">6</text></g><g class="g-node" data-v="7"><circle cx="133.1" cy="-43.3" r="18"/><text x="133.1" y="-47.3">K</text><text class="num" x="133.1" y="-34.3">7</text></g><g class="g-node" data-v="8"><circle cx="99.9" cy="32.4" r="18"/><text x="99.9" y="28.4">L</text><text class="num" x="99.9" y="41.4">8</text></g><g class="g-node" data-v="9"><circle cx="82.3" cy="113.3" r="18"/><text x="82.3" y="109.3">M</text><text class="num" x="82.3" y="122.3">9</text></g><g class="g-node" data-v="10"><circle cx="0.0" cy="105.0" r="18"/><text x="0.0" y="101.0">N</text><text class="num" x="0.0" y="114.0">10</text></g><g class="g-node" data-v="11"><circle cx="-82.3" cy="113.3" r="18"/><text x="-82.3" y="109.3">P</text><text class="num" x="-82.3" y="122.3">11</text></g><g class="g-node" data-v="12"><circle cx="-99.9" cy="32.4" r="18"/><text x="-99.9" y="28.4">Q</text><text class="num" x="-99.9" y="41.4">12</text></g><g class="g-node" data-v="13"><circle cx="-133.1" cy="-43.3" r="18"/><text x="-133.1" y="-47.3">R</text><text class="num" x="-133.1" y="-34.3">13</text></g><g class="g-node" data-v="14"><circle cx="-61.7" cy="-84.9" r="18"/><text x="-61.7" y="-88.9">S</text><text class="num" x="-61.7" y="-75.9">14</text></g><g class="g-node" data-v="15"><circle cx="32.3" cy="-44.5" r="18"/><text x="32.3" y="-48.5">T</text><text class="num" x="32.3" y="-35.5">15</text></g><g class="g-node" data-v="16"><circle cx="52.3" cy="17.0" r="18"/><text x="52.3" y="13.0">V</text><text class="num" x="52.3" y="26.0">16</text></g><g class="g-node" data-v="17"><circle cx="0.0" cy="55.0" r="18"/><text x="0.0" y="51.0">W</text><text class="num" x="0.0" y="64.0">17</text></g><g class="g-node" data-v="18"><circle cx="-52.3" cy="17.0" r="18"/><text x="-52.3" y="13.0">X</text><text class="num" x="-52.3" y="26.0">18</text></g><g class="g-node" data-v="19"><circle cx="-32.3" cy="-44.5" r="18"/><text x="-32.3" y="-48.5">Z</text><text class="num" x="-32.3" y="-35.5">19</text></g></svg><figcaption>压扁的正十二面体：20 座城市（字母及编号）和 30 条道路。</figcaption></figure>
+      <p>数学家把这样的图叫作<b>图（graph）</b>。这可不是数据图表，这里它的意思是：</p>
+      <div class="recipe">
+        <div class="step"><div class="k">顶点</div><div class="t">一座城市</div><div class="d">图上的点。正十二面体有 20 个，哈密顿用从 B 到 Z 的 20 个辅音字母给它们命名。</div></div>
+        <div class="step"><div class="k">边</div><div class="t">一条道路</div><div class="d">连接两座城市的线。一共 30 条。</div></div>
+        <div class="step"><div class="k">度</div><div class="t">每座城市的道路数</div><div class="d">数一数一座城市连着几条路。在正十二面体上，每座城市都正好有 <b>3</b> 条。</div></div>
+      </div>
+      <p>地图的外边界就是我们撑开的那个面。数一数五边形：地图里面 11 个，加上外面那一个，正好 12 个。在 Python 里，图很容易用<b>邻接表</b>来存：每座城市对应一个邻居列表。我们把城市编号为 0–19（B = 0，C = 1，……，Z = 19）：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>dodecahedron.py</div>
+<pre><code>NAMES = <span class="st">"BCDFGHJKLMNPQRSTVWXZ"</span>      <span class="cm"># 哈密顿的 20 个城市字母</span>
+
+<span class="kw">def</span> <span class="fn">dodecahedron</span>():
+    adj = {v: [] <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">20</span>)}
+    <span class="kw">def</span> <span class="fn">road</span>(a, b):                    <span class="cm"># 一条双向道路</span>
+        adj[a].append(b)
+        adj[b].append(a)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">5</span>):
+        road(i, (i + <span class="nu">1</span>) % <span class="nu">5</span>)              <span class="cm"># 外圈五边形</span>
+        road(i, <span class="nu">5</span> + <span class="nu">2</span> * i)                <span class="cm"># 外侧辐条</span>
+        road(<span class="nu">6</span> + <span class="nu">2</span> * i, <span class="nu">15</span> + i)           <span class="cm"># 内侧辐条</span>
+        road(<span class="nu">15</span> + i, <span class="nu">15</span> + (i + <span class="nu">1</span>) % <span class="nu">5</span>)    <span class="cm"># 内圈五边形</span>
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">10</span>):
+        road(<span class="nu">5</span> + j, <span class="nu">5</span> + (j + <span class="nu">1</span>) % <span class="nu">10</span>)     <span class="cm"># 中间 10 个城市围成的环</span>
+    <span class="kw">return</span> adj
+
+adj = dodecahedron()
+<span class="fn">print</span>(<span class="fn">len</span>(adj))                                    <span class="cm"># 20  座城市</span>
+<span class="fn">print</span>(<span class="fn">sum</span>(<span class="fn">len</span>(roads) <span class="kw">for</span> roads <span class="kw">in</span> adj.values()) // <span class="nu">2</span>)   <span class="cm"># 30  条道路</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">set</span>(<span class="fn">len</span>(r) <span class="kw">for</span> r <span class="kw">in</span> adj.values())))     <span class="cm"># [3]  每座城市都有 3 条路</span>
+<span class="fn">print</span>(adj[<span class="nu">0</span>])                                    <span class="cm"># [1, 5, 4]  B 的邻居：C、H、G</span></code></pre>
+      </div>
+      <p>为什么要除以 2？每条路会出现在<i>两个</i>列表里，两端各一次。这又是"握手"的小窍门。</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第 3 关</span><h2>哈密顿的谜题</h2></div>
+      <p class="lead">哈密顿的挑战：从任意一座城市出发，沿着道路走，<b>每座城市恰好去一次</b>，最后回到起点。</p>
+      <div class="recipe">
+        <div class="step"><div class="k">哈密顿回路</div><div class="t">每座城市一次，再回家</div><div class="d">一次环游。这就是哈密顿的谜题。</div></div>
+        <div class="step"><div class="k">哈密顿路径</div><div class="t">每座城市一次</div><div class="d">不用回家。这个更容易，因为回路去掉最后一条路就是一条路径。</div></div>
+        <div class="step"><div class="k">欧拉回路</div><div class="t">每条<i>路</i>一次</div><div class="d">这是另一个谜题！城市可以重复经过，但每条路必须恰好走一次。</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">别把欧拉和哈密顿搞混</div>
+        <p>比哈密顿早大约 120 年，莱昂哈德·欧拉解决了著名的<b>柯尼斯堡七桥问题</b>，并找到一条关于道路谜题的简单规则：想要每条路恰好走一次并回到起点，<b>每座城市的道路数都必须是偶数</b>。正十二面体上每座城市有 3 条路，是奇数，所以欧拉回路不可能存在。欧拉的问题有这样简单的判断方法；而哈密顿的问题，你会看到，<b>没有</b>。</p>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>euler_check.py（使用第 2 关的 adj）</div>
+<pre><code>odd = [city <span class="kw">for</span> city <span class="kw">in</span> adj <span class="kw">if</span> <span class="fn">len</span>(adj[city]) % <span class="nu">2</span> == <span class="nu">1</span>]
+<span class="fn">print</span>(<span class="fn">len</span>(odd))   <span class="cm"># 20  → 20 座城市全是奇数，所以没有欧拉回路</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第 4 关</span><h2>来玩"周游世界"游戏</h2></div>
+      <p class="lead">哈密顿的游戏叫作 <b>Icosian Game</b>（"icosa" 意思是二十）。玩家把编号 1 到 20 的木钉插进城市上的小孔，记录旅行的顺序。现在轮到你了。</p>
+      <div class="widget" id="gameWidget">
+        <h3>走遍 20 座城市，再回到家</h3>
+        <div class="hint">点击一座城市作为起点，然后点击一座<b>相邻</b>的城市（绿色虚线圈）前往。每座城市只能去一次！20 座都走完后，最后一座城市必须有路通回起点。</div>
+        <svg class="gsvg" id="gameSvg" viewBox="-230 -230 460 460" role="img" aria-label="graph"><line class="g-edge" data-a="0" data-b="1" x1="0.0" y1="-200.0" x2="190.2" y2="-61.8"/><line class="g-edge" data-a="0" data-b="5" x1="0.0" y1="-200.0" x2="0.0" y2="-140.0"/><line class="g-edge" data-a="6" data-b="15" x1="61.7" y1="-84.9" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="15" data-b="16" x1="32.3" y1="-44.5" x2="52.3" y2="17.0"/><line class="g-edge" data-a="1" data-b="2" x1="190.2" y1="-61.8" x2="117.6" y2="161.8"/><line class="g-edge" data-a="1" data-b="7" x1="190.2" y1="-61.8" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="8" data-b="16" x1="99.9" y1="32.4" x2="52.3" y2="17.0"/><line class="g-edge" data-a="16" data-b="17" x1="52.3" y1="17.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="2" data-b="3" x1="117.6" y1="161.8" x2="-117.6" y2="161.8"/><line class="g-edge" data-a="2" data-b="9" x1="117.6" y1="161.8" x2="82.3" y2="113.3"/><line class="g-edge" data-a="10" data-b="17" x1="0.0" y1="105.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="17" data-b="18" x1="0.0" y1="55.0" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="3" data-b="4" x1="-117.6" y1="161.8" x2="-190.2" y2="-61.8"/><line class="g-edge" data-a="3" data-b="11" x1="-117.6" y1="161.8" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="12" data-b="18" x1="-99.9" y1="32.4" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="18" data-b="19" x1="-52.3" y1="17.0" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="4" data-b="0" x1="-190.2" y1="-61.8" x2="0.0" y2="-200.0"/><line class="g-edge" data-a="4" data-b="13" x1="-190.2" y1="-61.8" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="14" data-b="19" x1="-61.7" y1="-84.9" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="19" data-b="15" x1="-32.3" y1="-44.5" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="5" data-b="6" x1="0.0" y1="-140.0" x2="61.7" y2="-84.9"/><line class="g-edge" data-a="6" data-b="7" x1="61.7" y1="-84.9" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="7" data-b="8" x1="133.1" y1="-43.3" x2="99.9" y2="32.4"/><line class="g-edge" data-a="8" data-b="9" x1="99.9" y1="32.4" x2="82.3" y2="113.3"/><line class="g-edge" data-a="9" data-b="10" x1="82.3" y1="113.3" x2="0.0" y2="105.0"/><line class="g-edge" data-a="10" data-b="11" x1="0.0" y1="105.0" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="11" data-b="12" x1="-82.3" y1="113.3" x2="-99.9" y2="32.4"/><line class="g-edge" data-a="12" data-b="13" x1="-99.9" y1="32.4" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="13" data-b="14" x1="-133.1" y1="-43.3" x2="-61.7" y2="-84.9"/><line class="g-edge" data-a="14" data-b="5" x1="-61.7" y1="-84.9" x2="0.0" y2="-140.0"/><g class="g-node" data-v="0"><circle cx="0.0" cy="-200.0" r="18"/><text x="0.0" y="-200.0">B</text></g><g class="g-node" data-v="1"><circle cx="190.2" cy="-61.8" r="18"/><text x="190.2" y="-61.8">C</text></g><g class="g-node" data-v="2"><circle cx="117.6" cy="161.8" r="18"/><text x="117.6" y="161.8">D</text></g><g class="g-node" data-v="3"><circle cx="-117.6" cy="161.8" r="18"/><text x="-117.6" y="161.8">F</text></g><g class="g-node" data-v="4"><circle cx="-190.2" cy="-61.8" r="18"/><text x="-190.2" y="-61.8">G</text></g><g class="g-node" data-v="5"><circle cx="0.0" cy="-140.0" r="18"/><text x="0.0" y="-140.0">H</text></g><g class="g-node" data-v="6"><circle cx="61.7" cy="-84.9" r="18"/><text x="61.7" y="-84.9">J</text></g><g class="g-node" data-v="7"><circle cx="133.1" cy="-43.3" r="18"/><text x="133.1" y="-43.3">K</text></g><g class="g-node" data-v="8"><circle cx="99.9" cy="32.4" r="18"/><text x="99.9" y="32.4">L</text></g><g class="g-node" data-v="9"><circle cx="82.3" cy="113.3" r="18"/><text x="82.3" y="113.3">M</text></g><g class="g-node" data-v="10"><circle cx="0.0" cy="105.0" r="18"/><text x="0.0" y="105.0">N</text></g><g class="g-node" data-v="11"><circle cx="-82.3" cy="113.3" r="18"/><text x="-82.3" y="113.3">P</text></g><g class="g-node" data-v="12"><circle cx="-99.9" cy="32.4" r="18"/><text x="-99.9" y="32.4">Q</text></g><g class="g-node" data-v="13"><circle cx="-133.1" cy="-43.3" r="18"/><text x="-133.1" y="-43.3">R</text></g><g class="g-node" data-v="14"><circle cx="-61.7" cy="-84.9" r="18"/><text x="-61.7" y="-84.9">S</text></g><g class="g-node" data-v="15"><circle cx="32.3" cy="-44.5" r="18"/><text x="32.3" y="-44.5">T</text></g><g class="g-node" data-v="16"><circle cx="52.3" cy="17.0" r="18"/><text x="52.3" y="17.0">V</text></g><g class="g-node" data-v="17"><circle cx="0.0" cy="55.0" r="18"/><text x="0.0" y="55.0">W</text></g><g class="g-node" data-v="18"><circle cx="-52.3" cy="17.0" r="18"/><text x="-52.3" y="17.0">X</text></g><g class="g-node" data-v="19"><circle cx="-32.3" cy="-44.5" r="18"/><text x="-32.3" y="-44.5">Z</text></g></svg>
+        <div class="controls">
+          <button class="btn ghost" id="gUndo" type="button">&#x21A9; 撤销</button>
+          <button class="btn ghost" id="gReset" type="button">重来</button>
+          <button class="btn ghost" id="gCheck" type="button">我还能走完吗？</button>
+          <button class="btn" id="gSolve" type="button">给我看一个解</button>
+          <button class="btn ghost" id="gCode" type="button">按哈密顿的密码走</button>
+        </div>
+        <div class="status" id="gStatus"></div>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">策略提示</div>
+        <ul>
+          <li>走进死胡同很正常。当所有邻居都去过了，你就遇到了<b>死路</b>：撤销几步，换一条路试试。电脑也正是这样解题的。</li>
+          <li>"我还能走完吗？"会告诉你目前的路线还能不能完成，但不会剧透答案。</li>
+          <li>一个好习惯：别让某座城市"搁浅"，也就是只剩一个没去过的邻居，否则你永远没法穿过它。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第 5 关</span><h2>教 Python 来玩</h2></div>
+      <p class="lead">电脑的玩法和你一模一样：选一条路，继续走，卡住了就退回来试下一条路。这就是<a href="Backtracking_zh.html">回溯</a>：<b>做选择 → 往下走 → 撤销选择</b>。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>find_trip.py（使用第 2 关的 adj 和 NAMES）</div>
+<pre><code><span class="kw">def</span> <span class="fn">hamilton_cycle</span>(adj, start=<span class="nu">0</span>):
+    n = <span class="fn">len</span>(adj)
+    path = [start]
+    visited = {start}
+
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == n:                    <span class="cm"># 每座城市都去过了……</span>
+            <span class="kw">return</span> start <span class="kw">in</span> adj[city]         <span class="cm"># ……还有路回家吗？</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)      <span class="cm"># 做选择</span>
+                <span class="kw">if</span> explore(nxt):                       <span class="cm"># 往下走</span>
+                    <span class="kw">return</span> <span class="kw">True</span>
+                path.pop(); visited.remove(nxt)         <span class="cm"># 撤销选择</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="kw">return</span> path <span class="kw">if</span> explore(start) <span class="kw">else</span> <span class="kw">None</span>
+
+trip = hamilton_cycle(adj)
+<span class="fn">print</span>(<span class="st">" → "</span>.join(NAMES[c] <span class="kw">for</span> c <span class="kw">in</span> trip + [trip[<span class="nu">0</span>]]))
+<span class="cm"># B → C → D → F → G → R → Q → P → N → M → L → K → J → T → V → W → X → Z → S → H → B</span></code></pre>
+      </div>
+      <div class="annot">
+        <div class="annot-row"><div class="annot-code">if len(path) == n:</div><div class="annot-note"><span><b>终点检查。</b>20 座城市都在路线上了……</span></div></div>
+        <div class="annot-row"><div class="annot-code">return start in adj[city]</div><div class="annot-note"><span><b>……可是有路回家吗？</b>没有的话，这条走满的路线还是失败。</span></div></div>
+        <div class="annot-row"><div class="annot-code">if nxt not in visited:</div><div class="annot-note"><span><b>规则。</b>同一座城市绝不去两次。</span></div></div>
+        <div class="annot-row"><div class="annot-code">path.pop(); visited.remove(nxt)</div><div class="annot-note"><span><b>撤销选择。</b>这条路走不通，退回来试下一条。</span></div></div>
+      </div>
+      <p>这个答案先绕外圈五边形一圈（B C D F G），再沿中间的环之字形前进，绕内圈五边形一圈，最后回家。在地图上描一描看！</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第 6 关</span><h2>一共有多少种不同的旅行？</h2></div>
+      <p class="lead">别找到第一条就停下，我们把<b>所有</b>路线都数出来。唯一的改动：不再返回 <code>True</code>，而是给计数器加 1。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>count_trips.py（使用第 2 关的 adj）</div>
+<pre><code><span class="kw">def</span> <span class="fn">count_cycles</span>(adj, start=<span class="nu">0</span>):
+    n = <span class="fn">len</span>(adj)
+    path = [start]
+    visited = {start}
+    count = <span class="nu">0</span>
+
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">nonlocal</span> count
+        <span class="kw">if</span> <span class="fn">len</span>(path) == n:
+            <span class="kw">if</span> start <span class="kw">in</span> adj[city]:
+                count += <span class="nu">1</span>
+            <span class="kw">return</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                explore(nxt)
+                path.pop(); visited.remove(nxt)
+
+    explore(start)
+    <span class="kw">return</span> count
+
+trips = count_cycles(adj)
+<span class="fn">print</span>(trips)         <span class="cm"># 60</span>
+<span class="fn">print</span>(trips // <span class="nu">2</span>)    <span class="cm"># 30</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat fast"><div class="num">60</div><div class="lbl">从 B 出发的旅行（两个方向都算）</div></div>
+        <div class="stat fast"><div class="num">30</div><div class="lbl">真正不同的环游路线</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">为什么要除以 2？</div>
+        <p>每一条环游路线都可以朝两个方向走：B → C → … → H → B 和 B → H → … → C → B 走的是完全相同的路。程序把两者都数了，所以真正不同的回路是 60 ÷ 2 = <b>30</b> 条。起点也无所谓：无论从哪里"开始"，回路都会经过 B，所以把 B 固定为起点不会漏掉任何一条。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第 7 关</span><h2>哈密顿的密码：左与右</h2></div>
+      <p class="lead">哈密顿是个代数天才，他想出了一个不用地图就能描述旅行的绝妙方法。</p>
+      <p>走到任何一座城市，你都会看到<b>正好两条</b>不是刚走过来的路：一条在你的左手边，一条在你的右手边。所以整个旅行可以写成一串字母：<b>L</b> 表示"走左手边那条路"，<b>R</b> 表示"走右手边那条路"。哈密顿围绕这些走法建立了一整套代数，叫作 <b>Icosian Calculus（二十面体演算）</b>。</p>
+      <p>这是一次完整旅行的密码。从 B 出发走到 C，然后按这 20 个字母走：</p>
+      <div class="codechips"><span class="L">L</span><span class="L">L</span><span class="L">L</span><span class="R">R</span><span class="R">R</span><span class="R">R</span><span class="L">L</span><span class="R">R</span><span class="L">L</span><span class="R">R</span><span class="L">L</span><span class="L">L</span><span class="L">L</span><span class="R">R</span><span class="R">R</span><span class="R">R</span><span class="L">L</span><span class="R">R</span><span class="L">L</span><span class="R">R</span></div>
+      <p>注意，它是同一个 10 字母图案 <code>LLLRRRLRLR</code> 重复两次！在上面的游戏里点<b>按哈密顿的密码走</b>，看看效果。要在 Python 里按密码走，我们得知道哪条路在哪一边：利用每座城市在地图上的位置，把它的三条路按方向逆时针排好：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>left_right.py（使用第 2 关的 adj 和 NAMES）</div>
+<pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="fn">position</span>(v):                              <span class="cm"># 城市 v 在地图上的位置</span>
+    <span class="kw">if</span> v &lt; <span class="nu">5</span>:
+        angle, r = <span class="nu">90</span> - <span class="nu">72</span> * v, <span class="nu">200</span>                  <span class="cm"># 外圈五边形</span>
+    <span class="kw">elif</span> v &lt; <span class="nu">15</span>:
+        angle, r = <span class="nu">90</span> - <span class="nu">36</span> * (v - <span class="nu">5</span>), (<span class="nu">140</span> <span class="kw">if</span> v % <span class="nu">2</span> == <span class="nu">1</span> <span class="kw">else</span> <span class="nu">105</span>)   <span class="cm"># 中间的环</span>
+    <span class="kw">else</span>:
+        angle, r = <span class="nu">54</span> - <span class="nu">72</span> * (v - <span class="nu">15</span>), <span class="nu">55</span>            <span class="cm"># 内圈五边形</span>
+    a = math.radians(angle)
+    <span class="kw">return</span> r * math.cos(a), r * math.sin(a)
+
+<span class="kw">def</span> <span class="fn">around</span>(v):                                <span class="cm"># v 的 3 条路，逆时针排列</span>
+    x, y = position(v)
+    <span class="kw">return</span> <span class="fn">sorted</span>(adj[v], key=<span class="kw">lambda</span> w: math.atan2(position(w)[<span class="nu">1</span>] - y, position(w)[<span class="nu">0</span>] - x))
+
+<span class="kw">def</span> <span class="fn">follow</span>(code, start, first):
+    route = [start, first]
+    <span class="kw">for</span> turn <span class="kw">in</span> code:
+        here, came_from = route[-<span class="nu">1</span>], route[-<span class="nu">2</span>]
+        ring = around(here)
+        k = ring.index(came_from)
+        <span class="cm"># 背对来路站着：顺时针方向的那条就是左手边的路</span>
+        route.append(ring[(k - <span class="nu">1</span>) % <span class="nu">3</span>] <span class="kw">if</span> turn == <span class="st">"L"</span> <span class="kw">else</span> ring[(k + <span class="nu">1</span>) % <span class="nu">3</span>])
+    <span class="kw">return</span> route
+
+route = follow(<span class="st">"LLLRRRLRLR"</span> * <span class="nu">2</span>, <span class="nu">0</span>, <span class="nu">1</span>)
+<span class="fn">print</span>(<span class="st">" "</span>.join(NAMES[c] <span class="kw">for</span> c <span class="kw">in</span> route))
+<span class="cm"># B C D F G R Q P N M L K J T V W X Z S H B C</span>
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="fn">set</span>(route[:<span class="nu">20</span>])))     <span class="cm"># 20    → 20 座城市，每座一次</span>
+<span class="fn">print</span>(route[<span class="nu">20</span>:] == [<span class="nu">0</span>, <span class="nu">1</span>])     <span class="cm"># True  → 回到 B，又朝着 C 走去</span></code></pre>
+      </div>
+      <p>转了 20 次之后，我们回到了 B，又朝 C 走去，和出发时一模一样。这正是 Python 在第 5 关找到的那条路线！</p>
+      <div class="callout tip">
+        <div class="ctitle">本页最惊人的事实</div>
+        <p>一共有 30 条不同的环游路线，可是<b>每一条</b>的密码都是 <code>LLLRRRLRLR</code> 重复两次。区别只在于从密码的哪个位置开始读，以及路线是不是镜像（所有 L 和 R 互换）。正十二面体对称得不可思议：说到底，它只有<i>一条</i>哈密顿回路，只是从不同角度去看。</p>
+      </div>
+      <details>
+        <summary>不信？让 Python 检查全部 60 条路线</summary>
+        <div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>check_code.py（使用上面的 adj 和 around()）</div>
+<pre><code><span class="kw">def</span> <span class="fn">all_cycles</span>(adj, start=<span class="nu">0</span>):
+    n, path, visited, found = <span class="fn">len</span>(adj), [start], {start}, []
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == n:
+            <span class="kw">if</span> start <span class="kw">in</span> adj[city]:
+                found.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                explore(nxt)
+                path.pop(); visited.remove(nxt)
+    explore(start)
+    <span class="kw">return</span> found
+
+<span class="kw">def</span> <span class="fn">turns</span>(trip):                     <span class="cm"># 一条路线的 L/R 密码</span>
+    code = <span class="st">""</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(trip)):
+        came_from, here, going = trip[i - <span class="nu">1</span>], trip[i], trip[(i + <span class="nu">1</span>) % <span class="fn">len</span>(trip)]
+        ring = around(here)
+        k = ring.index(came_from)
+        code += <span class="st">"L"</span> <span class="kw">if</span> ring[(k - <span class="nu">1</span>) % <span class="nu">3</span>] == going <span class="kw">else</span> <span class="st">"R"</span>
+    <span class="kw">return</span> code
+
+PATTERN = <span class="st">"LLLRRRLRLR"</span> * <span class="nu">2</span>
+MIRROR = PATTERN.translate(<span class="fn">str</span>.maketrans(<span class="st">"LR"</span>, <span class="st">"RL"</span>))
+
+<span class="kw">def</span> <span class="fn">same_code</span>(code):                 <span class="cm"># 是 PATTERN 或其镜像的某个旋转吗？</span>
+    <span class="kw">return</span> code <span class="kw">in</span> PATTERN + PATTERN <span class="kw">or</span> code <span class="kw">in</span> MIRROR + MIRROR
+
+trips = all_cycles(adj)
+<span class="fn">print</span>(<span class="fn">len</span>(trips))                                  <span class="cm"># 60</span>
+<span class="fn">print</span>(<span class="fn">all</span>(same_code(turns(t)) <span class="kw">for</span> t <span class="kw">in</span> trips))      <span class="cm"># True</span></code></pre></div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第 8 关</span><h2>为什么哈密顿的谜题其实很难</h2></div>
+      <p class="lead">欧拉的谜题有个立竿见影的判断法：数数每座城市的道路数。哈密顿的谜题有这样简单的判断法吗？</p>
+      <p>你可能会猜："只要每座城市都有 3 条路，像正十二面体那样，就一定有环游路线。"来认识一下<b>彼得森图</b>。它有 10 座城市，每座城市正好 3 条路，看起来非常友好：</p>
+      <figure class="gfig"><svg class="gsvg small" viewBox="-180 -180 360 360" role="img" aria-label="graph"><line class="g-edge" data-a="0" data-b="1" x1="0.0" y1="-150.0" x2="142.7" y2="-46.4"/><line class="g-edge" data-a="0" data-b="5" x1="0.0" y1="-150.0" x2="0.0" y2="-72.0"/><line class="g-edge" data-a="5" data-b="7" x1="0.0" y1="-72.0" x2="42.3" y2="58.2"/><line class="g-edge" data-a="1" data-b="2" x1="142.7" y1="-46.4" x2="88.2" y2="121.4"/><line class="g-edge" data-a="1" data-b="6" x1="142.7" y1="-46.4" x2="68.5" y2="-22.2"/><line class="g-edge" data-a="6" data-b="8" x1="68.5" y1="-22.2" x2="-42.3" y2="58.2"/><line class="g-edge" data-a="2" data-b="3" x1="88.2" y1="121.4" x2="-88.2" y2="121.4"/><line class="g-edge" data-a="2" data-b="7" x1="88.2" y1="121.4" x2="42.3" y2="58.2"/><line class="g-edge" data-a="7" data-b="9" x1="42.3" y1="58.2" x2="-68.5" y2="-22.2"/><line class="g-edge" data-a="3" data-b="4" x1="-88.2" y1="121.4" x2="-142.7" y2="-46.4"/><line class="g-edge" data-a="3" data-b="8" x1="-88.2" y1="121.4" x2="-42.3" y2="58.2"/><line class="g-edge" data-a="8" data-b="5" x1="-42.3" y1="58.2" x2="0.0" y2="-72.0"/><line class="g-edge" data-a="4" data-b="0" x1="-142.7" y1="-46.4" x2="0.0" y2="-150.0"/><line class="g-edge" data-a="4" data-b="9" x1="-142.7" y1="-46.4" x2="-68.5" y2="-22.2"/><line class="g-edge" data-a="9" data-b="6" x1="-68.5" y1="-22.2" x2="68.5" y2="-22.2"/><g class="g-node" data-v="0"><circle cx="0.0" cy="-150.0" r="18"/><text x="0.0" y="-150.0">0</text></g><g class="g-node" data-v="1"><circle cx="142.7" cy="-46.4" r="18"/><text x="142.7" y="-46.4">1</text></g><g class="g-node" data-v="2"><circle cx="88.2" cy="121.4" r="18"/><text x="88.2" y="121.4">2</text></g><g class="g-node" data-v="3"><circle cx="-88.2" cy="121.4" r="18"/><text x="-88.2" y="121.4">3</text></g><g class="g-node" data-v="4"><circle cx="-142.7" cy="-46.4" r="18"/><text x="-142.7" y="-46.4">4</text></g><g class="g-node" data-v="5"><circle cx="0.0" cy="-72.0" r="18"/><text x="0.0" y="-72.0">5</text></g><g class="g-node" data-v="6"><circle cx="68.5" cy="-22.2" r="18"/><text x="68.5" y="-22.2">6</text></g><g class="g-node" data-v="7"><circle cx="42.3" cy="58.2" r="18"/><text x="42.3" y="58.2">7</text></g><g class="g-node" data-v="8"><circle cx="-42.3" cy="58.2" r="18"/><text x="-42.3" y="58.2">8</text></g><g class="g-node" data-v="9"><circle cx="-68.5" cy="-22.2" r="18"/><text x="-68.5" y="-22.2">9</text></g></svg><figcaption>彼得森图：10 座城市，每座 3 条路，却没有哈密顿回路。</figcaption></figure>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>petersen.py（使用第 6 关的 count_cycles）</div>
+<pre><code>petersen = {v: [] <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">10</span>)}
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">5</span>):
+    <span class="kw">for</span> a, b <span class="kw">in</span> ((i, (i + <span class="nu">1</span>) % <span class="nu">5</span>),           <span class="cm"># 外圈五边形</span>
+                 (i, i + <span class="nu">5</span>),                 <span class="cm"># 辐条</span>
+                 (i + <span class="nu">5</span>, (i + <span class="nu">2</span>) % <span class="nu">5</span> + <span class="nu">5</span>)):   <span class="cm"># 内部五角星</span>
+        petersen[a].append(b)
+        petersen[b].append(a)
+
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">set</span>(<span class="fn">len</span>(r) <span class="kw">for</span> r <span class="kw">in</span> petersen.values())))   <span class="cm"># [3]  每座城市 3 条路</span>
+<span class="fn">print</span>(count_cycles(petersen))                           <span class="cm"># 0    一条环游路线都没有！</span></code></pre>
+      </div>
+      <p>零！每座城市的道路数和正十二面体一样，却没有哈密顿回路。所以"处处 3 条路"什么也证明不了。事实上，150 多年过去了，还没有人找到<b>任何</b>对所有地图都管用的快速判断法。</p>
+      <div class="callout warn">
+        <div class="ctitle">一个价值百万美元的问题</div>
+        <p>计算机科学家把哈密顿的谜题归入一类著名的问题，叫作 <b>NP 完全问题</b>。检查一条给定的路线很容易（练习题第 2 题），但<i>找出</i>一条似乎需要一场随地图变大而爆炸式增长的搜索。没有人确切知道是否存在快速的方法。这就是 <b>P 与 NP 问题</b>，解决它的人能拿到 <b>100 万美元</b>奖金。</p>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">真实的程序怎么应对</div>
+        <ul>
+          <li><b>尽早剪掉死路：</b>如果某座没去过的城市只剩不到 2 个"没去过或是路线端点"的邻居，它就永远没法被穿过，立刻退回。</li>
+          <li><b>聪明的顺序：</b>先试最受限制（空闲道路最少）的城市。</li>
+          <li><b>记住已做的工作：</b>对"已访问城市的集合"做动态规划（见<a href="dynamic_programming_zh.html">动态规划</a>），可以精确处理大约 20–25 座城市。</li>
+        </ul>
+        <p>哈密顿回路也藏在真实问题里：快递路线、电路板钻孔、DNA 测序，问的都是"每样东西去一次，而且要高效"。</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9: QUIZ ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">检查站</span><h2>概念小测验</h2></div>
+      <p class="lead">先在脑子里想好答案，再点开看。</p>
+      <details>
+        <summary>Q1. 一条路线把每条<i>路</i>恰好走了一次。它是哈密顿回路吗？</summary>
+        <div class="reveal"><p>不一定！那是<b>欧拉</b>回路。哈密顿的规则说的是<b>城市</b>：每座恰好一次。欧拉回路可能多次经过同一座城市。在正十二面体上，欧拉回路根本不存在（所有度数都是奇数），但哈密顿回路存在。</p></div>
+      </details>
+      <details>
+        <summary>Q2. 程序从 B 出发找到了 60 条路线，为什么说只有 30 条不同的回路？</summary>
+        <div class="reveal"><p>每条回路都被找到两次，两个方向各一次（顺时针和逆时针）。它们用的是同一组道路，所以算作一条：60 ÷ 2 = 30。</p></div>
+      </details>
+      <details>
+        <summary>Q3. 彼得森图的每座城市都有 3 条路，和正十二面体一样。为什么它没有哈密顿回路？</summary>
+        <div class="reveal"><p>因为每座城市的道路数决定不了答案，关键在于道路<i>怎样</i>连接。彼得森图"拧"得很巧妙，每一次尝试都会被困住：搜索试遍了所有可能，一条也找不到。这正是哈密顿的谜题难的原因，它没有欧拉那样简单的计数规则。</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 10: PRACTICE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">训练场</span><h2>练习题</h2></div>
+      <p class="lead">八道题，从热身 ★ 到 Boss 级 ★★★。好几道题的答案会用到上面的 <code>dodecahedron()</code>、<code>NAMES</code> 和 <code>count_cycles()</code>，先把它们粘贴进来。认真尝试过之后再看答案！</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. 五种立体的欧拉公式 <span class="stars">★</span></h3>
+        <p>用第 1 关的表格，算出每种柏拉图立体的 V − E + F。你发现了什么？</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>把每种立体存成字典里的 <code>(V, E, F)</code>，再用循环遍历。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_euler.py</div>
+<pre><code>solids = {<span class="st">"tetrahedron"</span>: (<span class="nu">4</span>, <span class="nu">6</span>, <span class="nu">4</span>), <span class="st">"cube"</span>: (<span class="nu">8</span>, <span class="nu">12</span>, <span class="nu">6</span>), <span class="st">"octahedron"</span>: (<span class="nu">6</span>, <span class="nu">12</span>, <span class="nu">8</span>),
+          <span class="st">"dodecahedron"</span>: (<span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">12</span>), <span class="st">"icosahedron"</span>: (<span class="nu">12</span>, <span class="nu">30</span>, <span class="nu">20</span>)}
+<span class="kw">for</span> name, (V, E, F) <span class="kw">in</span> solids.items():
+    <span class="fn">print</span>(name, V - E + F)
+<span class="cm"># tetrahedron 2</span>
+<span class="cm"># cube 2</span>
+<span class="cm"># octahedron 2</span>
+<span class="cm"># dodecahedron 2</span>
+<span class="cm"># icosahedron 2</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. 路线检查员 <span class="stars">★</span></h3>
+        <p>写一个函数 <code>is_hamilton_cycle(adj, route)</code>：只有当路线恰好经过每座城市一次，<b>并且</b>每一步（包括最后回家的那一步）都沿着道路走时，才返回 <code>True</code>。检查很容易，虽然寻找很难！</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>两项检查：<code>sorted(route) == sorted(adj)</code>（每座城市恰好一次）；以及对每个 <code>i</code>，<code>route[(i + 1) % n]</code> 都在 <code>adj[route[i]]</code> 里。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_inspector.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">is_hamilton_cycle</span>(adj, route):
+    <span class="kw">if</span> <span class="fn">sorted</span>(route) != <span class="fn">sorted</span>(adj):          <span class="cm"># 每座城市恰好一次？</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(route)):
+        a, b = route[i], route[(i + <span class="nu">1</span>) % <span class="fn">len</span>(route)]
+        <span class="kw">if</span> b <span class="kw">not</span> <span class="kw">in</span> adj[a]:                   <span class="cm"># a → b 有路吗？</span>
+            <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+good = [<span class="nu">0</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>, <span class="nu">13</span>, <span class="nu">12</span>, <span class="nu">11</span>, <span class="nu">10</span>, <span class="nu">9</span>, <span class="nu">8</span>, <span class="nu">7</span>, <span class="nu">6</span>, <span class="nu">15</span>, <span class="nu">16</span>, <span class="nu">17</span>, <span class="nu">18</span>, <span class="nu">19</span>, <span class="nu">14</span>, <span class="nu">5</span>]
+<span class="fn">print</span>(is_hamilton_cycle(adj, good))                            <span class="cm"># True</span>
+<span class="fn">print</span>(is_hamilton_cycle(adj, good[:-<span class="nu">1</span>] + [<span class="nu">6</span>]))                 <span class="cm"># False  (城市 6 出现两次)</span>
+<span class="fn">print</span>(is_hamilton_cycle(adj, good[:<span class="nu">5</span>] + good[<span class="nu">6</span>:] + [good[<span class="nu">5</span>]]))   <span class="cm"># False  (4 → 12 没有路)</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. 正方体上的环游 <span class="stars">★★</span></h3>
+        <p>正方体有 8 个顶点。把它们编号为 0–7，写成二进制（<code>000</code> 到 <code>111</code>）时，每一位分别表示左/右、下/上、前/后。两个顶点之间有棱，当且仅当它们只有<b>一位</b>二进制数字不同。建出正方体的图，数一数它的哈密顿回路。</p>
+      <figure class="gfig"><svg class="gsvg small" viewBox="-150 -150 300 300" role="img" aria-label="graph"><line class="g-edge" data-a="0" data-b="1" x1="-120.0" y1="120.0" x2="120.0" y2="120.0"/><line class="g-edge" data-a="0" data-b="2" x1="-120.0" y1="120.0" x2="-120.0" y2="-120.0"/><line class="g-edge" data-a="0" data-b="4" x1="-120.0" y1="120.0" x2="-55.0" y2="55.0"/><line class="g-edge" data-a="1" data-b="3" x1="120.0" y1="120.0" x2="120.0" y2="-120.0"/><line class="g-edge" data-a="1" data-b="5" x1="120.0" y1="120.0" x2="55.0" y2="55.0"/><line class="g-edge" data-a="2" data-b="3" x1="-120.0" y1="-120.0" x2="120.0" y2="-120.0"/><line class="g-edge" data-a="2" data-b="6" x1="-120.0" y1="-120.0" x2="-55.0" y2="-55.0"/><line class="g-edge" data-a="3" data-b="7" x1="120.0" y1="-120.0" x2="55.0" y2="-55.0"/><line class="g-edge" data-a="4" data-b="5" x1="-55.0" y1="55.0" x2="55.0" y2="55.0"/><line class="g-edge" data-a="4" data-b="6" x1="-55.0" y1="55.0" x2="-55.0" y2="-55.0"/><line class="g-edge" data-a="5" data-b="7" x1="55.0" y1="55.0" x2="55.0" y2="-55.0"/><line class="g-edge" data-a="6" data-b="7" x1="-55.0" y1="-55.0" x2="55.0" y2="-55.0"/><g class="g-node" data-v="0"><circle cx="-120.0" cy="120.0" r="18"/><text x="-120.0" y="120.0" style="font-size:11px">000</text></g><g class="g-node" data-v="1"><circle cx="120.0" cy="120.0" r="18"/><text x="120.0" y="120.0" style="font-size:11px">001</text></g><g class="g-node" data-v="2"><circle cx="-120.0" cy="-120.0" r="18"/><text x="-120.0" y="-120.0" style="font-size:11px">010</text></g><g class="g-node" data-v="3"><circle cx="120.0" cy="-120.0" r="18"/><text x="120.0" y="-120.0" style="font-size:11px">011</text></g><g class="g-node" data-v="4"><circle cx="-55.0" cy="55.0" r="18"/><text x="-55.0" y="55.0" style="font-size:11px">100</text></g><g class="g-node" data-v="5"><circle cx="55.0" cy="55.0" r="18"/><text x="55.0" y="55.0" style="font-size:11px">101</text></g><g class="g-node" data-v="6"><circle cx="-55.0" cy="-55.0" r="18"/><text x="-55.0" y="-55.0" style="font-size:11px">110</text></g><g class="g-node" data-v="7"><circle cx="55.0" cy="-55.0" r="18"/><text x="55.0" y="-55.0" style="font-size:11px">111</text></g></svg><figcaption>压扁的正方体，顶点用二进制编号。</figcaption></figure>
+        <details><summary>💡 提示</summary><div class="reveal"><p>翻转一位二进制数字就是异或运算：<code>v</code> 的邻居是 <code>v ^ 1</code>、<code>v ^ 2</code>、<code>v ^ 4</code>。然后用 <code>count_cycles</code>，再除以 2。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_cube.py</div>
+<pre><code>cube = {v: [v ^ <span class="nu">1</span>, v ^ <span class="nu">2</span>, v ^ <span class="nu">4</span>] <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">8</span>)}
+<span class="fn">print</span>(cube[<span class="nu">0</span>])                 <span class="cm"># [1, 2, 4]</span>
+<span class="fn">print</span>(count_cycles(cube))      <span class="cm"># 12</span>
+<span class="fn">print</span>(count_cycles(cube) // <span class="nu">2</span>) <span class="cm"># 6   条不同的环游路线</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. 路径与回路：小房子 <span class="stars">★★</span></h3>
+        <p>"小房子"图是一个正方形（0-1-2-3）加一个屋顶（城市 4 连着 2 和 3）。数一数它的哈密顿<b>路径</b>（起点终点任意）和哈密顿<b>回路</b>。别忘了方向要除以 2！</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>数路径时，把每座城市都当一次起点；每当路径走满 5 座城市就加一（不用回家）。每条路径会被找到两次，两端各一次。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_house.py</div>
+<pre><code>house = {<span class="nu">0</span>: [<span class="nu">1</span>, <span class="nu">3</span>], <span class="nu">1</span>: [<span class="nu">0</span>, <span class="nu">2</span>], <span class="nu">2</span>: [<span class="nu">1</span>, <span class="nu">3</span>, <span class="nu">4</span>], <span class="nu">3</span>: [<span class="nu">0</span>, <span class="nu">2</span>, <span class="nu">4</span>], <span class="nu">4</span>: [<span class="nu">2</span>, <span class="nu">3</span>]}
+
+<span class="kw">def</span> <span class="fn">count_paths</span>(adj):
+    n, total = <span class="fn">len</span>(adj), <span class="nu">0</span>
+    <span class="kw">for</span> start <span class="kw">in</span> adj:
+        path, visited = [start], {start}
+        <span class="kw">def</span> <span class="fn">explore</span>(city):
+            <span class="kw">nonlocal</span> total
+            <span class="kw">if</span> <span class="fn">len</span>(path) == n:
+                total += <span class="nu">1</span>
+                <span class="kw">return</span>
+            <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+                <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                    path.append(nxt); visited.add(nxt)
+                    explore(nxt)
+                    path.pop(); visited.remove(nxt)
+        explore(start)
+    <span class="kw">return</span> total
+
+<span class="fn">print</span>(count_paths(house) // <span class="nu">2</span>)    <span class="cm"># 7   条哈密顿路径</span>
+<span class="fn">print</span>(count_cycles(house) // <span class="nu">2</span>)   <span class="cm"># 1   条哈密顿回路：0-1-2-4-3-0</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. 哈密顿本人的挑战 <span class="stars">★★</span></h3>
+        <p>Icosian Game 附带的谜题里，有一道给出了<b>前五座城市</b>，要你把旅行补完。如果你的路线必须以 <b>B C D F G</b> 开头（绕外圈五边形一圈），有几种方法补完？把它们打印出来。</p>
+      <figure class="gfig"><svg class="gsvg small" viewBox="-230 -230 460 460" role="img" aria-label="graph"><line class="g-edge on" data-a="0" data-b="1" x1="0.0" y1="-200.0" x2="190.2" y2="-61.8"/><line class="g-edge" data-a="0" data-b="5" x1="0.0" y1="-200.0" x2="0.0" y2="-140.0"/><line class="g-edge" data-a="6" data-b="15" x1="61.7" y1="-84.9" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="15" data-b="16" x1="32.3" y1="-44.5" x2="52.3" y2="17.0"/><line class="g-edge on" data-a="1" data-b="2" x1="190.2" y1="-61.8" x2="117.6" y2="161.8"/><line class="g-edge" data-a="1" data-b="7" x1="190.2" y1="-61.8" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="8" data-b="16" x1="99.9" y1="32.4" x2="52.3" y2="17.0"/><line class="g-edge" data-a="16" data-b="17" x1="52.3" y1="17.0" x2="0.0" y2="55.0"/><line class="g-edge on" data-a="2" data-b="3" x1="117.6" y1="161.8" x2="-117.6" y2="161.8"/><line class="g-edge" data-a="2" data-b="9" x1="117.6" y1="161.8" x2="82.3" y2="113.3"/><line class="g-edge" data-a="10" data-b="17" x1="0.0" y1="105.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="17" data-b="18" x1="0.0" y1="55.0" x2="-52.3" y2="17.0"/><line class="g-edge on" data-a="3" data-b="4" x1="-117.6" y1="161.8" x2="-190.2" y2="-61.8"/><line class="g-edge" data-a="3" data-b="11" x1="-117.6" y1="161.8" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="12" data-b="18" x1="-99.9" y1="32.4" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="18" data-b="19" x1="-52.3" y1="17.0" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="4" data-b="0" x1="-190.2" y1="-61.8" x2="0.0" y2="-200.0"/><line class="g-edge" data-a="4" data-b="13" x1="-190.2" y1="-61.8" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="14" data-b="19" x1="-61.7" y1="-84.9" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="19" data-b="15" x1="-32.3" y1="-44.5" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="5" data-b="6" x1="0.0" y1="-140.0" x2="61.7" y2="-84.9"/><line class="g-edge" data-a="6" data-b="7" x1="61.7" y1="-84.9" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="7" data-b="8" x1="133.1" y1="-43.3" x2="99.9" y2="32.4"/><line class="g-edge" data-a="8" data-b="9" x1="99.9" y1="32.4" x2="82.3" y2="113.3"/><line class="g-edge" data-a="9" data-b="10" x1="82.3" y1="113.3" x2="0.0" y2="105.0"/><line class="g-edge" data-a="10" data-b="11" x1="0.0" y1="105.0" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="11" data-b="12" x1="-82.3" y1="113.3" x2="-99.9" y2="32.4"/><line class="g-edge" data-a="12" data-b="13" x1="-99.9" y1="32.4" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="13" data-b="14" x1="-133.1" y1="-43.3" x2="-61.7" y2="-84.9"/><line class="g-edge" data-a="14" data-b="5" x1="-61.7" y1="-84.9" x2="0.0" y2="-140.0"/><g class="g-node start" data-v="0"><circle cx="0.0" cy="-200.0" r="18"/><text x="0.0" y="-200.0">B</text></g><g class="g-node on" data-v="1"><circle cx="190.2" cy="-61.8" r="18"/><text x="190.2" y="-61.8">C</text></g><g class="g-node on" data-v="2"><circle cx="117.6" cy="161.8" r="18"/><text x="117.6" y="161.8">D</text></g><g class="g-node on" data-v="3"><circle cx="-117.6" cy="161.8" r="18"/><text x="-117.6" y="161.8">F</text></g><g class="g-node on" data-v="4"><circle cx="-190.2" cy="-61.8" r="18"/><text x="-190.2" y="-61.8">G</text></g><g class="g-node" data-v="5"><circle cx="0.0" cy="-140.0" r="18"/><text x="0.0" y="-140.0">H</text></g><g class="g-node" data-v="6"><circle cx="61.7" cy="-84.9" r="18"/><text x="61.7" y="-84.9">J</text></g><g class="g-node" data-v="7"><circle cx="133.1" cy="-43.3" r="18"/><text x="133.1" y="-43.3">K</text></g><g class="g-node" data-v="8"><circle cx="99.9" cy="32.4" r="18"/><text x="99.9" y="32.4">L</text></g><g class="g-node" data-v="9"><circle cx="82.3" cy="113.3" r="18"/><text x="82.3" y="113.3">M</text></g><g class="g-node" data-v="10"><circle cx="0.0" cy="105.0" r="18"/><text x="0.0" y="105.0">N</text></g><g class="g-node" data-v="11"><circle cx="-82.3" cy="113.3" r="18"/><text x="-82.3" y="113.3">P</text></g><g class="g-node" data-v="12"><circle cx="-99.9" cy="32.4" r="18"/><text x="-99.9" y="32.4">Q</text></g><g class="g-node" data-v="13"><circle cx="-133.1" cy="-43.3" r="18"/><text x="-133.1" y="-43.3">R</text></g><g class="g-node" data-v="14"><circle cx="-61.7" cy="-84.9" r="18"/><text x="-61.7" y="-84.9">S</text></g><g class="g-node" data-v="15"><circle cx="32.3" cy="-44.5" r="18"/><text x="32.3" y="-44.5">T</text></g><g class="g-node" data-v="16"><circle cx="52.3" cy="17.0" r="18"/><text x="52.3" y="17.0">V</text></g><g class="g-node" data-v="17"><circle cx="0.0" cy="55.0" r="18"/><text x="0.0" y="55.0">W</text></g><g class="g-node" data-v="18"><circle cx="-52.3" cy="17.0" r="18"/><text x="-52.3" y="17.0">X</text></g><g class="g-node" data-v="19"><circle cx="-32.3" cy="-44.5" r="18"/><text x="-32.3" y="-44.5">Z</text></g></svg><figcaption>哈密顿的挑战：路线必须以 B → C → D → F → G 开头。</figcaption></figure>
+        <details><summary>💡 提示</summary><div class="reveal"><p>回溯开始时令 <code>path = [0, 1, 2, 3, 4]</code>，并把这些城市标记为已访问，然后从城市 4（G）开始探索。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_finish.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">finish_trip</span>(adj, prefix):
+    n, path, visited, found = <span class="fn">len</span>(adj), <span class="fn">list</span>(prefix), <span class="fn">set</span>(prefix), []
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == n:
+            <span class="kw">if</span> path[<span class="nu">0</span>] <span class="kw">in</span> adj[city]:
+                found.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                explore(nxt)
+                path.pop(); visited.remove(nxt)
+    explore(path[-<span class="nu">1</span>])
+    <span class="kw">return</span> found
+
+ways = finish_trip(adj, [<span class="nu">0</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>])
+<span class="fn">print</span>(<span class="fn">len</span>(ways))   <span class="cm"># 2</span>
+<span class="kw">for</span> w <span class="kw">in</span> ways:
+    <span class="fn">print</span>(<span class="st">" "</span>.join(NAMES[c] <span class="kw">for</span> c <span class="kw">in</span> w))
+<span class="cm"># B C D F G R Q P N M L K J T V W X Z S H</span>
+<span class="cm"># B C D F G R S Z T V W X Q P N M L K J H</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. 彼得森图：有路径，没回路 <span class="stars">★★★</span></h3>
+        <p>第 8 关的彼得森图没有哈密顿回路。那它有哈密顿<b>路径</b>吗？找出一条从城市 0 出发的路径，并数一数一共有多少条不同的路径。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>用第 4 题的 <code>count_paths</code>（再除以 2）。要找一条路径，就复制 <code>hamilton_cycle</code>，去掉"有路回家"的检查。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_petersen_path.py</div>
+<pre><code>petersen = {v: [] <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">10</span>)}
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">5</span>):
+    <span class="kw">for</span> a, b <span class="kw">in</span> ((i, (i + <span class="nu">1</span>) % <span class="nu">5</span>), (i, i + <span class="nu">5</span>), (i + <span class="nu">5</span>, (i + <span class="nu">2</span>) % <span class="nu">5</span> + <span class="nu">5</span>)):
+        petersen[a].append(b)
+        petersen[b].append(a)
+
+<span class="kw">def</span> <span class="fn">hamilton_path</span>(adj, start):
+    path, visited = [start], {start}
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(adj):
+            <span class="kw">return</span> <span class="kw">True</span>                     <span class="cm"># 不用回家</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                <span class="kw">if</span> explore(nxt):
+                    <span class="kw">return</span> <span class="kw">True</span>
+                path.pop(); visited.remove(nxt)
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> path <span class="kw">if</span> explore(start) <span class="kw">else</span> <span class="kw">None</span>
+
+<span class="fn">print</span>(hamilton_path(petersen, <span class="nu">0</span>))       <span class="cm"># [0, 1, 2, 3, 4, 9, 7, 5, 8, 6]</span>
+<span class="fn">print</span>(count_paths(petersen) // <span class="nu">2</span>)      <span class="cm"># 120  条不同的哈密顿路径</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. 骑士巡游 <span class="stars">★★★</span></h3>
+        <p>国际象棋的马走"日"字。它能从 5 × 5 棋盘的一个角出发，每个格子恰好踩一次吗？这其实是乔装打扮的<b>哈密顿路径</b>问题：格子是城市，马的走法是道路。找出一条巡游路线，再数一数从角上出发一共有多少条。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>走到哪个格子，就把步数（1–25）写进去；撤销选择时改回 0。数出全部路线要花一两秒。</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_knight.py</div>
+<pre><code>MOVES = [(<span class="nu">1</span>, <span class="nu">2</span>), (<span class="nu">2</span>, <span class="nu">1</span>), (<span class="nu">2</span>, -<span class="nu">1</span>), (<span class="nu">1</span>, -<span class="nu">2</span>), (-<span class="nu">1</span>, -<span class="nu">2</span>), (-<span class="nu">2</span>, -<span class="nu">1</span>), (-<span class="nu">2</span>, <span class="nu">1</span>), (-<span class="nu">1</span>, <span class="nu">2</span>)]
+
+<span class="kw">def</span> <span class="fn">knight_tours</span>(n, count_all):
+    board = [[<span class="nu">0</span>] * n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+    found, first = <span class="nu">0</span>, <span class="kw">None</span>
+    <span class="kw">def</span> <span class="fn">jump</span>(r, c, step):
+        <span class="kw">nonlocal</span> found, first
+        board[r][c] = step                           <span class="cm"># 做选择</span>
+        <span class="kw">if</span> step == n * n:
+            found += <span class="nu">1</span>
+            first = first <span class="kw">or</span> [row[:] <span class="kw">for</span> row <span class="kw">in</span> board]
+        <span class="kw">else</span>:
+            <span class="kw">for</span> dr, dc <span class="kw">in</span> MOVES:
+                nr, nc = r + dr, c + dc
+                <span class="kw">if</span> <span class="nu">0</span> &lt;= nr &lt; n <span class="kw">and</span> <span class="nu">0</span> &lt;= nc &lt; n <span class="kw">and</span> board[nr][nc] == <span class="nu">0</span>:
+                    jump(nr, nc, step + <span class="nu">1</span>)          <span class="cm"># 往下走</span>
+                    <span class="kw">if</span> first <span class="kw">and</span> <span class="kw">not</span> count_all:
+                        <span class="kw">break</span>
+        board[r][c] = <span class="nu">0</span>                               <span class="cm"># 撤销选择</span>
+    jump(<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">1</span>)
+    <span class="kw">return</span> found, first
+
+_, tour = knight_tours(<span class="nu">5</span>, count_all=<span class="kw">False</span>)
+<span class="kw">for</span> row <span class="kw">in</span> tour:
+    <span class="fn">print</span>(row)
+<span class="cm"># [1, 14, 19, 8, 25]</span>
+<span class="cm"># [6, 9, 2, 13, 18]</span>
+<span class="cm"># [15, 20, 7, 24, 3]</span>
+<span class="cm"># [10, 5, 22, 17, 12]</span>
+<span class="cm"># [21, 16, 11, 4, 23]</span>
+<span class="fn">print</span>(knight_tours(<span class="nu">5</span>, count_all=<span class="kw">True</span>)[<span class="nu">0</span>])   <span class="cm"># 304  条从角上出发的巡游路线</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. 网格城市：什么时候能环游？ <span class="stars">★★★</span></h3>
+        <p>城市排成 <code>m × n</code> 的网格，上下左右相邻的城市之间有路。把 2 × 2 到 5 × 5 的每种网格都测试一遍，看看有没有哈密顿回路，找出规律。再解释<b>为什么</b>会这样。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>像国际象棋棋盘那样给网格涂色。每条路都连接一座黑城市和一座白城市，所以环游路线必然黑、白、黑、白……交替。这说明路线上城市的总数有什么特点？</p></div></details>
+        <details><summary>✅ 参考答案</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_grids.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">grid</span>(m, n):
+    <span class="kw">return</span> {(r, c): [(r + dr, c + dc) <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="nu">1</span>, <span class="nu">0</span>), (-<span class="nu">1</span>, <span class="nu">0</span>), (<span class="nu">0</span>, <span class="nu">1</span>), (<span class="nu">0</span>, -<span class="nu">1</span>))
+                     <span class="kw">if</span> <span class="nu">0</span> &lt;= r + dr &lt; m <span class="kw">and</span> <span class="nu">0</span> &lt;= c + dc &lt; n]
+            <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(m) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(n)}
+
+<span class="kw">def</span> <span class="fn">has_cycle</span>(adj):
+    start = <span class="fn">next</span>(<span class="fn">iter</span>(adj))
+    path, visited = [start], {start}
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(adj):
+            <span class="kw">return</span> start <span class="kw">in</span> adj[city]
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                <span class="kw">if</span> explore(nxt):
+                    <span class="kw">return</span> <span class="kw">True</span>
+                path.pop(); visited.remove(nxt)
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> explore(start)
+
+<span class="kw">for</span> m <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span>, <span class="nu">6</span>):
+    <span class="fn">print</span>(m, [has_cycle(grid(m, n)) <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span>, <span class="nu">6</span>)])
+<span class="cm"># 2 [True, True, True, True]</span>
+<span class="cm"># 3 [True, False, True, False]</span>
+<span class="cm"># 4 [True, True, True, True]</span>
+<span class="cm"># 5 [True, False, True, False]</span></code></pre></div>
+          <p><b>规律：</b>当且仅当 <code>m × n</code> 是<b>偶数</b>时存在环游路线。<b>原因：</b>回路黑、白、黑、白……交替，两种颜色的城市用得一样多，所以城市总数必须是偶数。如果 <code>m × n</code> 是奇数，经过所有城市的回路就不可能存在。（当 <code>m × n</code> 是偶数时，总可以沿着各列上下蛇形前进，再沿边缘返回。）</p>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">旅行结束！</div>
+        <p>你从一个有 170 年历史的木制谜题出发，一路走到了计算机科学的重大未解之谜。你学会了什么是图，玩了哈密顿的游戏，教会 Python 解题，破译了哈密顿的 L/R 密码，还明白了为什么"每个地方去一次"比"每条路走一次"难得多。</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>哈密顿回路：恰好经过图的每个顶点一次，并回到起点。正十二面体（哈密顿 1857 年的 Icosian Game）上有 30 条。搜索用的是<a href="Backtracking_zh.html">回溯</a>，更大的问题会用到<a href="dynamic_programming_zh.html">动态规划</a>。</p>
+    <p><a href="index_cn.html">&#x2190; 返回全部讲解</a> &middot; <a href="Regular_Dodecahedron_en.html">English version</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    startMsg: '点击任意一座城市，开始你的旅行。',
+    route: function(letters, k){ return '路线：<b>' + letters + '</b>（' + k + '/20）'; },
+    noRoad: function(a, b){ return '<span class="back">从 ' + a + ' 到 ' + b + ' 没有路。</span>'; },
+    twice: function(b){ return '<span class="back">' + b + ' 已经在路线上了。每座城市只能去一次！</span>'; },
+    deadEnd: function(a){ return '<span class="back">在 ' + a + ' 走进了死路：</span>所有邻居都去过了。点"撤销"，换一条路试试。（这就是回溯！）'; },
+    pathOnly: '<span class="back">20 座城市都走过了，但最后一座没有路回到起点。</span>这是一条哈密顿<i>路径</i>，不是回路。撤销几步再试试！',
+    win: '<span class="ok">你成功了！一条哈密顿回路：每座城市一次，并回到了家。</span>',
+    canYes: '<span class="ok">能！</span>这条路线还可以走完，继续加油！',
+    canNo: '<span class="back">不能：</span>从这里已经没法走完了。撤销几步吧。',
+    noStart: '先选一座出发城市。',
+    following: '按哈密顿的密码从 B 走向 C：',
+    trip3On: '显示一条哈密顿回路', trip3Off: '隐藏这条回路',
+    spinOn: '暂停旋转', spinOff: '开始旋转',
+    cap3: '20 个顶点 &middot; 30 条棱 &middot; 12 个五边形面',
+    cap3Trip: '绿色小点沿着一条哈密顿回路前进：走遍 20 个顶点，再回到起点。'
+  };
+
+  var NAMES = 'BCDFGHJKLMNPQRSTVWXZ';
+  var CODE = 'LLLRRRLRLRLLLRRRLRLR';
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  /* ---------- graph helpers (mirror the Python on this page) ---------- */
+  function buildDodeca(){
+    var adj = [];
+    for (var v = 0; v < 20; v++) adj.push([]);
+    function road(a, b){ adj[a].push(b); adj[b].push(a); }
+    for (var i = 0; i < 5; i++){
+      road(i, (i + 1) % 5);
+      road(i, 5 + 2 * i);
+      road(6 + 2 * i, 15 + i);
+      road(15 + i, 15 + (i + 1) % 5);
+    }
+    for (var j = 0; j < 10; j++) road(5 + j, 5 + (j + 1) % 10);
+    return adj;
+  }
+
+  function position(v){                     // maths coordinates (y up), same as position() in Python
+    var angle, r;
+    if (v < 5){ angle = 90 - 72 * v; r = 200; }
+    else if (v < 15){ angle = 90 - 36 * (v - 5); r = (v % 2 === 1) ? 140 : 105; }
+    else { angle = 54 - 72 * (v - 15); r = 55; }
+    var a = angle * Math.PI / 180;
+    return [r * Math.cos(a), r * Math.sin(a)];
+  }
+
+  function extendToCycle(adj, prefix){      // backtracking, like hamilton_cycle() but from a given start route
+    var n = adj.length, path = prefix.slice(), seen = {};
+    for (var i = 0; i < path.length; i++) seen[path[i]] = true;
+    function explore(city){
+      if (path.length === n) return adj[city].indexOf(path[0]) >= 0;
+      for (var k = 0; k < adj[city].length; k++){
+        var nxt = adj[city][k];
+        if (!seen[nxt]){
+          path.push(nxt); seen[nxt] = true;
+          if (explore(nxt)) return true;
+          path.pop(); seen[nxt] = false;
+        }
+      }
+      return false;
+    }
+    return explore(path[path.length - 1]) ? path : null;
+  }
+
+  function around(adj, v){
+    var p = position(v);
+    return adj[v].slice().sort(function(a, b){
+      var pa = position(a), pb = position(b);
+      return Math.atan2(pa[1] - p[1], pa[0] - p[0]) - Math.atan2(pb[1] - p[1], pb[0] - p[0]);
+    });
+  }
+
+  function follow(adj, code, start, first){
+    var route = [start, first];
+    for (var i = 0; i < code.length; i++){
+      var here = route[route.length - 1], from = route[route.length - 2];
+      var ring = around(adj, here), k = ring.indexOf(from);
+      route.push(code[i] === 'L' ? ring[(k + 2) % 3] : ring[(k + 1) % 3]);
+    }
+    return route;
+  }
+
+  var adj = buildDodeca();
+
+  /* ---------- the Icosian game ---------- */
+  var svg = document.getElementById('gameSvg');
+  var statusEl = document.getElementById('gStatus');
+  var path = [], timer = null, note = '';
+
+  function key(a, b){ return Math.min(a, b) + '-' + Math.max(a, b); }
+
+  function render(){
+    var onEdge = {}, onNode = {}, last = path[path.length - 1];
+    for (var i = 0; i < path.length; i++){
+      onNode[path[i]] = true;
+      if (i > 0) onEdge[key(path[i - 1], path[i])] = true;
+    }
+    var done = path.length === 20, closed = done && adj[last].indexOf(path[0]) >= 0;
+    var edges = svg.querySelectorAll('.g-edge');
+    for (var e = 0; e < edges.length; e++){
+      var a = +edges[e].getAttribute('data-a'), b = +edges[e].getAttribute('data-b'), kk = key(a, b);
+      var cls = 'g-edge';
+      if (onEdge[kk]) cls += ' on';
+      if (closed && kk === key(last, path[0])) cls += ' close';
+      edges[e].setAttribute('class', cls);
+    }
+    var nodes = svg.querySelectorAll('.g-node');
+    for (var m = 0; m < nodes.length; m++){
+      var v = +nodes[m].getAttribute('data-v'), c = 'g-node';
+      if (closed) c += ' win';
+      else if (v === path[0]) c += ' start';
+      else if (onNode[v]) c += ' on';
+      if (v === last && !closed) c += ' last';
+      if (path.length && !done && !onNode[v] && adj[last].indexOf(v) >= 0) c += ' next';
+      nodes[m].setAttribute('class', c);
+    }
+    var msg = path.length ? T.route(path.map(function(x){ return NAMES[x]; }).join(' → ') + (closed ? ' → ' + NAMES[path[0]] : ''), path.length) : T.startMsg;
+    if (closed) msg += '<br>' + T.win;
+    else if (done) msg += '<br>' + T.pathOnly;
+    else if (path.length && adj[last].every(function(w){ return onNode[w]; })) msg += '<br>' + T.deadEnd(NAMES[last]);
+    if (note) msg += '<br>' + note;
+    statusEl.innerHTML = msg;
+    note = '';
+  }
+
+  function stopAnim(){ if (timer){ clearInterval(timer); timer = null; } }
+  function animate(route, prefixMsg){
+    stopAnim();
+    var i = 0;
+    path = [];
+    timer = setInterval(function(){
+      path.push(route[i]); i++;
+      if (prefixMsg) note = prefixMsg + CODE.slice(0, i >= route.length ? CODE.length : Math.max(0, i - 2)).split('').join(' ');
+      render();
+      if (i >= route.length) stopAnim();
+    }, 320);
+  }
+
+  svg.addEventListener('click', function(e){
+    var g = e.target.closest('.g-node');
+    if (!g) return;
+    stopAnim();
+    var v = +g.getAttribute('data-v');
+    if (!path.length){ path = [v]; render(); return; }
+    var last = path[path.length - 1];
+    if (v === last) return;
+    if (path.indexOf(v) >= 0) note = T.twice(NAMES[v]);
+    else if (adj[last].indexOf(v) < 0) note = T.noRoad(NAMES[last], NAMES[v]);
+    else if (path.length < 20) path.push(v);
+    render();
+  });
+  document.getElementById('gUndo').addEventListener('click', function(){ stopAnim(); path.pop(); render(); });
+  document.getElementById('gReset').addEventListener('click', function(){ stopAnim(); path = []; render(); });
+  document.getElementById('gCheck').addEventListener('click', function(){
+    stopAnim();
+    if (!path.length){ note = T.noStart; render(); return; }
+    note = extendToCycle(adj, path) ? T.canYes : T.canNo;
+    render();
+  });
+  document.getElementById('gSolve').addEventListener('click', function(){
+    stopAnim();
+    var start = path.length ? path : [0];
+    var full = extendToCycle(adj, start);
+    if (!full){ note = T.canNo; render(); return; }
+    animate(full, '');
+  });
+  document.getElementById('gCode').addEventListener('click', function(){
+    var route = follow(adj, CODE, 0, 1).slice(0, 20);
+    animate(route, T.following);
+  });
+  render();
+
+  /* ---------- the spinning 3D dodecahedron ---------- */
+  var d3 = document.getElementById('d3');
+  var PHI = (1 + Math.sqrt(5)) / 2, IP = 1 / PHI;
+  function build3D(){
+    var pts = [], s = [-1, 1];
+    for (var a = 0; a < 2; a++) for (var b = 0; b < 2; b++) for (var c = 0; c < 2; c++) pts.push([s[a], s[b], s[c]]);
+    for (var p = 0; p < 2; p++) for (var q = 0; q < 2; q++){
+      pts.push([0, s[p] * IP, s[q] * PHI]);
+      pts.push([s[p] * IP, s[q] * PHI, 0]);
+      pts.push([s[p] * PHI, 0, s[q] * IP]);
+    }
+    var edges = [], adj3 = [];
+    for (var i = 0; i < pts.length; i++) adj3.push([]);
+    for (i = 0; i < pts.length; i++) for (var j = i + 1; j < pts.length; j++){
+      var dx = pts[i][0] - pts[j][0], dy = pts[i][1] - pts[j][1], dz = pts[i][2] - pts[j][2];
+      if (Math.abs(Math.sqrt(dx * dx + dy * dy + dz * dz) - 2 * IP) < 1e-6){ edges.push([i, j]); adj3[i].push(j); adj3[j].push(i); }
+    }
+    return { pts: pts, edges: edges, adj: adj3 };
+  }
+  var solid = build3D();
+  var trip3 = extendToCycle(solid.adj, [0]);
+  var tripEdge = {};
+  for (var t = 0; t < trip3.length; t++) tripEdge[key(trip3[t], trip3[(t + 1) % trip3.length])] = true;
+
+  var lines = [], dots = [];
+  for (var e3 = 0; e3 < solid.edges.length; e3++){
+    var ln = document.createElementNS(SVGNS, 'line'); d3.appendChild(ln); lines.push(ln);
+  }
+  for (var v3 = 0; v3 < solid.pts.length; v3++){
+    var dt = document.createElementNS(SVGNS, 'circle'); dt.setAttribute('r', 3.2); d3.appendChild(dt); dots.push(dt);
+  }
+  var traveller = document.createElementNS(SVGNS, 'circle');
+  traveller.setAttribute('r', 8); traveller.setAttribute('class', 'traveller'); traveller.style.display = 'none';
+  d3.appendChild(traveller);
+
+  var rx = -0.45, ry = 0.6, S = 78, showTrip = false, spinning = true, travel = 0, dragging = null;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) spinning = false;
+
+  function project(p){
+    var cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
+    var x1 = p[0] * cy + p[2] * sy, z1 = -p[0] * sy + p[2] * cy;
+    var y2 = p[1] * cx - z1 * sx, z2 = p[1] * sx + z1 * cx;
+    return [x1 * S, -y2 * S, z2];
+  }
+  function draw3D(){
+    var pr = solid.pts.map(project);
+    for (var i = 0; i < solid.edges.length; i++){
+      var a = solid.edges[i][0], b = solid.edges[i][1], back = (pr[a][2] + pr[b][2]) < 0;
+      var cls = 'e3' + (back ? ' back' : '') + (showTrip && tripEdge[key(a, b)] ? ' trip' : '');
+      lines[i].setAttribute('x1', pr[a][0].toFixed(1)); lines[i].setAttribute('y1', pr[a][1].toFixed(1));
+      lines[i].setAttribute('x2', pr[b][0].toFixed(1)); lines[i].setAttribute('y2', pr[b][1].toFixed(1));
+      lines[i].setAttribute('class', cls);
+    }
+    for (var j = 0; j < dots.length; j++){
+      dots[j].setAttribute('cx', pr[j][0].toFixed(1)); dots[j].setAttribute('cy', pr[j][1].toFixed(1));
+      dots[j].setAttribute('class', 'v3' + (pr[j][2] < 0 ? ' back' : ''));
+    }
+    if (showTrip){
+      var k = Math.floor(travel) % trip3.length, f = travel - Math.floor(travel);
+      var A = solid.pts[trip3[k]], B = solid.pts[trip3[(k + 1) % trip3.length]];
+      var q = project([A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f, A[2] + (B[2] - A[2]) * f]);
+      traveller.setAttribute('cx', q[0].toFixed(1)); traveller.setAttribute('cy', q[1].toFixed(1));
+      traveller.style.display = '';
+    } else traveller.style.display = 'none';
+  }
+  function tick(){
+    if (spinning && !dragging) ry += 0.005;
+    if (showTrip && !reduced) travel += 0.02;
+    draw3D();
+    requestAnimationFrame(tick);
+  }
+  d3.addEventListener('pointerdown', function(e){ dragging = [e.clientX, e.clientY]; d3.classList.add('dragging'); d3.setPointerCapture(e.pointerId); });
+  d3.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    ry += (e.clientX - dragging[0]) * 0.01; rx += (e.clientY - dragging[1]) * 0.01;
+    dragging = [e.clientX, e.clientY];
+    if (reduced) draw3D();
+  });
+  function endDrag(){ dragging = null; d3.classList.remove('dragging'); }
+  d3.addEventListener('pointerup', endDrag);
+  d3.addEventListener('pointercancel', endDrag);
+  document.getElementById('d3Trip').addEventListener('click', function(){
+    showTrip = !showTrip; travel = 0;
+    this.innerHTML = showTrip ? T.trip3Off : T.trip3On;
+    document.getElementById('d3Cap').innerHTML = showTrip ? T.cap3Trip : T.cap3;
+    draw3D();
+  });
+  document.getElementById('d3Spin').addEventListener('click', function(){
+    spinning = !spinning;
+    this.innerHTML = spinning ? T.spinOn : T.spinOff;
+  });
+  if (reduced) document.getElementById('d3Spin').innerHTML = T.spinOff;
+  draw3D();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

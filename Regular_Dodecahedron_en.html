@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hamilton's Trip Around the World: Hamiltonian Cycles on the Regular Dodecahedron</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+
+  /* ---------- Graph drawings (map, Petersen, cube, game) ---------- */
+  .gsvg{display:block;width:100%;max-width:440px;height:auto;margin:0 auto;touch-action:manipulation;}
+  .gsvg.small{max-width:300px;}
+  .gfig{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:22px 0;}
+  .gfig figcaption, .gcap{font-size:13px;color:var(--ink-soft);text-align:center;margin-top:6px;}
+  .g-edge{stroke:var(--line);stroke-width:5;stroke-linecap:round;}
+  .g-edge.on{stroke:var(--accent);stroke-width:7;}
+  .g-edge.close{stroke:var(--clue);stroke-width:7;}
+  .g-node circle{fill:var(--paper-raised);stroke:var(--ink-soft);stroke-width:2.5;}
+  .g-node text{fill:var(--ink);font-family:var(--font-mono);font-weight:800;font-size:15px;text-anchor:middle;dominant-baseline:central;pointer-events:none;}
+  .g-node text.num{font-size:10px;font-weight:600;fill:var(--ink-soft);}
+  .g-node.on circle{fill:var(--accent-soft);stroke:var(--accent);}
+  .g-node.start circle{fill:var(--clue-soft);stroke:var(--clue);stroke-width:3.5;}
+  .g-node.next circle{stroke:var(--clue);stroke-width:3.5;stroke-dasharray:5 3;}
+  .g-node.last circle{stroke-width:5;}
+  .g-node.win circle{fill:var(--clue-soft);stroke:var(--clue);}
+  .g-node.bad circle{fill:var(--alert-soft);stroke:var(--alert);}
+  #gameSvg .g-node{cursor:pointer;}
+  #gameSvg .g-node:hover circle{stroke:var(--accent);stroke-width:4;}
+
+  /* ---------- 3D dodecahedron ---------- */
+  .d3wrap{display:flex;justify-content:center;}
+  .d3svg{width:100%;max-width:380px;height:auto;cursor:grab;touch-action:none;user-select:none;}
+  .d3svg.dragging{cursor:grabbing;}
+  .e3{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;}
+  .e3.back{stroke:var(--ink-soft);opacity:.35;stroke-dasharray:5 5;}
+  .e3.trip{stroke:var(--accent);stroke-width:5;opacity:1;stroke-dasharray:none;}
+  .e3.trip.back{opacity:.45;}
+  .v3{fill:var(--ink);}
+  .v3.back{opacity:.3;}
+  .traveller{fill:var(--clue);stroke:var(--paper-raised);stroke-width:2.5;}
+  .status{font-family:var(--font-mono);font-size:14px;line-height:1.6;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;min-height:3.4em;word-break:break-word;}
+  .status b{color:var(--accent-strong);}
+  .status .ok{color:var(--clue);font-weight:800;}
+  .status .back{color:var(--alert);font-weight:700;}
+  .codechips{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:16px 0;}
+  .codechips span{font-family:var(--font-mono);font-weight:800;font-size:16px;width:30px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--line);background:var(--paper-raised);}
+  .codechips span.L{color:var(--code-fn);border-color:var(--code-fn);}
+  .codechips span.R{color:var(--code-nu);border-color:var(--code-nu);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="Regular_Dodecahedron_zh.html">中文 &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Graph Theory &middot; Skill Explainer</div>
+      <h1>Hamilton's Trip Around the World: <em>Hamiltonian Cycles on the Dodecahedron</em></h1>
+      <p class="sub">In 1857 the Irish mathematician Sir William Rowan Hamilton invented a puzzle, which a London games company soon sold as a toy. Its board was a <b>dodecahedron</b>: 20 corners, each named after a city. The challenge was to visit <b>every city exactly once</b> and come back home. Today such a round trip is called a <b>Hamiltonian cycle</b>, and it leads straight to one of the biggest unsolved questions in computer science.</p>
+      <div class="stampbar">
+        <span class="stamp hot">Ages 13+</span>
+        <span class="stamp">Graph theory</span>
+        <span class="stamp">3D model</span>
+        <span class="stamp">Playable puzzle</span>
+        <span class="stamp">8 practice problems</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>Meet the dodecahedron</h2></div>
+      <p class="lead">"Dodeca" is Greek for twelve, and "hedron" means face. A <b>regular dodecahedron</b> is a solid made of <b>12 identical pentagons</b> (five-sided shapes), with three of them meeting at every corner.</p>
+      <p>Drag the model to spin it. Dashed lines are edges at the back.</p>
+      <div class="widget" id="solidWidget">
+        <div class="d3wrap"><svg class="d3svg" id="d3" viewBox="-190 -170 380 340" role="img" aria-label="A rotating regular dodecahedron"></svg></div>
+        <div class="controls">
+          <button class="btn" id="d3Trip" type="button">Show a Hamilton trip</button>
+          <button class="btn ghost" id="d3Spin" type="button">Pause spinning</button>
+        </div>
+        <div class="gcap" id="d3Cap">20 corners &middot; 30 edges &middot; 12 pentagon faces</div>
+      </div>
+      <p>The dodecahedron is one of only <b>five</b> perfectly regular solids, called the <b>Platonic solids</b>. In each one, all faces are the same regular shape and every corner looks exactly alike:</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>solid</th><th>faces are…</th><th>F (faces)</th><th>V (corners)</th><th>E (edges)</th></tr></thead>
+          <tbody>
+            <tr><td>tetrahedron</td><td>triangles</td><td>4</td><td>4</td><td>6</td></tr>
+            <tr><td>cube</td><td>squares</td><td>6</td><td>8</td><td>12</td></tr>
+            <tr><td>octahedron</td><td>triangles</td><td>8</td><td>6</td><td>12</td></tr>
+            <tr><td class="odd">dodecahedron</td><td class="odd">pentagons</td><td class="odd">12</td><td class="odd">20</td><td class="odd">30</td></tr>
+            <tr><td>icosahedron</td><td>triangles</td><td>20</td><td>12</td><td>30</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">A magic formula</div>
+        <p>For every one of these solids, <b>V − E + F = 2</b>. For the dodecahedron: 20 − 30 + 12 = 2. This is <b>Euler's formula</b>, and it works for any solid without holes. You'll check all five in practice problem 1.</p>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">Counting without counting</div>
+        <p>You don't have to count the edges one by one. There are 12 pentagons with 5 edges each, which makes 60, but every edge is shared by 2 faces, so 60 ÷ 2 = <b>30 edges</b>. In the same way, there are 12 × 5 = 60 pentagon corners, and 3 of them meet at each point of the solid, so 60 ÷ 3 = <b>20 corners</b>.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Squash it flat: from solid to map</h2></div>
+      <p class="lead">Imagine the dodecahedron is made of rubber. Poke a hole in the front face, stretch it wide open and press the whole thing flat. The corners and edges survive, and you get a <b>map</b>.</p>
+      <figure class="gfig"><svg class="gsvg" viewBox="-230 -230 460 460" role="img" aria-label="graph"><line class="g-edge" data-a="0" data-b="1" x1="0.0" y1="-200.0" x2="190.2" y2="-61.8"/><line class="g-edge" data-a="0" data-b="5" x1="0.0" y1="-200.0" x2="0.0" y2="-140.0"/><line class="g-edge" data-a="6" data-b="15" x1="61.7" y1="-84.9" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="15" data-b="16" x1="32.3" y1="-44.5" x2="52.3" y2="17.0"/><line class="g-edge" data-a="1" data-b="2" x1="190.2" y1="-61.8" x2="117.6" y2="161.8"/><line class="g-edge" data-a="1" data-b="7" x1="190.2" y1="-61.8" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="8" data-b="16" x1="99.9" y1="32.4" x2="52.3" y2="17.0"/><line class="g-edge" data-a="16" data-b="17" x1="52.3" y1="17.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="2" data-b="3" x1="117.6" y1="161.8" x2="-117.6" y2="161.8"/><line class="g-edge" data-a="2" data-b="9" x1="117.6" y1="161.8" x2="82.3" y2="113.3"/><line class="g-edge" data-a="10" data-b="17" x1="0.0" y1="105.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="17" data-b="18" x1="0.0" y1="55.0" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="3" data-b="4" x1="-117.6" y1="161.8" x2="-190.2" y2="-61.8"/><line class="g-edge" data-a="3" data-b="11" x1="-117.6" y1="161.8" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="12" data-b="18" x1="-99.9" y1="32.4" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="18" data-b="19" x1="-52.3" y1="17.0" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="4" data-b="0" x1="-190.2" y1="-61.8" x2="0.0" y2="-200.0"/><line class="g-edge" data-a="4" data-b="13" x1="-190.2" y1="-61.8" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="14" data-b="19" x1="-61.7" y1="-84.9" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="19" data-b="15" x1="-32.3" y1="-44.5" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="5" data-b="6" x1="0.0" y1="-140.0" x2="61.7" y2="-84.9"/><line class="g-edge" data-a="6" data-b="7" x1="61.7" y1="-84.9" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="7" data-b="8" x1="133.1" y1="-43.3" x2="99.9" y2="32.4"/><line class="g-edge" data-a="8" data-b="9" x1="99.9" y1="32.4" x2="82.3" y2="113.3"/><line class="g-edge" data-a="9" data-b="10" x1="82.3" y1="113.3" x2="0.0" y2="105.0"/><line class="g-edge" data-a="10" data-b="11" x1="0.0" y1="105.0" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="11" data-b="12" x1="-82.3" y1="113.3" x2="-99.9" y2="32.4"/><line class="g-edge" data-a="12" data-b="13" x1="-99.9" y1="32.4" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="13" data-b="14" x1="-133.1" y1="-43.3" x2="-61.7" y2="-84.9"/><line class="g-edge" data-a="14" data-b="5" x1="-61.7" y1="-84.9" x2="0.0" y2="-140.0"/><g class="g-node" data-v="0"><circle cx="0.0" cy="-200.0" r="18"/><text x="0.0" y="-204.0">B</text><text class="num" x="0.0" y="-191.0">0</text></g><g class="g-node" data-v="1"><circle cx="190.2" cy="-61.8" r="18"/><text x="190.2" y="-65.8">C</text><text class="num" x="190.2" y="-52.8">1</text></g><g class="g-node" data-v="2"><circle cx="117.6" cy="161.8" r="18"/><text x="117.6" y="157.8">D</text><text class="num" x="117.6" y="170.8">2</text></g><g class="g-node" data-v="3"><circle cx="-117.6" cy="161.8" r="18"/><text x="-117.6" y="157.8">F</text><text class="num" x="-117.6" y="170.8">3</text></g><g class="g-node" data-v="4"><circle cx="-190.2" cy="-61.8" r="18"/><text x="-190.2" y="-65.8">G</text><text class="num" x="-190.2" y="-52.8">4</text></g><g class="g-node" data-v="5"><circle cx="0.0" cy="-140.0" r="18"/><text x="0.0" y="-144.0">H</text><text class="num" x="0.0" y="-131.0">5</text></g><g class="g-node" data-v="6"><circle cx="61.7" cy="-84.9" r="18"/><text x="61.7" y="-88.9">J</text><text class="num" x="61.7" y="-75.9">6</text></g><g class="g-node" data-v="7"><circle cx="133.1" cy="-43.3" r="18"/><text x="133.1" y="-47.3">K</text><text class="num" x="133.1" y="-34.3">7</text></g><g class="g-node" data-v="8"><circle cx="99.9" cy="32.4" r="18"/><text x="99.9" y="28.4">L</text><text class="num" x="99.9" y="41.4">8</text></g><g class="g-node" data-v="9"><circle cx="82.3" cy="113.3" r="18"/><text x="82.3" y="109.3">M</text><text class="num" x="82.3" y="122.3">9</text></g><g class="g-node" data-v="10"><circle cx="0.0" cy="105.0" r="18"/><text x="0.0" y="101.0">N</text><text class="num" x="0.0" y="114.0">10</text></g><g class="g-node" data-v="11"><circle cx="-82.3" cy="113.3" r="18"/><text x="-82.3" y="109.3">P</text><text class="num" x="-82.3" y="122.3">11</text></g><g class="g-node" data-v="12"><circle cx="-99.9" cy="32.4" r="18"/><text x="-99.9" y="28.4">Q</text><text class="num" x="-99.9" y="41.4">12</text></g><g class="g-node" data-v="13"><circle cx="-133.1" cy="-43.3" r="18"/><text x="-133.1" y="-47.3">R</text><text class="num" x="-133.1" y="-34.3">13</text></g><g class="g-node" data-v="14"><circle cx="-61.7" cy="-84.9" r="18"/><text x="-61.7" y="-88.9">S</text><text class="num" x="-61.7" y="-75.9">14</text></g><g class="g-node" data-v="15"><circle cx="32.3" cy="-44.5" r="18"/><text x="32.3" y="-48.5">T</text><text class="num" x="32.3" y="-35.5">15</text></g><g class="g-node" data-v="16"><circle cx="52.3" cy="17.0" r="18"/><text x="52.3" y="13.0">V</text><text class="num" x="52.3" y="26.0">16</text></g><g class="g-node" data-v="17"><circle cx="0.0" cy="55.0" r="18"/><text x="0.0" y="51.0">W</text><text class="num" x="0.0" y="64.0">17</text></g><g class="g-node" data-v="18"><circle cx="-52.3" cy="17.0" r="18"/><text x="-52.3" y="13.0">X</text><text class="num" x="-52.3" y="26.0">18</text></g><g class="g-node" data-v="19"><circle cx="-32.3" cy="-44.5" r="18"/><text x="-32.3" y="-48.5">Z</text><text class="num" x="-32.3" y="-35.5">19</text></g></svg><figcaption>The dodecahedron squashed flat: 20 cities (letters, with their numbers) and 30 roads.</figcaption></figure>
+      <p>Mathematicians call a picture like this a <b>graph</b>. That doesn't mean a chart of numbers. Here it means:</p>
+      <div class="recipe">
+        <div class="step"><div class="k">Vertex</div><div class="t">a city</div><div class="d">The dots. The dodecahedron has 20. Hamilton named them with 20 consonants, from B to Z.</div></div>
+        <div class="step"><div class="k">Edge</div><div class="t">a road</div><div class="d">A line joining two cities. There are 30.</div></div>
+        <div class="step"><div class="k">Degree</div><div class="t">roads per city</div><div class="d">Count the roads at a city. On the dodecahedron every city has exactly <b>3</b>.</div></div>
+      </div>
+      <p>The outer edge of the map is the face we stretched open. Count the pentagons: 11 inside the map plus the outside one makes all 12. In Python, a graph is easy to store as an <b>adjacency list</b>: for every city, a list of its neighbours. We number the cities 0–19 (B = 0, C = 1, …, Z = 19):</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>dodecahedron.py</div>
+<pre><code>NAMES = <span class="st">"BCDFGHJKLMNPQRSTVWXZ"</span>      <span class="cm"># Hamilton's 20 city letters</span>
+
+<span class="kw">def</span> <span class="fn">dodecahedron</span>():
+    adj = {v: [] <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">20</span>)}
+    <span class="kw">def</span> <span class="fn">road</span>(a, b):                    <span class="cm"># a two-way road</span>
+        adj[a].append(b)
+        adj[b].append(a)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">5</span>):
+        road(i, (i + <span class="nu">1</span>) % <span class="nu">5</span>)              <span class="cm"># outer pentagon</span>
+        road(i, <span class="nu">5</span> + <span class="nu">2</span> * i)                <span class="cm"># outer spokes</span>
+        road(<span class="nu">6</span> + <span class="nu">2</span> * i, <span class="nu">15</span> + i)           <span class="cm"># inner spokes</span>
+        road(<span class="nu">15</span> + i, <span class="nu">15</span> + (i + <span class="nu">1</span>) % <span class="nu">5</span>)    <span class="cm"># inner pentagon</span>
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">10</span>):
+        road(<span class="nu">5</span> + j, <span class="nu">5</span> + (j + <span class="nu">1</span>) % <span class="nu">10</span>)     <span class="cm"># middle ring of 10</span>
+    <span class="kw">return</span> adj
+
+adj = dodecahedron()
+<span class="fn">print</span>(<span class="fn">len</span>(adj))                                    <span class="cm"># 20  cities</span>
+<span class="fn">print</span>(<span class="fn">sum</span>(<span class="fn">len</span>(roads) <span class="kw">for</span> roads <span class="kw">in</span> adj.values()) // <span class="nu">2</span>)   <span class="cm"># 30  roads</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">set</span>(<span class="fn">len</span>(r) <span class="kw">for</span> r <span class="kw">in</span> adj.values())))     <span class="cm"># [3]  every city has 3 roads</span>
+<span class="fn">print</span>(adj[<span class="nu">0</span>])                                    <span class="cm"># [1, 5, 4]  B's neighbours: C, H, G</span></code></pre>
+      </div>
+      <p>Why divide by 2? Each road appears in <i>two</i> lists, once for each end. That's the "handshake" trick again.</p>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Hamilton's puzzle</h2></div>
+      <p class="lead">Hamilton's challenge: start at any city, travel along roads, visit <b>every city exactly once</b>, and finish back where you started.</p>
+      <div class="recipe">
+        <div class="step"><div class="k">Hamiltonian cycle</div><div class="t">every city once, then home</div><div class="d">A round trip. This is Hamilton's puzzle.</div></div>
+        <div class="step"><div class="k">Hamiltonian path</div><div class="t">every city once</div><div class="d">You don't need to get back home. It's easier, because a cycle minus its last road is a path.</div></div>
+        <div class="step"><div class="k">Euler circuit</div><div class="t">every <i>road</i> once</div><div class="d">A different puzzle! You may revisit cities, but must use each road exactly once.</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">Don't mix up Euler and Hamilton</div>
+        <p>About 120 years before Hamilton, Leonhard Euler solved the famous <b>Bridges of Königsberg</b> puzzle and found a simple rule for road puzzles: you can make a round trip using every road once <b>only if every city has an even number of roads</b>. On the dodecahedron every city has 3 roads, which is odd, so an Euler circuit is impossible. Euler's question has an easy test like this. Hamilton's question, as you'll see, does <b>not</b>.</p>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>euler_check.py (uses adj from Level 2)</div>
+<pre><code>odd = [city <span class="kw">for</span> city <span class="kw">in</span> adj <span class="kw">if</span> <span class="fn">len</span>(adj[city]) % <span class="nu">2</span> == <span class="nu">1</span>]
+<span class="fn">print</span>(<span class="fn">len</span>(odd))   <span class="cm"># 20  → all 20 cities are odd, so no Euler circuit</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>Play the Icosian Game</h2></div>
+      <p class="lead">Hamilton's game was called the <b>Icosian Game</b> ("icosa" means twenty). Pegs numbered 1 to 20 were pushed into holes at the cities to record the trip. Now it's your turn.</p>
+      <div class="widget" id="gameWidget">
+        <h3>Visit all 20 cities and come home</h3>
+        <div class="hint">Click a city to start, then click a <b>neighbouring</b> city (dashed green ring) to travel there. Each city only once! When all 20 are visited, the last city must have a road back to your start.</div>
+        <svg class="gsvg" id="gameSvg" viewBox="-230 -230 460 460" role="img" aria-label="graph"><line class="g-edge" data-a="0" data-b="1" x1="0.0" y1="-200.0" x2="190.2" y2="-61.8"/><line class="g-edge" data-a="0" data-b="5" x1="0.0" y1="-200.0" x2="0.0" y2="-140.0"/><line class="g-edge" data-a="6" data-b="15" x1="61.7" y1="-84.9" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="15" data-b="16" x1="32.3" y1="-44.5" x2="52.3" y2="17.0"/><line class="g-edge" data-a="1" data-b="2" x1="190.2" y1="-61.8" x2="117.6" y2="161.8"/><line class="g-edge" data-a="1" data-b="7" x1="190.2" y1="-61.8" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="8" data-b="16" x1="99.9" y1="32.4" x2="52.3" y2="17.0"/><line class="g-edge" data-a="16" data-b="17" x1="52.3" y1="17.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="2" data-b="3" x1="117.6" y1="161.8" x2="-117.6" y2="161.8"/><line class="g-edge" data-a="2" data-b="9" x1="117.6" y1="161.8" x2="82.3" y2="113.3"/><line class="g-edge" data-a="10" data-b="17" x1="0.0" y1="105.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="17" data-b="18" x1="0.0" y1="55.0" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="3" data-b="4" x1="-117.6" y1="161.8" x2="-190.2" y2="-61.8"/><line class="g-edge" data-a="3" data-b="11" x1="-117.6" y1="161.8" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="12" data-b="18" x1="-99.9" y1="32.4" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="18" data-b="19" x1="-52.3" y1="17.0" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="4" data-b="0" x1="-190.2" y1="-61.8" x2="0.0" y2="-200.0"/><line class="g-edge" data-a="4" data-b="13" x1="-190.2" y1="-61.8" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="14" data-b="19" x1="-61.7" y1="-84.9" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="19" data-b="15" x1="-32.3" y1="-44.5" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="5" data-b="6" x1="0.0" y1="-140.0" x2="61.7" y2="-84.9"/><line class="g-edge" data-a="6" data-b="7" x1="61.7" y1="-84.9" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="7" data-b="8" x1="133.1" y1="-43.3" x2="99.9" y2="32.4"/><line class="g-edge" data-a="8" data-b="9" x1="99.9" y1="32.4" x2="82.3" y2="113.3"/><line class="g-edge" data-a="9" data-b="10" x1="82.3" y1="113.3" x2="0.0" y2="105.0"/><line class="g-edge" data-a="10" data-b="11" x1="0.0" y1="105.0" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="11" data-b="12" x1="-82.3" y1="113.3" x2="-99.9" y2="32.4"/><line class="g-edge" data-a="12" data-b="13" x1="-99.9" y1="32.4" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="13" data-b="14" x1="-133.1" y1="-43.3" x2="-61.7" y2="-84.9"/><line class="g-edge" data-a="14" data-b="5" x1="-61.7" y1="-84.9" x2="0.0" y2="-140.0"/><g class="g-node" data-v="0"><circle cx="0.0" cy="-200.0" r="18"/><text x="0.0" y="-200.0">B</text></g><g class="g-node" data-v="1"><circle cx="190.2" cy="-61.8" r="18"/><text x="190.2" y="-61.8">C</text></g><g class="g-node" data-v="2"><circle cx="117.6" cy="161.8" r="18"/><text x="117.6" y="161.8">D</text></g><g class="g-node" data-v="3"><circle cx="-117.6" cy="161.8" r="18"/><text x="-117.6" y="161.8">F</text></g><g class="g-node" data-v="4"><circle cx="-190.2" cy="-61.8" r="18"/><text x="-190.2" y="-61.8">G</text></g><g class="g-node" data-v="5"><circle cx="0.0" cy="-140.0" r="18"/><text x="0.0" y="-140.0">H</text></g><g class="g-node" data-v="6"><circle cx="61.7" cy="-84.9" r="18"/><text x="61.7" y="-84.9">J</text></g><g class="g-node" data-v="7"><circle cx="133.1" cy="-43.3" r="18"/><text x="133.1" y="-43.3">K</text></g><g class="g-node" data-v="8"><circle cx="99.9" cy="32.4" r="18"/><text x="99.9" y="32.4">L</text></g><g class="g-node" data-v="9"><circle cx="82.3" cy="113.3" r="18"/><text x="82.3" y="113.3">M</text></g><g class="g-node" data-v="10"><circle cx="0.0" cy="105.0" r="18"/><text x="0.0" y="105.0">N</text></g><g class="g-node" data-v="11"><circle cx="-82.3" cy="113.3" r="18"/><text x="-82.3" y="113.3">P</text></g><g class="g-node" data-v="12"><circle cx="-99.9" cy="32.4" r="18"/><text x="-99.9" y="32.4">Q</text></g><g class="g-node" data-v="13"><circle cx="-133.1" cy="-43.3" r="18"/><text x="-133.1" y="-43.3">R</text></g><g class="g-node" data-v="14"><circle cx="-61.7" cy="-84.9" r="18"/><text x="-61.7" y="-84.9">S</text></g><g class="g-node" data-v="15"><circle cx="32.3" cy="-44.5" r="18"/><text x="32.3" y="-44.5">T</text></g><g class="g-node" data-v="16"><circle cx="52.3" cy="17.0" r="18"/><text x="52.3" y="17.0">V</text></g><g class="g-node" data-v="17"><circle cx="0.0" cy="55.0" r="18"/><text x="0.0" y="55.0">W</text></g><g class="g-node" data-v="18"><circle cx="-52.3" cy="17.0" r="18"/><text x="-52.3" y="17.0">X</text></g><g class="g-node" data-v="19"><circle cx="-32.3" cy="-44.5" r="18"/><text x="-32.3" y="-44.5">Z</text></g></svg>
+        <div class="controls">
+          <button class="btn ghost" id="gUndo" type="button">&#x21A9; Undo</button>
+          <button class="btn ghost" id="gReset" type="button">Reset</button>
+          <button class="btn ghost" id="gCheck" type="button">Can I still finish?</button>
+          <button class="btn" id="gSolve" type="button">Show me a solution</button>
+          <button class="btn ghost" id="gCode" type="button">Follow Hamilton's code</button>
+        </div>
+        <div class="status" id="gStatus"></div>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">Strategy hints</div>
+        <ul>
+          <li>Getting stuck is normal. When every neighbour is already visited, you've hit a <b>dead end</b>: undo a few moves and try another road. That's exactly how the computer solves it too.</li>
+          <li>"Can I still finish?" tells you whether your route so far can still be completed, without giving the answer away.</li>
+          <li>A good habit: don't leave a city "stranded" with only one unvisited neighbour, or you'll never be able to pass through it.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Teaching Python to play</h2></div>
+      <p class="lead">The computer plays exactly the way you did: pick a road, keep going, and when you're stuck, back up and try the next road. That's <a href="Backtracking_en.html">backtracking</a>: <b>Choose → Explore → Un-choose</b>.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>find_trip.py (uses adj and NAMES from Level 2)</div>
+<pre><code><span class="kw">def</span> <span class="fn">hamilton_cycle</span>(adj, start=<span class="nu">0</span>):
+    n = <span class="fn">len</span>(adj)
+    path = [start]
+    visited = {start}
+
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == n:                    <span class="cm"># every city visited…</span>
+            <span class="kw">return</span> start <span class="kw">in</span> adj[city]         <span class="cm"># …and a road leads home?</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)      <span class="cm"># choose</span>
+                <span class="kw">if</span> explore(nxt):                       <span class="cm"># explore</span>
+                    <span class="kw">return</span> <span class="kw">True</span>
+                path.pop(); visited.remove(nxt)         <span class="cm"># un-choose</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="kw">return</span> path <span class="kw">if</span> explore(start) <span class="kw">else</span> <span class="kw">None</span>
+
+trip = hamilton_cycle(adj)
+<span class="fn">print</span>(<span class="st">" → "</span>.join(NAMES[c] <span class="kw">for</span> c <span class="kw">in</span> trip + [trip[<span class="nu">0</span>]]))
+<span class="cm"># B → C → D → F → G → R → Q → P → N → M → L → K → J → T → V → W → X → Z → S → H → B</span></code></pre>
+      </div>
+      <div class="annot">
+        <div class="annot-row"><div class="annot-code">if len(path) == n:</div><div class="annot-note"><span><b>Goal check.</b> All 20 cities are on the path…</span></div></div>
+        <div class="annot-row"><div class="annot-code">return start in adj[city]</div><div class="annot-note"><span><b>…but is there a road home?</b> If not, this full path is still a failure.</span></div></div>
+        <div class="annot-row"><div class="annot-code">if nxt not in visited:</div><div class="annot-note"><span><b>Rule.</b> Never visit a city twice.</span></div></div>
+        <div class="annot-row"><div class="annot-code">path.pop(); visited.remove(nxt)</div><div class="annot-note"><span><b>Un-choose.</b> That road led nowhere, so take it back and try the next one.</span></div></div>
+      </div>
+      <p>The answer goes once around the outer pentagon (B C D F G), zig-zags around the middle ring, circles the inner pentagon and comes home. Try tracing it on the map!</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>How many different trips are there?</h2></div>
+      <p class="lead">Instead of stopping at the first trip, let's count <b>all</b> of them. The only change is to add 1 to a counter instead of returning <code>True</code>.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>count_trips.py (uses adj from Level 2)</div>
+<pre><code><span class="kw">def</span> <span class="fn">count_cycles</span>(adj, start=<span class="nu">0</span>):
+    n = <span class="fn">len</span>(adj)
+    path = [start]
+    visited = {start}
+    count = <span class="nu">0</span>
+
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">nonlocal</span> count
+        <span class="kw">if</span> <span class="fn">len</span>(path) == n:
+            <span class="kw">if</span> start <span class="kw">in</span> adj[city]:
+                count += <span class="nu">1</span>
+            <span class="kw">return</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                explore(nxt)
+                path.pop(); visited.remove(nxt)
+
+    explore(start)
+    <span class="kw">return</span> count
+
+trips = count_cycles(adj)
+<span class="fn">print</span>(trips)         <span class="cm"># 60</span>
+<span class="fn">print</span>(trips // <span class="nu">2</span>)    <span class="cm"># 30</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat fast"><div class="num">60</div><div class="lbl">trips starting at B (going either way round)</div></div>
+        <div class="stat fast"><div class="num">30</div><div class="lbl">really different round trips</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">Why divide by 2?</div>
+        <p>Every round trip can be travelled in two directions: B → C → … → H → B and B → H → … → C → B use exactly the same roads. The program counts both, so the number of truly different cycles is 60 ÷ 2 = <b>30</b>. And the starting city doesn't matter either: a cycle passes through B no matter where you "start" it, so fixing B as the start doesn't lose any.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Hamilton's secret code: Left and Right</h2></div>
+      <p class="lead">Hamilton was an algebra genius, and he found an amazing way to describe the trips without a map.</p>
+      <p>Arrive at any city and you'll see <b>exactly two</b> roads you haven't just used: one on your left-hand side and one on your right-hand side. So a whole trip can be written as a string of letters: <b>L</b> means "take the left-hand road", <b>R</b> means "take the right-hand road". Hamilton built a whole system of algebra around these moves, which he called the <b>Icosian Calculus</b>.</p>
+      <p>Here is the code for a complete trip. Start at B, walk to C, then obey these 20 letters:</p>
+      <div class="codechips"><span class="L">L</span><span class="L">L</span><span class="L">L</span><span class="R">R</span><span class="R">R</span><span class="R">R</span><span class="L">L</span><span class="R">R</span><span class="L">L</span><span class="R">R</span><span class="L">L</span><span class="L">L</span><span class="L">L</span><span class="R">R</span><span class="R">R</span><span class="R">R</span><span class="L">L</span><span class="R">R</span><span class="L">L</span><span class="R">R</span></div>
+      <p>Notice that it's the same 10-letter pattern <code>LLLRRRLRLR</code> twice! Press <b>Follow Hamilton's code</b> in the game above to watch it happen. To follow the code in Python, we need to know which road is on which side. We use the position of every city on our map and sort its three roads by direction, going counter-clockwise:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>left_right.py (uses adj and NAMES from Level 2)</div>
+<pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="fn">position</span>(v):                              <span class="cm"># where city v sits on the map</span>
+    <span class="kw">if</span> v &lt; <span class="nu">5</span>:
+        angle, r = <span class="nu">90</span> - <span class="nu">72</span> * v, <span class="nu">200</span>                  <span class="cm"># outer pentagon</span>
+    <span class="kw">elif</span> v &lt; <span class="nu">15</span>:
+        angle, r = <span class="nu">90</span> - <span class="nu">36</span> * (v - <span class="nu">5</span>), (<span class="nu">140</span> <span class="kw">if</span> v % <span class="nu">2</span> == <span class="nu">1</span> <span class="kw">else</span> <span class="nu">105</span>)   <span class="cm"># middle ring</span>
+    <span class="kw">else</span>:
+        angle, r = <span class="nu">54</span> - <span class="nu">72</span> * (v - <span class="nu">15</span>), <span class="nu">55</span>            <span class="cm"># inner pentagon</span>
+    a = math.radians(angle)
+    <span class="kw">return</span> r * math.cos(a), r * math.sin(a)
+
+<span class="kw">def</span> <span class="fn">around</span>(v):                                <span class="cm"># v's 3 roads, counter-clockwise</span>
+    x, y = position(v)
+    <span class="kw">return</span> <span class="fn">sorted</span>(adj[v], key=<span class="kw">lambda</span> w: math.atan2(position(w)[<span class="nu">1</span>] - y, position(w)[<span class="nu">0</span>] - x))
+
+<span class="kw">def</span> <span class="fn">follow</span>(code, start, first):
+    route = [start, first]
+    <span class="kw">for</span> turn <span class="kw">in</span> code:
+        here, came_from = route[-<span class="nu">1</span>], route[-<span class="nu">2</span>]
+        ring = around(here)
+        k = ring.index(came_from)
+        <span class="cm"># facing away from where we came from: clockwise = left-hand road</span>
+        route.append(ring[(k - <span class="nu">1</span>) % <span class="nu">3</span>] <span class="kw">if</span> turn == <span class="st">"L"</span> <span class="kw">else</span> ring[(k + <span class="nu">1</span>) % <span class="nu">3</span>])
+    <span class="kw">return</span> route
+
+route = follow(<span class="st">"LLLRRRLRLR"</span> * <span class="nu">2</span>, <span class="nu">0</span>, <span class="nu">1</span>)
+<span class="fn">print</span>(<span class="st">" "</span>.join(NAMES[c] <span class="kw">for</span> c <span class="kw">in</span> route))
+<span class="cm"># B C D F G R Q P N M L K J T V W X Z S H B C</span>
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="fn">set</span>(route[:<span class="nu">20</span>])))     <span class="cm"># 20    → all 20 cities, each once</span>
+<span class="fn">print</span>(route[<span class="nu">20</span>:] == [<span class="nu">0</span>, <span class="nu">1</span>])     <span class="cm"># True  → back at B, heading to C again</span></code></pre>
+      </div>
+      <p>After 20 turns we're back at B, walking towards C again, exactly where we began. It's the same trip Python found in Level 5!</p>
+      <div class="callout tip">
+        <div class="ctitle">The most surprising fact on this page</div>
+        <p>There are 30 different round trips, yet <b>every single one</b> has the same secret code <code>LLLRRRLRLR</code> repeated twice. The only differences are where in the code you start reading, and whether the trip is a mirror image (all L's and R's swapped). The dodecahedron is so symmetric that, deep down, there is only <i>one</i> Hamiltonian cycle, seen from different angles.</p>
+      </div>
+      <details>
+        <summary>Don't believe it? Let Python check all 60 trips</summary>
+        <div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>check_code.py (uses adj and around() from above)</div>
+<pre><code><span class="kw">def</span> <span class="fn">all_cycles</span>(adj, start=<span class="nu">0</span>):
+    n, path, visited, found = <span class="fn">len</span>(adj), [start], {start}, []
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == n:
+            <span class="kw">if</span> start <span class="kw">in</span> adj[city]:
+                found.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                explore(nxt)
+                path.pop(); visited.remove(nxt)
+    explore(start)
+    <span class="kw">return</span> found
+
+<span class="kw">def</span> <span class="fn">turns</span>(trip):                     <span class="cm"># the L/R code of a trip</span>
+    code = <span class="st">""</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(trip)):
+        came_from, here, going = trip[i - <span class="nu">1</span>], trip[i], trip[(i + <span class="nu">1</span>) % <span class="fn">len</span>(trip)]
+        ring = around(here)
+        k = ring.index(came_from)
+        code += <span class="st">"L"</span> <span class="kw">if</span> ring[(k - <span class="nu">1</span>) % <span class="nu">3</span>] == going <span class="kw">else</span> <span class="st">"R"</span>
+    <span class="kw">return</span> code
+
+PATTERN = <span class="st">"LLLRRRLRLR"</span> * <span class="nu">2</span>
+MIRROR = PATTERN.translate(<span class="fn">str</span>.maketrans(<span class="st">"LR"</span>, <span class="st">"RL"</span>))
+
+<span class="kw">def</span> <span class="fn">same_code</span>(code):                 <span class="cm"># a rotation of PATTERN or of its mirror?</span>
+    <span class="kw">return</span> code <span class="kw">in</span> PATTERN + PATTERN <span class="kw">or</span> code <span class="kw">in</span> MIRROR + MIRROR
+
+trips = all_cycles(adj)
+<span class="fn">print</span>(<span class="fn">len</span>(trips))                                  <span class="cm"># 60</span>
+<span class="fn">print</span>(<span class="fn">all</span>(same_code(turns(t)) <span class="kw">for</span> t <span class="kw">in</span> trips))      <span class="cm"># True</span></code></pre></div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Why Hamilton's puzzle is secretly HARD</h2></div>
+      <p class="lead">For Euler's puzzle there's an instant test: count the roads at each city. Is there a simple test like that for Hamilton's puzzle?</p>
+      <p>You might guess: "If every city has 3 roads, like the dodecahedron, there must be a round trip." Meet the <b>Petersen graph</b>. It has 10 cities, every city has exactly 3 roads, and it looks very friendly:</p>
+      <figure class="gfig"><svg class="gsvg small" viewBox="-180 -180 360 360" role="img" aria-label="graph"><line class="g-edge" data-a="0" data-b="1" x1="0.0" y1="-150.0" x2="142.7" y2="-46.4"/><line class="g-edge" data-a="0" data-b="5" x1="0.0" y1="-150.0" x2="0.0" y2="-72.0"/><line class="g-edge" data-a="5" data-b="7" x1="0.0" y1="-72.0" x2="42.3" y2="58.2"/><line class="g-edge" data-a="1" data-b="2" x1="142.7" y1="-46.4" x2="88.2" y2="121.4"/><line class="g-edge" data-a="1" data-b="6" x1="142.7" y1="-46.4" x2="68.5" y2="-22.2"/><line class="g-edge" data-a="6" data-b="8" x1="68.5" y1="-22.2" x2="-42.3" y2="58.2"/><line class="g-edge" data-a="2" data-b="3" x1="88.2" y1="121.4" x2="-88.2" y2="121.4"/><line class="g-edge" data-a="2" data-b="7" x1="88.2" y1="121.4" x2="42.3" y2="58.2"/><line class="g-edge" data-a="7" data-b="9" x1="42.3" y1="58.2" x2="-68.5" y2="-22.2"/><line class="g-edge" data-a="3" data-b="4" x1="-88.2" y1="121.4" x2="-142.7" y2="-46.4"/><line class="g-edge" data-a="3" data-b="8" x1="-88.2" y1="121.4" x2="-42.3" y2="58.2"/><line class="g-edge" data-a="8" data-b="5" x1="-42.3" y1="58.2" x2="0.0" y2="-72.0"/><line class="g-edge" data-a="4" data-b="0" x1="-142.7" y1="-46.4" x2="0.0" y2="-150.0"/><line class="g-edge" data-a="4" data-b="9" x1="-142.7" y1="-46.4" x2="-68.5" y2="-22.2"/><line class="g-edge" data-a="9" data-b="6" x1="-68.5" y1="-22.2" x2="68.5" y2="-22.2"/><g class="g-node" data-v="0"><circle cx="0.0" cy="-150.0" r="18"/><text x="0.0" y="-150.0">0</text></g><g class="g-node" data-v="1"><circle cx="142.7" cy="-46.4" r="18"/><text x="142.7" y="-46.4">1</text></g><g class="g-node" data-v="2"><circle cx="88.2" cy="121.4" r="18"/><text x="88.2" y="121.4">2</text></g><g class="g-node" data-v="3"><circle cx="-88.2" cy="121.4" r="18"/><text x="-88.2" y="121.4">3</text></g><g class="g-node" data-v="4"><circle cx="-142.7" cy="-46.4" r="18"/><text x="-142.7" y="-46.4">4</text></g><g class="g-node" data-v="5"><circle cx="0.0" cy="-72.0" r="18"/><text x="0.0" y="-72.0">5</text></g><g class="g-node" data-v="6"><circle cx="68.5" cy="-22.2" r="18"/><text x="68.5" y="-22.2">6</text></g><g class="g-node" data-v="7"><circle cx="42.3" cy="58.2" r="18"/><text x="42.3" y="58.2">7</text></g><g class="g-node" data-v="8"><circle cx="-42.3" cy="58.2" r="18"/><text x="-42.3" y="58.2">8</text></g><g class="g-node" data-v="9"><circle cx="-68.5" cy="-22.2" r="18"/><text x="-68.5" y="-22.2">9</text></g></svg><figcaption>The Petersen graph: 10 cities, 3 roads each, and no Hamiltonian cycle.</figcaption></figure>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>petersen.py (uses count_cycles from Level 6)</div>
+<pre><code>petersen = {v: [] <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">10</span>)}
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">5</span>):
+    <span class="kw">for</span> a, b <span class="kw">in</span> ((i, (i + <span class="nu">1</span>) % <span class="nu">5</span>),           <span class="cm"># outer pentagon</span>
+                 (i, i + <span class="nu">5</span>),                 <span class="cm"># spokes</span>
+                 (i + <span class="nu">5</span>, (i + <span class="nu">2</span>) % <span class="nu">5</span> + <span class="nu">5</span>)):   <span class="cm"># inner star</span>
+        petersen[a].append(b)
+        petersen[b].append(a)
+
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">set</span>(<span class="fn">len</span>(r) <span class="kw">for</span> r <span class="kw">in</span> petersen.values())))   <span class="cm"># [3]  every city has 3 roads</span>
+<span class="fn">print</span>(count_cycles(petersen))                           <span class="cm"># 0    NO round trip at all!</span></code></pre>
+      </div>
+      <p>Zero! The same number of roads per city as the dodecahedron, but no Hamiltonian cycle. So "3 roads everywhere" proves nothing. In fact, after more than 150 years, nobody has found <b>any</b> quick test that works for every map.</p>
+      <div class="callout warn">
+        <div class="ctitle">A million-dollar question</div>
+        <p>Computer scientists put Hamilton's puzzle in a famous group of problems called <b>NP-complete</b>. Checking a proposed trip is easy (practice problem 2), but <i>finding</i> one seems to need a search that grows explosively with the size of the map. Nobody knows for sure whether a fast method exists. This is the <b>P vs NP</b> problem, and there's a <b>$1,000,000</b> prize for solving it.</p>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">How real programs fight back</div>
+        <ul>
+          <li><b>Prune dead ends early:</b> if an unvisited city has fewer than 2 unvisited-or-endpoint neighbours left, it can never be passed through, so back up right away.</li>
+          <li><b>Smart order:</b> try the most constrained cities first (fewest free roads).</li>
+          <li><b>Remember work:</b> dynamic programming over subsets of visited cities (see <a href="dynamic_programming_en.html">Dynamic Programming</a>) handles about 20–25 cities exactly.</li>
+        </ul>
+        <p>Hamiltonian cycles hide inside real problems too: delivery routes, circuit-board drilling and DNA sequencing all ask "visit everything once, efficiently".</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 9: QUIZ ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">CHECKPOINT</span><h2>Quick concept quiz</h2></div>
+      <p class="lead">Try to answer in your head before you peek.</p>
+      <details>
+        <summary>Q1. A route uses every <i>road</i> exactly once. Is it a Hamiltonian cycle?</summary>
+        <div class="reveal"><p>Not necessarily! That's an <b>Euler</b> circuit. Hamilton's rule is about <b>cities</b>: each one exactly once. An Euler circuit may pass through a city many times. On the dodecahedron an Euler circuit doesn't even exist (all degrees are odd), but Hamiltonian cycles do.</p></div>
+      </details>
+      <details>
+        <summary>Q2. Our program found 60 trips from B. Why do we say there are only 30 different cycles?</summary>
+        <div class="reveal"><p>Each cycle is found twice, once in each direction (clockwise and anticlockwise). They use the same set of roads, so we count them as one: 60 ÷ 2 = 30.</p></div>
+      </details>
+      <details>
+        <summary>Q3. Every city in the Petersen graph has 3 roads, just like the dodecahedron. Why doesn't it have a Hamiltonian cycle?</summary>
+        <div class="reveal"><p>Because the number of roads per city doesn't decide the answer. What matters is <i>how</i> the roads are connected. The Petersen graph is "twisted" in a way that traps every attempt: the search tries every possibility and finds none. This is exactly why Hamilton's puzzle is hard. There's no simple counting rule like Euler's.</p></div>
+      </details>
+    </section>
+
+    <!-- ============ LEVEL 10: PRACTICE ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">TRAINING GROUND</span><h2>Practice problems</h2></div>
+      <p class="lead">Eight problems, from warm-up ★ to boss level ★★★. Several solutions reuse <code>dodecahedron()</code>, <code>NAMES</code> and <code>count_cycles()</code> from the levels above. Paste those in first. Only open a solution after a real try!</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. Euler's formula for all five <span class="stars">★</span></h3>
+        <p>Using the table in Level 1, compute V − E + F for every Platonic solid. What do you notice?</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Store each solid as <code>(V, E, F)</code> in a dictionary and loop over it.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_euler.py</div>
+<pre><code>solids = {<span class="st">"tetrahedron"</span>: (<span class="nu">4</span>, <span class="nu">6</span>, <span class="nu">4</span>), <span class="st">"cube"</span>: (<span class="nu">8</span>, <span class="nu">12</span>, <span class="nu">6</span>), <span class="st">"octahedron"</span>: (<span class="nu">6</span>, <span class="nu">12</span>, <span class="nu">8</span>),
+          <span class="st">"dodecahedron"</span>: (<span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">12</span>), <span class="st">"icosahedron"</span>: (<span class="nu">12</span>, <span class="nu">30</span>, <span class="nu">20</span>)}
+<span class="kw">for</span> name, (V, E, F) <span class="kw">in</span> solids.items():
+    <span class="fn">print</span>(name, V - E + F)
+<span class="cm"># tetrahedron 2</span>
+<span class="cm"># cube 2</span>
+<span class="cm"># octahedron 2</span>
+<span class="cm"># dodecahedron 2</span>
+<span class="cm"># icosahedron 2</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. The trip inspector <span class="stars">★</span></h3>
+        <p>Write <code>is_hamilton_cycle(adj, route)</code> that returns <code>True</code> only if the route visits every city exactly once <b>and</b> each step (including the last one, back home) is along a road. Checking is easy, even though finding is hard!</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Two checks: <code>sorted(route) == sorted(adj)</code> (every city exactly once), and for every <code>i</code>, <code>route[(i + 1) % n]</code> is in <code>adj[route[i]]</code>.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_inspector.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">is_hamilton_cycle</span>(adj, route):
+    <span class="kw">if</span> <span class="fn">sorted</span>(route) != <span class="fn">sorted</span>(adj):          <span class="cm"># every city exactly once?</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(route)):
+        a, b = route[i], route[(i + <span class="nu">1</span>) % <span class="fn">len</span>(route)]
+        <span class="kw">if</span> b <span class="kw">not</span> <span class="kw">in</span> adj[a]:                   <span class="cm"># is there a road a → b?</span>
+            <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+good = [<span class="nu">0</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>, <span class="nu">13</span>, <span class="nu">12</span>, <span class="nu">11</span>, <span class="nu">10</span>, <span class="nu">9</span>, <span class="nu">8</span>, <span class="nu">7</span>, <span class="nu">6</span>, <span class="nu">15</span>, <span class="nu">16</span>, <span class="nu">17</span>, <span class="nu">18</span>, <span class="nu">19</span>, <span class="nu">14</span>, <span class="nu">5</span>]
+<span class="fn">print</span>(is_hamilton_cycle(adj, good))                            <span class="cm"># True</span>
+<span class="fn">print</span>(is_hamilton_cycle(adj, good[:-<span class="nu">1</span>] + [<span class="nu">6</span>]))                 <span class="cm"># False  (city 6 twice)</span>
+<span class="fn">print</span>(is_hamilton_cycle(adj, good[:<span class="nu">5</span>] + good[<span class="nu">6</span>:] + [good[<span class="nu">5</span>]]))   <span class="cm"># False  (no road 4 → 12)</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. Round trips on a cube <span class="stars">★★</span></h3>
+        <p>A cube has 8 corners. Number them 0–7 so that, written in binary (<code>000</code> to <code>111</code>), each digit says left/right, down/up and front/back. Two corners are joined exactly when they differ in <b>one</b> binary digit. Build the cube graph and count its Hamiltonian cycles.</p>
+      <figure class="gfig"><svg class="gsvg small" viewBox="-150 -150 300 300" role="img" aria-label="graph"><line class="g-edge" data-a="0" data-b="1" x1="-120.0" y1="120.0" x2="120.0" y2="120.0"/><line class="g-edge" data-a="0" data-b="2" x1="-120.0" y1="120.0" x2="-120.0" y2="-120.0"/><line class="g-edge" data-a="0" data-b="4" x1="-120.0" y1="120.0" x2="-55.0" y2="55.0"/><line class="g-edge" data-a="1" data-b="3" x1="120.0" y1="120.0" x2="120.0" y2="-120.0"/><line class="g-edge" data-a="1" data-b="5" x1="120.0" y1="120.0" x2="55.0" y2="55.0"/><line class="g-edge" data-a="2" data-b="3" x1="-120.0" y1="-120.0" x2="120.0" y2="-120.0"/><line class="g-edge" data-a="2" data-b="6" x1="-120.0" y1="-120.0" x2="-55.0" y2="-55.0"/><line class="g-edge" data-a="3" data-b="7" x1="120.0" y1="-120.0" x2="55.0" y2="-55.0"/><line class="g-edge" data-a="4" data-b="5" x1="-55.0" y1="55.0" x2="55.0" y2="55.0"/><line class="g-edge" data-a="4" data-b="6" x1="-55.0" y1="55.0" x2="-55.0" y2="-55.0"/><line class="g-edge" data-a="5" data-b="7" x1="55.0" y1="55.0" x2="55.0" y2="-55.0"/><line class="g-edge" data-a="6" data-b="7" x1="-55.0" y1="-55.0" x2="55.0" y2="-55.0"/><g class="g-node" data-v="0"><circle cx="-120.0" cy="120.0" r="18"/><text x="-120.0" y="120.0" style="font-size:11px">000</text></g><g class="g-node" data-v="1"><circle cx="120.0" cy="120.0" r="18"/><text x="120.0" y="120.0" style="font-size:11px">001</text></g><g class="g-node" data-v="2"><circle cx="-120.0" cy="-120.0" r="18"/><text x="-120.0" y="-120.0" style="font-size:11px">010</text></g><g class="g-node" data-v="3"><circle cx="120.0" cy="-120.0" r="18"/><text x="120.0" y="-120.0" style="font-size:11px">011</text></g><g class="g-node" data-v="4"><circle cx="-55.0" cy="55.0" r="18"/><text x="-55.0" y="55.0" style="font-size:11px">100</text></g><g class="g-node" data-v="5"><circle cx="55.0" cy="55.0" r="18"/><text x="55.0" y="55.0" style="font-size:11px">101</text></g><g class="g-node" data-v="6"><circle cx="-55.0" cy="-55.0" r="18"/><text x="-55.0" y="-55.0" style="font-size:11px">110</text></g><g class="g-node" data-v="7"><circle cx="55.0" cy="-55.0" r="18"/><text x="55.0" y="-55.0" style="font-size:11px">111</text></g></svg><figcaption>The cube squashed flat, corners labelled in binary.</figcaption></figure>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Flipping one binary digit is the XOR operator: the neighbours of <code>v</code> are <code>v ^ 1</code>, <code>v ^ 2</code> and <code>v ^ 4</code>. Then reuse <code>count_cycles</code> and divide by 2.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_cube.py</div>
+<pre><code>cube = {v: [v ^ <span class="nu">1</span>, v ^ <span class="nu">2</span>, v ^ <span class="nu">4</span>] <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">8</span>)}
+<span class="fn">print</span>(cube[<span class="nu">0</span>])                 <span class="cm"># [1, 2, 4]</span>
+<span class="fn">print</span>(count_cycles(cube))      <span class="cm"># 12</span>
+<span class="fn">print</span>(count_cycles(cube) // <span class="nu">2</span>) <span class="cm"># 6   different round trips</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. Paths vs. cycles: the little house <span class="stars">★★</span></h3>
+        <p>The "house" graph is a square (0-1-2-3) with a roof (city 4 joined to 2 and 3). Count its Hamiltonian <b>paths</b> (any start, any end) and its Hamiltonian <b>cycles</b>. Remember to divide by 2 for direction!</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>For paths, try every starting city and count each time the path reaches all 5 cities (no need to return home). Every path is found twice, once from each end.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_house.py</div>
+<pre><code>house = {<span class="nu">0</span>: [<span class="nu">1</span>, <span class="nu">3</span>], <span class="nu">1</span>: [<span class="nu">0</span>, <span class="nu">2</span>], <span class="nu">2</span>: [<span class="nu">1</span>, <span class="nu">3</span>, <span class="nu">4</span>], <span class="nu">3</span>: [<span class="nu">0</span>, <span class="nu">2</span>, <span class="nu">4</span>], <span class="nu">4</span>: [<span class="nu">2</span>, <span class="nu">3</span>]}
+
+<span class="kw">def</span> <span class="fn">count_paths</span>(adj):
+    n, total = <span class="fn">len</span>(adj), <span class="nu">0</span>
+    <span class="kw">for</span> start <span class="kw">in</span> adj:
+        path, visited = [start], {start}
+        <span class="kw">def</span> <span class="fn">explore</span>(city):
+            <span class="kw">nonlocal</span> total
+            <span class="kw">if</span> <span class="fn">len</span>(path) == n:
+                total += <span class="nu">1</span>
+                <span class="kw">return</span>
+            <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+                <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                    path.append(nxt); visited.add(nxt)
+                    explore(nxt)
+                    path.pop(); visited.remove(nxt)
+        explore(start)
+    <span class="kw">return</span> total
+
+<span class="fn">print</span>(count_paths(house) // <span class="nu">2</span>)    <span class="cm"># 7   Hamiltonian paths</span>
+<span class="fn">print</span>(count_cycles(house) // <span class="nu">2</span>)   <span class="cm"># 1   Hamiltonian cycle: 0-1-2-4-3-0</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. Hamilton's own challenge <span class="stars">★★</span></h3>
+        <p>One of the puzzles that came with the Icosian Game gave you the <b>first five cities</b> and asked you to finish the trip. If your trip must start <b>B C D F G</b> (once around the outer pentagon), in how many ways can you finish it? Print them.</p>
+      <figure class="gfig"><svg class="gsvg small" viewBox="-230 -230 460 460" role="img" aria-label="graph"><line class="g-edge on" data-a="0" data-b="1" x1="0.0" y1="-200.0" x2="190.2" y2="-61.8"/><line class="g-edge" data-a="0" data-b="5" x1="0.0" y1="-200.0" x2="0.0" y2="-140.0"/><line class="g-edge" data-a="6" data-b="15" x1="61.7" y1="-84.9" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="15" data-b="16" x1="32.3" y1="-44.5" x2="52.3" y2="17.0"/><line class="g-edge on" data-a="1" data-b="2" x1="190.2" y1="-61.8" x2="117.6" y2="161.8"/><line class="g-edge" data-a="1" data-b="7" x1="190.2" y1="-61.8" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="8" data-b="16" x1="99.9" y1="32.4" x2="52.3" y2="17.0"/><line class="g-edge" data-a="16" data-b="17" x1="52.3" y1="17.0" x2="0.0" y2="55.0"/><line class="g-edge on" data-a="2" data-b="3" x1="117.6" y1="161.8" x2="-117.6" y2="161.8"/><line class="g-edge" data-a="2" data-b="9" x1="117.6" y1="161.8" x2="82.3" y2="113.3"/><line class="g-edge" data-a="10" data-b="17" x1="0.0" y1="105.0" x2="0.0" y2="55.0"/><line class="g-edge" data-a="17" data-b="18" x1="0.0" y1="55.0" x2="-52.3" y2="17.0"/><line class="g-edge on" data-a="3" data-b="4" x1="-117.6" y1="161.8" x2="-190.2" y2="-61.8"/><line class="g-edge" data-a="3" data-b="11" x1="-117.6" y1="161.8" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="12" data-b="18" x1="-99.9" y1="32.4" x2="-52.3" y2="17.0"/><line class="g-edge" data-a="18" data-b="19" x1="-52.3" y1="17.0" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="4" data-b="0" x1="-190.2" y1="-61.8" x2="0.0" y2="-200.0"/><line class="g-edge" data-a="4" data-b="13" x1="-190.2" y1="-61.8" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="14" data-b="19" x1="-61.7" y1="-84.9" x2="-32.3" y2="-44.5"/><line class="g-edge" data-a="19" data-b="15" x1="-32.3" y1="-44.5" x2="32.3" y2="-44.5"/><line class="g-edge" data-a="5" data-b="6" x1="0.0" y1="-140.0" x2="61.7" y2="-84.9"/><line class="g-edge" data-a="6" data-b="7" x1="61.7" y1="-84.9" x2="133.1" y2="-43.3"/><line class="g-edge" data-a="7" data-b="8" x1="133.1" y1="-43.3" x2="99.9" y2="32.4"/><line class="g-edge" data-a="8" data-b="9" x1="99.9" y1="32.4" x2="82.3" y2="113.3"/><line class="g-edge" data-a="9" data-b="10" x1="82.3" y1="113.3" x2="0.0" y2="105.0"/><line class="g-edge" data-a="10" data-b="11" x1="0.0" y1="105.0" x2="-82.3" y2="113.3"/><line class="g-edge" data-a="11" data-b="12" x1="-82.3" y1="113.3" x2="-99.9" y2="32.4"/><line class="g-edge" data-a="12" data-b="13" x1="-99.9" y1="32.4" x2="-133.1" y2="-43.3"/><line class="g-edge" data-a="13" data-b="14" x1="-133.1" y1="-43.3" x2="-61.7" y2="-84.9"/><line class="g-edge" data-a="14" data-b="5" x1="-61.7" y1="-84.9" x2="0.0" y2="-140.0"/><g class="g-node start" data-v="0"><circle cx="0.0" cy="-200.0" r="18"/><text x="0.0" y="-200.0">B</text></g><g class="g-node on" data-v="1"><circle cx="190.2" cy="-61.8" r="18"/><text x="190.2" y="-61.8">C</text></g><g class="g-node on" data-v="2"><circle cx="117.6" cy="161.8" r="18"/><text x="117.6" y="161.8">D</text></g><g class="g-node on" data-v="3"><circle cx="-117.6" cy="161.8" r="18"/><text x="-117.6" y="161.8">F</text></g><g class="g-node on" data-v="4"><circle cx="-190.2" cy="-61.8" r="18"/><text x="-190.2" y="-61.8">G</text></g><g class="g-node" data-v="5"><circle cx="0.0" cy="-140.0" r="18"/><text x="0.0" y="-140.0">H</text></g><g class="g-node" data-v="6"><circle cx="61.7" cy="-84.9" r="18"/><text x="61.7" y="-84.9">J</text></g><g class="g-node" data-v="7"><circle cx="133.1" cy="-43.3" r="18"/><text x="133.1" y="-43.3">K</text></g><g class="g-node" data-v="8"><circle cx="99.9" cy="32.4" r="18"/><text x="99.9" y="32.4">L</text></g><g class="g-node" data-v="9"><circle cx="82.3" cy="113.3" r="18"/><text x="82.3" y="113.3">M</text></g><g class="g-node" data-v="10"><circle cx="0.0" cy="105.0" r="18"/><text x="0.0" y="105.0">N</text></g><g class="g-node" data-v="11"><circle cx="-82.3" cy="113.3" r="18"/><text x="-82.3" y="113.3">P</text></g><g class="g-node" data-v="12"><circle cx="-99.9" cy="32.4" r="18"/><text x="-99.9" y="32.4">Q</text></g><g class="g-node" data-v="13"><circle cx="-133.1" cy="-43.3" r="18"/><text x="-133.1" y="-43.3">R</text></g><g class="g-node" data-v="14"><circle cx="-61.7" cy="-84.9" r="18"/><text x="-61.7" y="-84.9">S</text></g><g class="g-node" data-v="15"><circle cx="32.3" cy="-44.5" r="18"/><text x="32.3" y="-44.5">T</text></g><g class="g-node" data-v="16"><circle cx="52.3" cy="17.0" r="18"/><text x="52.3" y="17.0">V</text></g><g class="g-node" data-v="17"><circle cx="0.0" cy="55.0" r="18"/><text x="0.0" y="55.0">W</text></g><g class="g-node" data-v="18"><circle cx="-52.3" cy="17.0" r="18"/><text x="-52.3" y="17.0">X</text></g><g class="g-node" data-v="19"><circle cx="-32.3" cy="-44.5" r="18"/><text x="-32.3" y="-44.5">Z</text></g></svg><figcaption>Hamilton's challenge: the trip must start B → C → D → F → G.</figcaption></figure>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Start the backtracking with <code>path = [0, 1, 2, 3, 4]</code> and those cities already visited, then explore from city 4 (G).</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_finish.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">finish_trip</span>(adj, prefix):
+    n, path, visited, found = <span class="fn">len</span>(adj), <span class="fn">list</span>(prefix), <span class="fn">set</span>(prefix), []
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == n:
+            <span class="kw">if</span> path[<span class="nu">0</span>] <span class="kw">in</span> adj[city]:
+                found.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                explore(nxt)
+                path.pop(); visited.remove(nxt)
+    explore(path[-<span class="nu">1</span>])
+    <span class="kw">return</span> found
+
+ways = finish_trip(adj, [<span class="nu">0</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>])
+<span class="fn">print</span>(<span class="fn">len</span>(ways))   <span class="cm"># 2</span>
+<span class="kw">for</span> w <span class="kw">in</span> ways:
+    <span class="fn">print</span>(<span class="st">" "</span>.join(NAMES[c] <span class="kw">for</span> c <span class="kw">in</span> w))
+<span class="cm"># B C D F G R Q P N M L K J T V W X Z S H</span>
+<span class="cm"># B C D F G R S Z T V W X Q P N M L K J H</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. Petersen: a path, but no cycle <span class="stars">★★★</span></h3>
+        <p>The Petersen graph from Level 8 has no Hamiltonian cycle. Does it have a Hamiltonian <b>path</b>? Find one starting at city 0, and count how many different paths there are in total.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Use <code>count_paths</code> from problem 4 (and divide by 2). For finding one path, copy <code>hamilton_cycle</code> but drop the "road leads home" check.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_petersen_path.py</div>
+<pre><code>petersen = {v: [] <span class="kw">for</span> v <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">10</span>)}
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">5</span>):
+    <span class="kw">for</span> a, b <span class="kw">in</span> ((i, (i + <span class="nu">1</span>) % <span class="nu">5</span>), (i, i + <span class="nu">5</span>), (i + <span class="nu">5</span>, (i + <span class="nu">2</span>) % <span class="nu">5</span> + <span class="nu">5</span>)):
+        petersen[a].append(b)
+        petersen[b].append(a)
+
+<span class="kw">def</span> <span class="fn">hamilton_path</span>(adj, start):
+    path, visited = [start], {start}
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(adj):
+            <span class="kw">return</span> <span class="kw">True</span>                     <span class="cm"># no need to get home</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                <span class="kw">if</span> explore(nxt):
+                    <span class="kw">return</span> <span class="kw">True</span>
+                path.pop(); visited.remove(nxt)
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> path <span class="kw">if</span> explore(start) <span class="kw">else</span> <span class="kw">None</span>
+
+<span class="fn">print</span>(hamilton_path(petersen, <span class="nu">0</span>))       <span class="cm"># [0, 1, 2, 3, 4, 9, 7, 5, 8, 6]</span>
+<span class="fn">print</span>(count_paths(petersen) // <span class="nu">2</span>)      <span class="cm"># 120  different Hamiltonian paths</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. The knight's tour <span class="stars">★★★</span></h3>
+        <p>A chess knight moves in an "L" shape. Can it start in a corner of a 5 × 5 board and land on every square exactly once? This is a <b>Hamiltonian path</b> problem in disguise: squares are cities, and knight moves are roads. Find a tour, then count all tours from the corner.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Write the move number (1–25) into each square as you go, and set it back to 0 when you un-choose. Counting every tour takes a second or two.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_knight.py</div>
+<pre><code>MOVES = [(<span class="nu">1</span>, <span class="nu">2</span>), (<span class="nu">2</span>, <span class="nu">1</span>), (<span class="nu">2</span>, -<span class="nu">1</span>), (<span class="nu">1</span>, -<span class="nu">2</span>), (-<span class="nu">1</span>, -<span class="nu">2</span>), (-<span class="nu">2</span>, -<span class="nu">1</span>), (-<span class="nu">2</span>, <span class="nu">1</span>), (-<span class="nu">1</span>, <span class="nu">2</span>)]
+
+<span class="kw">def</span> <span class="fn">knight_tours</span>(n, count_all):
+    board = [[<span class="nu">0</span>] * n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+    found, first = <span class="nu">0</span>, <span class="kw">None</span>
+    <span class="kw">def</span> <span class="fn">jump</span>(r, c, step):
+        <span class="kw">nonlocal</span> found, first
+        board[r][c] = step                           <span class="cm"># choose</span>
+        <span class="kw">if</span> step == n * n:
+            found += <span class="nu">1</span>
+            first = first <span class="kw">or</span> [row[:] <span class="kw">for</span> row <span class="kw">in</span> board]
+        <span class="kw">else</span>:
+            <span class="kw">for</span> dr, dc <span class="kw">in</span> MOVES:
+                nr, nc = r + dr, c + dc
+                <span class="kw">if</span> <span class="nu">0</span> &lt;= nr &lt; n <span class="kw">and</span> <span class="nu">0</span> &lt;= nc &lt; n <span class="kw">and</span> board[nr][nc] == <span class="nu">0</span>:
+                    jump(nr, nc, step + <span class="nu">1</span>)          <span class="cm"># explore</span>
+                    <span class="kw">if</span> first <span class="kw">and</span> <span class="kw">not</span> count_all:
+                        <span class="kw">break</span>
+        board[r][c] = <span class="nu">0</span>                               <span class="cm"># un-choose</span>
+    jump(<span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">1</span>)
+    <span class="kw">return</span> found, first
+
+_, tour = knight_tours(<span class="nu">5</span>, count_all=<span class="kw">False</span>)
+<span class="kw">for</span> row <span class="kw">in</span> tour:
+    <span class="fn">print</span>(row)
+<span class="cm"># [1, 14, 19, 8, 25]</span>
+<span class="cm"># [6, 9, 2, 13, 18]</span>
+<span class="cm"># [15, 20, 7, 24, 3]</span>
+<span class="cm"># [10, 5, 22, 17, 12]</span>
+<span class="cm"># [21, 16, 11, 4, 23]</span>
+<span class="fn">print</span>(knight_tours(<span class="nu">5</span>, count_all=<span class="kw">True</span>)[<span class="nu">0</span>])   <span class="cm"># 304  tours from the corner</span></code></pre></div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. Grid cities: when is a round trip possible? <span class="stars">★★★</span></h3>
+        <p>Cities sit on an <code>m × n</code> grid, with roads between neighbours left/right/up/down. Test every grid from 2 × 2 to 5 × 5 for a Hamiltonian cycle and spot the pattern. Then explain <b>why</b> it happens.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Colour the grid like a chessboard. Every road joins a black city to a white one, so a round trip must alternate colours: black, white, black, white… What does that say about the total number of cities on the trip?</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+          <div class="codebox"><div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_grids.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">grid</span>(m, n):
+    <span class="kw">return</span> {(r, c): [(r + dr, c + dc) <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="nu">1</span>, <span class="nu">0</span>), (-<span class="nu">1</span>, <span class="nu">0</span>), (<span class="nu">0</span>, <span class="nu">1</span>), (<span class="nu">0</span>, -<span class="nu">1</span>))
+                     <span class="kw">if</span> <span class="nu">0</span> &lt;= r + dr &lt; m <span class="kw">and</span> <span class="nu">0</span> &lt;= c + dc &lt; n]
+            <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(m) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(n)}
+
+<span class="kw">def</span> <span class="fn">has_cycle</span>(adj):
+    start = <span class="fn">next</span>(<span class="fn">iter</span>(adj))
+    path, visited = [start], {start}
+    <span class="kw">def</span> <span class="fn">explore</span>(city):
+        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(adj):
+            <span class="kw">return</span> start <span class="kw">in</span> adj[city]
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[city]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> visited:
+                path.append(nxt); visited.add(nxt)
+                <span class="kw">if</span> explore(nxt):
+                    <span class="kw">return</span> <span class="kw">True</span>
+                path.pop(); visited.remove(nxt)
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> explore(start)
+
+<span class="kw">for</span> m <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span>, <span class="nu">6</span>):
+    <span class="fn">print</span>(m, [has_cycle(grid(m, n)) <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span>, <span class="nu">6</span>)])
+<span class="cm"># 2 [True, True, True, True]</span>
+<span class="cm"># 3 [True, False, True, False]</span>
+<span class="cm"># 4 [True, True, True, True]</span>
+<span class="cm"># 5 [True, False, True, False]</span></code></pre></div>
+          <p><b>Pattern:</b> a round trip exists exactly when <code>m × n</code> is <b>even</b>. <b>Why:</b> a cycle alternates black, white, black, white…, so it uses equally many of each colour, which means it has an even number of cities. If <code>m × n</code> is odd, a cycle through all the cities is impossible. (When <code>m × n</code> is even, you can always snake up and down the columns and return along the edge.)</p>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">Trip complete!</div>
+        <p>You've travelled from a 170-year-old wooden puzzle to one of the great open questions of computer science. You've learned what a graph is, played Hamilton's game, taught Python to solve it, decoded Hamilton's L/R secret, and seen why "visit everything once" is so much harder than "use every road once".</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Hamiltonian cycles: visit every vertex of a graph exactly once and return to the start. The regular dodecahedron (Hamilton's 1857 Icosian Game) has 30 of them. The search uses <a href="Backtracking_en.html">backtracking</a>, and bigger versions use <a href="dynamic_programming_en.html">dynamic programming</a>.</p>
+    <p><a href="index.html">&#x2190; Back to all explainers</a> &middot; <a href="Regular_Dodecahedron_zh.html">中文版</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    startMsg: 'Click any city to start your trip.',
+    route: function(letters, k){ return 'Route: <b>' + letters + '</b> (' + k + '/20)'; },
+    noRoad: function(a, b){ return '<span class="back">There is no road from ' + a + ' to ' + b + '.</span>'; },
+    twice: function(b){ return '<span class="back">' + b + ' is already on your route. Each city only once!</span>'; },
+    deadEnd: function(a){ return '<span class="back">Dead end at ' + a + ':</span> every neighbour is already visited. Press Undo and try another road. (That\'s backtracking!)'; },
+    pathOnly: '<span class="back">All 20 cities visited, but there is no road back to the start.</span> That\'s a Hamiltonian <i>path</i>, not a cycle. Undo and try again!',
+    win: '<span class="ok">You did it! A Hamiltonian cycle: every city once, and back home.</span>',
+    canYes: '<span class="ok">Yes!</span> This route can still be finished. Keep going!',
+    canNo: '<span class="back">No:</span> there is no way to finish from here. Undo some moves.',
+    noStart: 'Pick a starting city first.',
+    following: 'Following Hamilton\'s code from B towards C: ',
+    trip3On: 'Show a Hamilton trip', trip3Off: 'Hide the trip',
+    spinOn: 'Pause spinning', spinOff: 'Start spinning',
+    cap3: '20 corners &middot; 30 edges &middot; 12 pentagon faces',
+    cap3Trip: 'The green dot travels a Hamiltonian cycle: all 20 corners, then home.'
+  };
+
+  var NAMES = 'BCDFGHJKLMNPQRSTVWXZ';
+  var CODE = 'LLLRRRLRLRLLLRRRLRLR';
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  /* ---------- graph helpers (mirror the Python on this page) ---------- */
+  function buildDodeca(){
+    var adj = [];
+    for (var v = 0; v < 20; v++) adj.push([]);
+    function road(a, b){ adj[a].push(b); adj[b].push(a); }
+    for (var i = 0; i < 5; i++){
+      road(i, (i + 1) % 5);
+      road(i, 5 + 2 * i);
+      road(6 + 2 * i, 15 + i);
+      road(15 + i, 15 + (i + 1) % 5);
+    }
+    for (var j = 0; j < 10; j++) road(5 + j, 5 + (j + 1) % 10);
+    return adj;
+  }
+
+  function position(v){                     // maths coordinates (y up), same as position() in Python
+    var angle, r;
+    if (v < 5){ angle = 90 - 72 * v; r = 200; }
+    else if (v < 15){ angle = 90 - 36 * (v - 5); r = (v % 2 === 1) ? 140 : 105; }
+    else { angle = 54 - 72 * (v - 15); r = 55; }
+    var a = angle * Math.PI / 180;
+    return [r * Math.cos(a), r * Math.sin(a)];
+  }
+
+  function extendToCycle(adj, prefix){      // backtracking, like hamilton_cycle() but from a given start route
+    var n = adj.length, path = prefix.slice(), seen = {};
+    for (var i = 0; i < path.length; i++) seen[path[i]] = true;
+    function explore(city){
+      if (path.length === n) return adj[city].indexOf(path[0]) >= 0;
+      for (var k = 0; k < adj[city].length; k++){
+        var nxt = adj[city][k];
+        if (!seen[nxt]){
+          path.push(nxt); seen[nxt] = true;
+          if (explore(nxt)) return true;
+          path.pop(); seen[nxt] = false;
+        }
+      }
+      return false;
+    }
+    return explore(path[path.length - 1]) ? path : null;
+  }
+
+  function around(adj, v){
+    var p = position(v);
+    return adj[v].slice().sort(function(a, b){
+      var pa = position(a), pb = position(b);
+      return Math.atan2(pa[1] - p[1], pa[0] - p[0]) - Math.atan2(pb[1] - p[1], pb[0] - p[0]);
+    });
+  }
+
+  function follow(adj, code, start, first){
+    var route = [start, first];
+    for (var i = 0; i < code.length; i++){
+      var here = route[route.length - 1], from = route[route.length - 2];
+      var ring = around(adj, here), k = ring.indexOf(from);
+      route.push(code[i] === 'L' ? ring[(k + 2) % 3] : ring[(k + 1) % 3]);
+    }
+    return route;
+  }
+
+  var adj = buildDodeca();
+
+  /* ---------- the Icosian game ---------- */
+  var svg = document.getElementById('gameSvg');
+  var statusEl = document.getElementById('gStatus');
+  var path = [], timer = null, note = '';
+
+  function key(a, b){ return Math.min(a, b) + '-' + Math.max(a, b); }
+
+  function render(){
+    var onEdge = {}, onNode = {}, last = path[path.length - 1];
+    for (var i = 0; i < path.length; i++){
+      onNode[path[i]] = true;
+      if (i > 0) onEdge[key(path[i - 1], path[i])] = true;
+    }
+    var done = path.length === 20, closed = done && adj[last].indexOf(path[0]) >= 0;
+    var edges = svg.querySelectorAll('.g-edge');
+    for (var e = 0; e < edges.length; e++){
+      var a = +edges[e].getAttribute('data-a'), b = +edges[e].getAttribute('data-b'), kk = key(a, b);
+      var cls = 'g-edge';
+      if (onEdge[kk]) cls += ' on';
+      if (closed && kk === key(last, path[0])) cls += ' close';
+      edges[e].setAttribute('class', cls);
+    }
+    var nodes = svg.querySelectorAll('.g-node');
+    for (var m = 0; m < nodes.length; m++){
+      var v = +nodes[m].getAttribute('data-v'), c = 'g-node';
+      if (closed) c += ' win';
+      else if (v === path[0]) c += ' start';
+      else if (onNode[v]) c += ' on';
+      if (v === last && !closed) c += ' last';
+      if (path.length && !done && !onNode[v] && adj[last].indexOf(v) >= 0) c += ' next';
+      nodes[m].setAttribute('class', c);
+    }
+    var msg = path.length ? T.route(path.map(function(x){ return NAMES[x]; }).join(' → ') + (closed ? ' → ' + NAMES[path[0]] : ''), path.length) : T.startMsg;
+    if (closed) msg += '<br>' + T.win;
+    else if (done) msg += '<br>' + T.pathOnly;
+    else if (path.length && adj[last].every(function(w){ return onNode[w]; })) msg += '<br>' + T.deadEnd(NAMES[last]);
+    if (note) msg += '<br>' + note;
+    statusEl.innerHTML = msg;
+    note = '';
+  }
+
+  function stopAnim(){ if (timer){ clearInterval(timer); timer = null; } }
+  function animate(route, prefixMsg){
+    stopAnim();
+    var i = 0;
+    path = [];
+    timer = setInterval(function(){
+      path.push(route[i]); i++;
+      if (prefixMsg) note = prefixMsg + CODE.slice(0, i >= route.length ? CODE.length : Math.max(0, i - 2)).split('').join(' ');
+      render();
+      if (i >= route.length) stopAnim();
+    }, 320);
+  }
+
+  svg.addEventListener('click', function(e){
+    var g = e.target.closest('.g-node');
+    if (!g) return;
+    stopAnim();
+    var v = +g.getAttribute('data-v');
+    if (!path.length){ path = [v]; render(); return; }
+    var last = path[path.length - 1];
+    if (v === last) return;
+    if (path.indexOf(v) >= 0) note = T.twice(NAMES[v]);
+    else if (adj[last].indexOf(v) < 0) note = T.noRoad(NAMES[last], NAMES[v]);
+    else if (path.length < 20) path.push(v);
+    render();
+  });
+  document.getElementById('gUndo').addEventListener('click', function(){ stopAnim(); path.pop(); render(); });
+  document.getElementById('gReset').addEventListener('click', function(){ stopAnim(); path = []; render(); });
+  document.getElementById('gCheck').addEventListener('click', function(){
+    stopAnim();
+    if (!path.length){ note = T.noStart; render(); return; }
+    note = extendToCycle(adj, path) ? T.canYes : T.canNo;
+    render();
+  });
+  document.getElementById('gSolve').addEventListener('click', function(){
+    stopAnim();
+    var start = path.length ? path : [0];
+    var full = extendToCycle(adj, start);
+    if (!full){ note = T.canNo; render(); return; }
+    animate(full, '');
+  });
+  document.getElementById('gCode').addEventListener('click', function(){
+    var route = follow(adj, CODE, 0, 1).slice(0, 20);
+    animate(route, T.following);
+  });
+  render();
+
+  /* ---------- the spinning 3D dodecahedron ---------- */
+  var d3 = document.getElementById('d3');
+  var PHI = (1 + Math.sqrt(5)) / 2, IP = 1 / PHI;
+  function build3D(){
+    var pts = [], s = [-1, 1];
+    for (var a = 0; a < 2; a++) for (var b = 0; b < 2; b++) for (var c = 0; c < 2; c++) pts.push([s[a], s[b], s[c]]);
+    for (var p = 0; p < 2; p++) for (var q = 0; q < 2; q++){
+      pts.push([0, s[p] * IP, s[q] * PHI]);
+      pts.push([s[p] * IP, s[q] * PHI, 0]);
+      pts.push([s[p] * PHI, 0, s[q] * IP]);
+    }
+    var edges = [], adj3 = [];
+    for (var i = 0; i < pts.length; i++) adj3.push([]);
+    for (i = 0; i < pts.length; i++) for (var j = i + 1; j < pts.length; j++){
+      var dx = pts[i][0] - pts[j][0], dy = pts[i][1] - pts[j][1], dz = pts[i][2] - pts[j][2];
+      if (Math.abs(Math.sqrt(dx * dx + dy * dy + dz * dz) - 2 * IP) < 1e-6){ edges.push([i, j]); adj3[i].push(j); adj3[j].push(i); }
+    }
+    return { pts: pts, edges: edges, adj: adj3 };
+  }
+  var solid = build3D();
+  var trip3 = extendToCycle(solid.adj, [0]);
+  var tripEdge = {};
+  for (var t = 0; t < trip3.length; t++) tripEdge[key(trip3[t], trip3[(t + 1) % trip3.length])] = true;
+
+  var lines = [], dots = [];
+  for (var e3 = 0; e3 < solid.edges.length; e3++){
+    var ln = document.createElementNS(SVGNS, 'line'); d3.appendChild(ln); lines.push(ln);
+  }
+  for (var v3 = 0; v3 < solid.pts.length; v3++){
+    var dt = document.createElementNS(SVGNS, 'circle'); dt.setAttribute('r', 3.2); d3.appendChild(dt); dots.push(dt);
+  }
+  var traveller = document.createElementNS(SVGNS, 'circle');
+  traveller.setAttribute('r', 8); traveller.setAttribute('class', 'traveller'); traveller.style.display = 'none';
+  d3.appendChild(traveller);
+
+  var rx = -0.45, ry = 0.6, S = 78, showTrip = false, spinning = true, travel = 0, dragging = null;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) spinning = false;
+
+  function project(p){
+    var cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
+    var x1 = p[0] * cy + p[2] * sy, z1 = -p[0] * sy + p[2] * cy;
+    var y2 = p[1] * cx - z1 * sx, z2 = p[1] * sx + z1 * cx;
+    return [x1 * S, -y2 * S, z2];
+  }
+  function draw3D(){
+    var pr = solid.pts.map(project);
+    for (var i = 0; i < solid.edges.length; i++){
+      var a = solid.edges[i][0], b = solid.edges[i][1], back = (pr[a][2] + pr[b][2]) < 0;
+      var cls = 'e3' + (back ? ' back' : '') + (showTrip && tripEdge[key(a, b)] ? ' trip' : '');
+      lines[i].setAttribute('x1', pr[a][0].toFixed(1)); lines[i].setAttribute('y1', pr[a][1].toFixed(1));
+      lines[i].setAttribute('x2', pr[b][0].toFixed(1)); lines[i].setAttribute('y2', pr[b][1].toFixed(1));
+      lines[i].setAttribute('class', cls);
+    }
+    for (var j = 0; j < dots.length; j++){
+      dots[j].setAttribute('cx', pr[j][0].toFixed(1)); dots[j].setAttribute('cy', pr[j][1].toFixed(1));
+      dots[j].setAttribute('class', 'v3' + (pr[j][2] < 0 ? ' back' : ''));
+    }
+    if (showTrip){
+      var k = Math.floor(travel) % trip3.length, f = travel - Math.floor(travel);
+      var A = solid.pts[trip3[k]], B = solid.pts[trip3[(k + 1) % trip3.length]];
+      var q = project([A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f, A[2] + (B[2] - A[2]) * f]);
+      traveller.setAttribute('cx', q[0].toFixed(1)); traveller.setAttribute('cy', q[1].toFixed(1));
+      traveller.style.display = '';
+    } else traveller.style.display = 'none';
+  }
+  function tick(){
+    if (spinning && !dragging) ry += 0.005;
+    if (showTrip && !reduced) travel += 0.02;
+    draw3D();
+    requestAnimationFrame(tick);
+  }
+  d3.addEventListener('pointerdown', function(e){ dragging = [e.clientX, e.clientY]; d3.classList.add('dragging'); d3.setPointerCapture(e.pointerId); });
+  d3.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    ry += (e.clientX - dragging[0]) * 0.01; rx += (e.clientY - dragging[1]) * 0.01;
+    dragging = [e.clientX, e.clientY];
+    if (reduced) draw3D();
+  });
+  function endDrag(){ dragging = null; d3.classList.remove('dragging'); }
+  d3.addEventListener('pointerup', endDrag);
+  d3.addEventListener('pointercancel', endDrag);
+  document.getElementById('d3Trip').addEventListener('click', function(){
+    showTrip = !showTrip; travel = 0;
+    this.innerHTML = showTrip ? T.trip3Off : T.trip3On;
+    document.getElementById('d3Cap').innerHTML = showTrip ? T.cap3Trip : T.cap3;
+    draw3D();
+  });
+  document.getElementById('d3Spin').addEventListener('click', function(){
+    spinning = !spinning;
+    this.innerHTML = spinning ? T.spinOn : T.spinOff;
+  });
+  if (reduced) document.getElementById('d3Spin').innerHTML = T.spinOff;
+  draw3D();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
