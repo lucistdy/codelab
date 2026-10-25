@@ -1,0 +1,1251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Dance Party of Links: Dancing Links and Algorithm X</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+
+  /* ---------- Exact-cover matrix ---------- */
+  table.xc td{font-size:16px;color:var(--ink);}
+  table.xc tbody th{font-family:var(--font-mono);font-size:13.5px;text-transform:none;letter-spacing:0;text-align:left;color:var(--ink);background:var(--paper-raised-2);}
+  table.xc thead th{font-family:var(--font-mono);font-size:14px;}
+  table.xc th .sz{display:block;font-size:11px;color:var(--accent-strong);font-weight:700;}
+  #coverTable tbody tr{cursor:pointer;}
+  #coverTable tbody tr:hover th{color:var(--accent-strong);}
+  table.xc tr.sel th, table.xc tr.sel td{background:var(--accent-soft);}
+  table.xc .cov1{background:var(--clue-soft);color:var(--clue);}
+  table.xc thead th.cov1{color:var(--clue);}
+  table.xc .cov2{background:var(--alert-soft);color:var(--alert);}
+  table.xc tr.sel td.cov1{background:#bfe3cc;}
+  table.xc tr.sel td.cov2{background:#efc1b9;}
+  table.xc th.hid{text-decoration:line-through;opacity:.35;}
+  table.xc td.hid{opacity:.25;}
+  table.xc tr.hid th, table.xc tr.hid td{opacity:.22;}
+  table.xc tr.pick th, table.xc tr.pick td{background:var(--accent-soft);color:var(--accent-strong);font-weight:800;opacity:1;}
+  table.xc tr.try th{box-shadow:inset 4px 0 0 var(--accent);}
+  table.xc th.focus{background:var(--accent-soft);color:var(--accent-strong);}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) table.xc tr.sel td.cov1{background:#245039;} :root:not([data-theme="light"]) table.xc tr.sel td.cov2{background:#5a2b28;} }
+  :root[data-theme="dark"] table.xc tr.sel td.cov1{background:#245039;}
+  :root[data-theme="dark"] table.xc tr.sel td.cov2{background:#5a2b28;}
+
+  /* ---------- Hand-holding circle (linked list) ---------- */
+  .ll-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;margin:10px 0;}
+  .kid{font-family:var(--font-mono);font-weight:800;font-size:15px;padding:8px 12px;border-radius:999px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-strong);}
+  button.kid{cursor:pointer;}
+  button.kid:hover{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .kid.head{background:var(--paper-raised-2);border-color:var(--line);color:var(--ink-soft);}
+  .kid.head.ghost{opacity:.45;border-style:dashed;}
+  .hands{color:var(--ink-soft);font-size:18px;}
+  .ll-gone{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;min-height:2em;margin:6px 0 12px;}
+  .ll-gone .lbl{font-size:12.5px;color:var(--ink-soft);}
+  .kid.out{background:var(--paper-raised-2);border:1px dashed var(--alert);color:var(--alert);display:inline-flex;flex-direction:column;align-items:center;line-height:1.3;border-radius:10px;}
+  .kid.out small{font-size:11px;font-weight:600;color:var(--ink-soft);}
+  .status{font-family:var(--font-mono);font-size:14px;line-height:1.6;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;min-height:3.4em;word-break:break-word;}
+  .status b{color:var(--accent-strong);}
+  .status .ok{color:var(--clue);font-weight:800;}
+  .status .back{color:var(--alert);font-weight:700;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="Dancing_Links_zh.html">中文 &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Algorithms &middot; Skill Explainer</div>
+      <h1>The Dance Party of Links: <em>Dancing Links and Algorithm X</em></h1>
+      <p class="sub">You already know <a href="Backtracking_en.html">backtracking</a>: choose, explore, un-choose. Now meet its turbo-charged cousin. <b>Dancing Links</b> is a trick invented by the computer scientist Donald Knuth that lets backtracking cross things off and put them back <b>instantly</b>. With it, Python solves the hardest Sudoku in a blink, places queens, and tiles boards with funny-shaped pieces.</p>
+      <div class="stampbar">
+        <span class="stamp hot">Ages 13+</span>
+        <span class="stamp">Backtracking, level 2</span>
+        <span class="stamp">Linked lists</span>
+        <span class="stamp">3 interactive demos</span>
+        <span class="stamp">8 practice problems</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>Backtracking, and where the time goes</h2></div>
+      <p class="lead">Remember the backtracking recipe from the <a href="Backtracking_en.html">Maze Explorer's Golden Thread</a>? Every backtracking program follows the same three steps:</p>
+      <div class="recipe">
+        <div class="step"><div class="k">Step 1</div><div class="t">Choose</div><div class="d">Make one choice: put a queen here, write a 5 in this square.</div></div>
+        <div class="step"><div class="k">Step 2</div><div class="t">Explore</div><div class="d">Solve the rest of the puzzle with that choice in place (recursion).</div></div>
+        <div class="step"><div class="k">Step 3</div><div class="t">Un-choose</div><div class="d">Undo the choice exactly, so you can try the next option.</div></div>
+      </div>
+      <p>That recipe is simple, but a real solver spends most of its time on <b>bookkeeping</b>:</p>
+      <ul>
+        <li>After choosing, it has to <b>cross off</b> every option that now clashes. (A 5 in this square means no other 5 in this row, column or box.)</li>
+        <li>Before choosing, it has to <b>find</b> which options are still allowed.</li>
+        <li>After exploring, it has to <b>un-cross</b> everything it crossed off, in exactly the right way.</li>
+      </ul>
+      <p>The Sudoku solver on the backtracking page re-checks the row, column and box every single time it tries a digit. That works, but it's like searching your whole room every morning for your shoes. Dancing Links keeps everything so tidy that crossing off and un-crossing take just a couple of steps each.</p>
+      <p>To get there, we need two ideas: a universal puzzle called <b>exact cover</b>, and a clever data structure called a <b>doubly linked list</b>. Let's go!</p>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>The dance party puzzle: exact cover</h2></div>
+      <p class="lead">The school dance party has <b>7 songs</b>, named A to G. Six dance groups want to perform, and each group only dances a set of songs it has practised, <b>all together or not at all</b>. The DJ's rule: every song must be danced by <b>exactly one</b> group. No empty dance floor, and no two groups bumping into each other.</p>
+      <p>We can draw this as a table. A dot means "this group dances this song":</p>
+      <div class="widget" id="coverWidget">
+        <h3>🎵 Be the DJ</h3>
+        <div class="hint">Click groups to pick them. A song column turns <b>green</b> when exactly one picked group dances it, and <b>red</b> when two groups clash.</div>
+        <div class="table-wrap"><table class="trace xc" id="coverTable"></table></div>
+        <div class="controls"><button class="btn ghost" id="coverClear" type="button">Clear</button></div>
+        <div class="status" id="coverMsg"></div>
+      </div>
+      <p>This is called an <b>exact cover</b> problem: pick some rows so that every column is covered <b>exactly once</b>. It sounds like a toy, but it's secretly everywhere:</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>puzzle</th><th>rows (choices)</th><th>columns (rules: exactly once)</th></tr></thead>
+          <tbody>
+            <tr><td>dance party</td><td class="left">a dance group</td><td class="left">each song</td></tr>
+            <tr><td>Sudoku</td><td class="left">"digit d in square (r, c)"</td><td class="left">each square filled; each digit once per row, column, box</td></tr>
+            <tr><td>N-Queens</td><td class="left">"a queen on square (r, c)"</td><td class="left">each row and each column has one queen</td></tr>
+            <tr><td>tiling</td><td class="left">"this piece in this position"</td><td class="left">each piece used once; each square covered once</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>So if we can solve exact cover <b>fast</b>, we can solve all of these puzzles with the same program. Here's the dance party in Python, with each group stored as a <b>set</b> of songs:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>party.py</div>
+<pre><code>rows = {
+    <span class="st">"Owls"</span>:  {<span class="st">"C"</span>, <span class="st">"E"</span>, <span class="st">"F"</span>},
+    <span class="st">"Foxes"</span>: {<span class="st">"A"</span>, <span class="st">"D"</span>, <span class="st">"G"</span>},
+    <span class="st">"Bees"</span>:  {<span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"F"</span>},
+    <span class="st">"Cats"</span>:  {<span class="st">"A"</span>, <span class="st">"D"</span>},
+    <span class="st">"Dogs"</span>:  {<span class="st">"B"</span>, <span class="st">"G"</span>},
+    <span class="st">"Frogs"</span>: {<span class="st">"D"</span>, <span class="st">"E"</span>, <span class="st">"G"</span>},
+}
+songs = <span class="fn">set</span>(<span class="st">"ABCDEFG"</span>)
+
+<span class="kw">def</span> <span class="fn">is_exact_cover</span>(chosen):
+    danced = []
+    <span class="kw">for</span> group <span class="kw">in</span> chosen:
+        danced.extend(rows[group])        <span class="cm"># every song this group dances</span>
+    <span class="kw">return</span> <span class="fn">sorted</span>(danced) == <span class="fn">sorted</span>(songs)  <span class="cm"># each song exactly once?</span>
+
+<span class="fn">print</span>(is_exact_cover([<span class="st">"Foxes"</span>, <span class="st">"Bees"</span>]))           <span class="cm"># False  (E is never danced)</span>
+<span class="fn">print</span>(is_exact_cover([<span class="st">"Owls"</span>, <span class="st">"Bees"</span>, <span class="st">"Cats"</span>]))    <span class="cm"># False  (C and F twice, G never)</span></code></pre>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">Try before you scroll</div>
+        <p>Can you find the answer in the widget above? There is exactly one. Here's a hint: song A is danced by only two groups, Foxes and Cats, so the answer must contain one of them. That little idea is the heart of the next level.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>Algorithm X: backtracking for exact cover</h2></div>
+      <p class="lead">Donald Knuth called his exact-cover recipe <b>Algorithm X</b>, because, as he put it, he couldn't think of a better name. It's plain backtracking with one smart rule about what to choose first.</p>
+      <div class="recipe">
+        <div class="step"><div class="k">1 &middot; Done?</div><div class="t">No columns left</div><div class="d">Every song is danced exactly once: we found a solution!</div></div>
+        <div class="step"><div class="k">2 &middot; Pick a column</div><div class="t">The hardest song</div><div class="d">Pick the song danced by the <b>fewest</b> groups still available. If that's zero, it's a dead end.</div></div>
+        <div class="step"><div class="k">3 &middot; Try each row</div><div class="t">Choose a group</div><div class="d">For each group that dances it: choose it, remove every group that <b>clashes</b> with it, and remove its songs.</div></div>
+        <div class="step"><div class="k">4 &middot; Recurse, undo</div><div class="t">Explore, un-choose</div><div class="d">Solve what's left, then put everything back and try the next group.</div></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">Why the hardest song first?</div>
+        <p>Every song has to be danced by somebody. If a song has only 1 possible group, that group is forced, so there's no guessing at all. If a song has 0 groups left, we know right away that this branch is hopeless. Starting with the column that has the fewest options keeps the search tree as skinny as possible. Sudoku players do the same thing when they look for the square with the fewest possible digits.</p>
+      </div>
+      <p>Here is a first version. To keep it simple, it <b>copies</b> the table of remaining groups at every step instead of undoing changes, and it prints what it's thinking:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>algorithm_x.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">algorithm_x</span>(rows, cols, chosen, depth=<span class="nu">0</span>):
+    pad = <span class="st">"    "</span> * depth
+    <span class="kw">if</span> <span class="kw">not</span> cols:                                     <span class="cm"># every song is covered</span>
+        <span class="fn">print</span>(pad + <span class="st">"SOLVED:"</span>, <span class="fn">sorted</span>(chosen))
+        <span class="kw">return</span>
+    c = <span class="fn">min</span>(<span class="fn">sorted</span>(cols), key=<span class="kw">lambda</span> col: <span class="fn">sum</span>(col <span class="kw">in</span> rows[r] <span class="kw">for</span> r <span class="kw">in</span> rows))
+    options = [r <span class="kw">for</span> r <span class="kw">in</span> rows <span class="kw">if</span> c <span class="kw">in</span> rows[r]]      <span class="cm"># groups that dance song c</span>
+    <span class="kw">if</span> <span class="kw">not</span> options:
+        <span class="fn">print</span>(pad + <span class="st">"song "</span> + c + <span class="st">": nobody left, dead end"</span>)
+        <span class="kw">return</span>
+    <span class="fn">print</span>(pad + <span class="st">"song "</span> + c + <span class="st">": try"</span>, options)
+    <span class="kw">for</span> r <span class="kw">in</span> options:
+        left = {k: v <span class="kw">for</span> k, v <span class="kw">in</span> rows.items() <span class="kw">if</span> <span class="kw">not</span> (v &amp; rows[r])}  <span class="cm"># drop clashing groups</span>
+        algorithm_x(left, cols - rows[r], chosen + [r], depth + <span class="nu">1</span>)
+
+algorithm_x(rows, songs, [])
+<span class="cm"># song A: try ['Foxes', 'Cats']</span>
+<span class="cm">#     song B: try ['Bees']</span>
+<span class="cm">#         song E: nobody left, dead end</span>
+<span class="cm">#     song E: try ['Owls']</span>
+<span class="cm">#         song B: try ['Dogs']</span>
+<span class="cm">#             SOLVED: ['Cats', 'Dogs', 'Owls']</span></code></pre>
+      </div>
+      <p>Read the trace like a story. Song A can only be danced by Foxes or Cats. Try Foxes: that removes Cats, Dogs and Frogs (they share songs with Foxes), so song B is left with only Bees. Choosing Bees removes Owls, and now nobody can dance song E. Dead end! Back up and try Cats instead: E is forced to Owls, B is forced to Dogs, and every song is covered.</p>
+      <div class="answer-line">Answer: <b>Cats</b> (A, D) + <b>Owls</b> (C, E, F) + <b>Dogs</b> (B, G)</div>
+      <p>The line <code>left = {k: v for ...}</code> builds a brand-new dictionary at every step. For 6 groups that's nothing. For a Sudoku with 729 rows, copying everything thousands of times gets slow. What we'd love is a way to <b>hide</b> rows and columns quickly, and <b>un-hide</b> them just as quickly when we backtrack. Time for the dancing.</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>The magic trick: links that dance</h2></div>
+      <p class="lead">Picture kids standing in a circle, each holding hands with a left neighbour and a right neighbour. That's a <b>doubly linked list</b>: every item remembers who is on its left (<code>L</code>) and on its right (<code>R</code>). A special <code>head</code> marks where the circle starts.</p>
+      <p><b>Removing</b> a kid takes just two steps: their left neighbour now holds hands with their right neighbour, and vice versa. Here's the trick. The removed kid <b>keeps remembering</b> their old neighbours. So to put them back, they just grab both hands again:</p>
+      <div class="pair">
+        <div class="answer-line">remove(x): <b>R[L[x]] = R[x]</b>; <b>L[R[x]] = L[x]</b></div>
+        <div class="answer-line">restore(x): <b>R[L[x]] = x</b>; <b>L[R[x]] = x</b></div>
+      </div>
+      <div class="widget" id="llWidget">
+        <h3>💃 The hand-holding circle</h3>
+        <div class="hint">Click a kid to remove them. Watch the L and R table: the removed kid's own entries don't change! Then press <b>Undo</b> to put kids back, last removed first.</div>
+        <div class="ll-row" id="llRow"></div>
+        <div class="ll-gone" id="llGone"></div>
+        <div class="table-wrap"><table class="trace" id="llTable"></table></div>
+        <div class="controls">
+          <button class="btn" id="llUndo" type="button">Undo</button>
+          <button class="btn ghost" id="llReset" type="button">Reset</button>
+        </div>
+        <div class="status" id="llMsg"></div>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>linked_list.py</div>
+<pre><code>names = [<span class="st">"head"</span>, <span class="st">"Ann"</span>, <span class="st">"Ben"</span>, <span class="st">"Cat"</span>, <span class="st">"Dan"</span>]
+L = [<span class="nu">4</span>, <span class="nu">0</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>]          <span class="cm"># L[x] = who is on x's left</span>
+R = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>, <span class="nu">0</span>]          <span class="cm"># R[x] = who is on x's right  (it's a circle)</span>
+
+<span class="kw">def</span> <span class="fn">show</span>():
+    out, x = [], R[<span class="nu">0</span>]
+    <span class="kw">while</span> x != <span class="nu">0</span>:            <span class="cm"># walk right until we're back at the head</span>
+        out.append(names[x])
+        x = R[x]
+    <span class="fn">print</span>(out)
+
+<span class="kw">def</span> <span class="fn">remove</span>(x):
+    R[L[x]] = R[x]           <span class="cm"># my left neighbour now holds my right neighbour</span>
+    L[R[x]] = L[x]           <span class="cm"># my right neighbour now holds my left neighbour</span>
+
+<span class="kw">def</span> <span class="fn">restore</span>(x):
+    R[L[x]] = x              <span class="cm"># I still remember both neighbours,</span>
+    L[R[x]] = x              <span class="cm"># so I just grab their hands again</span>
+
+remove(<span class="nu">2</span>); show()            <span class="cm"># ['Ann', 'Cat', 'Dan']</span>
+remove(<span class="nu">3</span>); show()            <span class="cm"># ['Ann', 'Dan']</span>
+restore(<span class="nu">3</span>); show()           <span class="cm"># ['Ann', 'Cat', 'Dan']</span>
+restore(<span class="nu">2</span>); show()           <span class="cm"># ['Ann', 'Ben', 'Cat', 'Dan']</span></code></pre>
+      </div>
+      <div class="callout warn">
+        <div class="ctitle">Last out, first back in</div>
+        <p>Restoring only works if you undo in <b>reverse order</b>: the last kid removed must be the first one put back. If Ben comes back while Cat is still out, Ben grabs Cat's hand, but Cat isn't in the circle! Practice problem 2 shows the mess this makes. Luckily, backtracking <b>always</b> undoes in reverse order, because the deepest choice is the first one to be undone. Backtracking and dancing links are a perfect match.</p>
+      </div>
+      <p>Knuth named this trick <b>Dancing Links</b> because, while the program runs, the links keep stepping out of the circle and back in, like dancers. In his famous 2000 paper on the topic, he pointed out that this "remember your neighbours" trick is much older, but nobody had shown how beautifully it fits backtracking.</p>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>Building the dancing grid</h2></div>
+      <p class="lead">Now the big idea: turn the whole exact-cover table into linked lists. Every dot in the table becomes a <b>node</b> that holds hands in four directions: left and right (with the other dots in its row) and up and down (with the other dots in its column).</p>
+      <ul>
+        <li>Each column gets a <b>header</b> node at the top that also counts its dots (<code>S</code> for size). That makes "find the column with the fewest dots" quick.</li>
+        <li>All headers stand in one left-right circle with a <b>root</b> node. If the root's right neighbour is the root itself, no columns are left: we've found a solution!</li>
+        <li>Every list loops around, so the grid is shaped like a doughnut (mathematicians say <b>torus</b>).</li>
+      </ul>
+      <p>Then Algorithm X needs just two moves, both built from the remove/restore trick:</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>move</th><th>what it does</th></tr></thead>
+          <tbody>
+            <tr><td>cover(c)</td><td class="left">Take column c's header out of the header circle. Then, for every row that has a dot in c, take that row's <b>other</b> dots out of their columns. (Those rows clash with whatever covers c.)</td></tr>
+            <tr><td>uncover(c)</td><td class="left">Do exactly the same steps <b>backwards</b>, restoring every node in reverse order.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Step through the search on our dance party table. Grey rows and crossed-out columns are hidden (covered). Picked groups are orange.</p>
+      <div class="widget" id="dlxWidget">
+        <h3>🕺 Watch the links dance</h3>
+        <div class="hint">Each step is one move of the Dancing Links search. The numbers in the header row are the column sizes <code>S</code>.</div>
+        <div class="table-wrap"><table class="trace xc" id="dlxTable"></table></div>
+        <div class="controls">
+          <button class="btn" id="dlxStep" type="button">Step</button>
+          <button class="btn ghost" id="dlxPlay" type="button">Play</button>
+          <button class="btn ghost" id="dlxReset" type="button">Reset</button>
+        </div>
+        <div class="status" id="dlxMsg"></div>
+      </div>
+      <p>Here is the full Dancing Links solver in Python. All the nodes live in plain lists: node number <code>x</code> has neighbours <code>L[x]</code>, <code>R[x]</code>, <code>U[x]</code>, <code>D[x]</code>, and belongs to column <code>C[x]</code>. Node 0 is the root, and nodes 1, 2, 3, … are the column headers.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>dlx.py</div>
+<pre><code><span class="kw">class</span> DLX:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, columns, secondary=()):
+        n = <span class="fn">len</span>(columns)
+        self.col_id = {name: i + <span class="nu">1</span> <span class="kw">for</span> i, name <span class="kw">in</span> <span class="fn">enumerate</span>(columns)}
+        self.L = [n] + <span class="fn">list</span>(<span class="fn">range</span>(n))           <span class="cm"># headers 1..n in a circle with root 0</span>
+        self.R = <span class="fn">list</span>(<span class="fn">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>)) + [<span class="nu">0</span>]
+        self.U = <span class="fn">list</span>(<span class="fn">range</span>(n + <span class="nu">1</span>))             <span class="cm"># empty columns point to themselves</span>
+        self.D = <span class="fn">list</span>(<span class="fn">range</span>(n + <span class="nu">1</span>))
+        self.C = <span class="fn">list</span>(<span class="fn">range</span>(n + <span class="nu">1</span>))             <span class="cm"># which column each node is in</span>
+        self.S = [<span class="nu">0</span>] * (n + <span class="nu">1</span>)                  <span class="cm"># how many dots each column has</span>
+        self.name = [<span class="kw">None</span>] * (n + <span class="nu">1</span>)            <span class="cm"># which row each node belongs to</span>
+        self.tries = <span class="nu">0</span>
+        <span class="kw">for</span> col <span class="kw">in</span> secondary:                   <span class="cm"># "at most once" columns (Level 6):</span>
+            c = self.col_id[col]                <span class="cm"># take them out of the header circle</span>
+            self.R[self.L[c]] = self.R[c]
+            self.L[self.R[c]] = self.L[c]
+            self.L[c] = self.R[c] = c
+
+    <span class="kw">def</span> <span class="fn">add_row</span>(self, name, cols):
+        first = <span class="kw">None</span>
+        <span class="kw">for</span> col <span class="kw">in</span> cols:
+            c, x = self.col_id[col], <span class="fn">len</span>(self.C)
+            self.C.append(c); self.name.append(name)
+            self.U.append(self.U[c]); self.D.append(c)    <span class="cm"># join the bottom of column c</span>
+            self.D[self.U[c]] = x; self.U[c] = x
+            self.S[c] += <span class="nu">1</span>
+            <span class="kw">if</span> first <span class="kw">is</span> <span class="kw">None</span>:
+                self.L.append(x); self.R.append(x); first = x
+            <span class="kw">else</span>:                                          <span class="cm"># join the end of the row</span>
+                self.L.append(self.L[first]); self.R.append(first)
+                self.R[self.L[first]] = x; self.L[first] = x
+
+    <span class="kw">def</span> <span class="fn">cover</span>(self, c):
+        L, R, U, D, C, S = self.L, self.R, self.U, self.D, self.C, self.S
+        R[L[c]] = R[c]; L[R[c]] = L[c]          <span class="cm"># header leaves the circle</span>
+        i = D[c]
+        <span class="kw">while</span> i != c:                           <span class="cm"># every row with a dot in c...</span>
+            j = R[i]
+            <span class="kw">while</span> j != i:                       <span class="cm"># ...loses its other dots</span>
+                D[U[j]] = D[j]; U[D[j]] = U[j]
+                S[C[j]] -= <span class="nu">1</span>
+                j = R[j]
+            i = D[i]
+
+    <span class="kw">def</span> <span class="fn">uncover</span>(self, c):
+        L, R, U, D, C, S = self.L, self.R, self.U, self.D, self.C, self.S
+        i = U[c]
+        <span class="kw">while</span> i != c:                           <span class="cm"># exactly backwards: up, then left</span>
+            j = L[i]
+            <span class="kw">while</span> j != i:
+                S[C[j]] += <span class="nu">1</span>
+                D[U[j]] = j; U[D[j]] = j
+                j = L[j]
+            i = U[i]
+        R[L[c]] = c; L[R[c]] = c                <span class="cm"># header comes back</span>
+
+    <span class="kw">def</span> <span class="fn">solve</span>(self, limit=<span class="kw">None</span>):
+        self.solutions = []
+        self.search([], limit)
+        <span class="kw">return</span> self.solutions
+
+    <span class="kw">def</span> <span class="fn">search</span>(self, chosen, limit):
+        L, R, D, C, S = self.L, self.R, self.D, self.C, self.S
+        <span class="kw">if</span> R[<span class="nu">0</span>] == <span class="nu">0</span>:                           <span class="cm"># no columns left: solved!</span>
+            self.solutions.append(<span class="fn">list</span>(chosen))
+            <span class="kw">return</span>
+        c, j = R[<span class="nu">0</span>], R[R[<span class="nu">0</span>]]
+        <span class="kw">while</span> j != <span class="nu">0</span>:                           <span class="cm"># find the column with fewest dots</span>
+            <span class="kw">if</span> S[j] &lt; S[c]:
+                c = j
+            j = R[j]
+        self.cover(c)
+        r = D[c]
+        <span class="kw">while</span> r != c:                           <span class="cm"># try every row in column c</span>
+            self.tries += <span class="nu">1</span>
+            chosen.append(self.name[r])         <span class="cm"># choose</span>
+            j = R[r]
+            <span class="kw">while</span> j != r:
+                self.cover(C[j]); j = R[j]
+            self.search(chosen, limit)          <span class="cm"># explore</span>
+            j = L[r]
+            <span class="kw">while</span> j != r:
+                self.uncover(C[j]); j = L[j]
+            chosen.pop()                        <span class="cm"># un-choose</span>
+            <span class="kw">if</span> limit <span class="kw">and</span> <span class="fn">len</span>(self.solutions) &gt;= limit:
+                <span class="kw">break</span>
+            r = D[r]
+        self.uncover(c)
+
+party = DLX(<span class="st">"ABCDEFG"</span>)
+<span class="kw">for</span> group, its_songs <span class="kw">in</span> rows.items():
+    party.add_row(group, <span class="fn">sorted</span>(its_songs))
+<span class="fn">print</span>(party.solve(), party.tries)   <span class="cm"># [['Cats', 'Owls', 'Dogs']] 5</span></code></pre>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">Spot the recipe</div>
+        <p>Look at <code>search</code>: <b>choose</b> (append the row and cover its columns), <b>explore</b> (recurse), <b>un-choose</b> (uncover in reverse order and pop). It's the same backtracking recipe from Level 1. The only difference is that crossing off and un-crossing are now just a few pointer swaps, with no copying and no searching.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>N-Queens as exact cover</h2></div>
+      <p class="lead">On the backtracking page we placed N queens so that none attack each other. Let's rewrite that puzzle as exact cover and hand it to our DLX solver.</p>
+      <ul>
+        <li><b>Rows:</b> one for each square, meaning "a queen on (r, c)". There are N × N of them.</li>
+        <li><b>Columns:</b> every board row <code>R0…</code> and every board column <code>C0…</code> must have <b>exactly one</b> queen.</li>
+        <li>But the diagonals are different. There are 2N − 1 diagonals in each direction, and only N queens, so some diagonals stay empty. A diagonal must have <b>at most one</b> queen.</li>
+      </ul>
+      <p>"At most once" columns are called <b>secondary</b> columns. The trick is simple: leave them out of the header circle. The search never <i>has</i> to cover them, but when a queen is placed, covering its diagonals still removes every other square on them. Our <code>DLX</code> class already supports this with the <code>secondary</code> argument.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>queens.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">queens</span>(n):
+    rows_cols = [<span class="st">"R%d"</span> % i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n)] + [<span class="st">"C%d"</span> % i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n)]
+    diagonals = [<span class="st">"A%d"</span> % i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span> * n - <span class="nu">1</span>)] + [<span class="st">"B%d"</span> % i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span> * n - <span class="nu">1</span>)]
+    board = DLX(rows_cols + diagonals, secondary=diagonals)
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(n):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(n):
+            board.add_row((r, c), [<span class="st">"R%d"</span> % r, <span class="st">"C%d"</span> % c,
+                                   <span class="st">"A%d"</span> % (r + c), <span class="st">"B%d"</span> % (r - c + n - <span class="nu">1</span>)])
+    <span class="kw">return</span> board.solve()
+
+<span class="fn">print</span>([<span class="fn">len</span>(queens(n)) <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">9</span>)])   <span class="cm"># [1, 0, 0, 2, 10, 4, 40, 92]</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(queens(<span class="nu">4</span>)[<span class="nu">0</span>]))                     <span class="cm"># [(0, 1), (1, 3), (2, 0), (3, 2)]</span></code></pre>
+      </div>
+      <p>Same answer as the backtracking page: 92 ways for 8 queens. But notice what changed. We didn't write a single line of "is this square safe?" code. We only <b>described</b> the rules as columns, and the general-purpose solver did the rest.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>Boss level: Sudoku in a blink</h2></div>
+      <p class="lead">A 9×9 Sudoku as exact cover needs <b>324 columns</b> (rules) and up to <b>729 rows</b> (choices). That sounds huge, but each rule is easy to describe:</p>
+      <div class="stats">
+        <div class="stat fast"><div class="num">81</div><div class="lbl">"square (r, c) has a digit"</div></div>
+        <div class="stat fast"><div class="num">81</div><div class="lbl">"row r has digit d"</div></div>
+        <div class="stat fast"><div class="num">81</div><div class="lbl">"column c has digit d"</div></div>
+        <div class="stat fast"><div class="num">81</div><div class="lbl">"box b has digit d"</div></div>
+      </div>
+      <p>Each choice "digit d in square (r, c)" covers exactly 4 of these rules. For the given clues, we only add the one row that matches the clue.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sudoku_dlx.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_sudoku</span>(puzzle):
+    cols = ([<span class="st">"sq%d%d"</span> % (r, c) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>)] +
+            [<span class="st">"r%d=%d"</span> % (r, d) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>)] +
+            [<span class="st">"c%d=%d"</span> % (c, d) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>)] +
+            [<span class="st">"b%d=%d"</span> % (b, d) <span class="kw">for</span> b <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>)])
+    grid = DLX(cols)
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+            clue = puzzle[r * <span class="nu">9</span> + c]
+            <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>):
+                <span class="kw">if</span> clue != <span class="st">"0"</span> <span class="kw">and</span> <span class="fn">int</span>(clue) != d:
+                    <span class="kw">continue</span>                    <span class="cm"># a clue allows only its own digit</span>
+                b = r // <span class="nu">3</span> * <span class="nu">3</span> + c // <span class="nu">3</span>
+                grid.add_row((r, c, d), [<span class="st">"sq%d%d"</span> % (r, c), <span class="st">"r%d=%d"</span> % (r, d),
+                                         <span class="st">"c%d=%d"</span> % (c, d), <span class="st">"b%d=%d"</span> % (b, d)])
+    answer = grid.solve(limit=<span class="nu">1</span>)[<span class="nu">0</span>]
+    out = [<span class="nu">0</span>] * <span class="nu">81</span>
+    <span class="kw">for</span> r, c, d <span class="kw">in</span> answer:
+        out[r * <span class="nu">9</span> + c] = d
+    <span class="kw">return</span> <span class="st">""</span>.join(<span class="fn">map</span>(<span class="fn">str</span>, out)), grid.tries
+
+hard = (<span class="st">"800000000"</span> <span class="st">"003600000"</span> <span class="st">"070090200"</span>
+        <span class="st">"050007000"</span> <span class="st">"000045700"</span> <span class="st">"000100030"</span>
+        <span class="st">"001000068"</span> <span class="st">"008500010"</span> <span class="st">"090000400"</span>)
+solution, tries = solve_sudoku(hard)
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">0</span>, <span class="nu">81</span>, <span class="nu">27</span>):
+    <span class="fn">print</span>(solution[i:i + <span class="nu">27</span>])
+<span class="fn">print</span>(tries)
+<span class="cm"># 812753649943682175675491283</span>
+<span class="cm"># 154237896369845721287169534</span>
+<span class="cm"># 521974368438526917796318452</span>
+<span class="cm"># 1492</span></code></pre>
+      </div>
+      <p>This puzzle was published in 2012 and was advertised in newspapers as "the world's hardest Sudoku". Now compare with plain backtracking, which fills the first empty square with the first digit that fits, like the solver on the backtracking page:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>sudoku_plain.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">solve_plain</span>(puzzle):
+    g = [<span class="fn">int</span>(ch) <span class="kw">for</span> ch <span class="kw">in</span> puzzle]
+    count = [<span class="nu">0</span>]
+    <span class="kw">def</span> <span class="fn">fits</span>(i, d):
+        r, c = divmod(i, <span class="nu">9</span>)
+        br, bc = r // <span class="nu">3</span> * <span class="nu">3</span>, c // <span class="nu">3</span> * <span class="nu">3</span>
+        <span class="kw">return</span> <span class="fn">all</span>(g[r * <span class="nu">9</span> + k] != d <span class="kw">and</span> g[k * <span class="nu">9</span> + c] != d <span class="kw">and</span>
+                   g[(br + k // <span class="nu">3</span>) * <span class="nu">9</span> + bc + k % <span class="nu">3</span>] != d <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>))
+    <span class="kw">def</span> <span class="fn">fill</span>():
+        <span class="kw">if</span> <span class="nu">0</span> <span class="kw">not</span> <span class="kw">in</span> g:
+            <span class="kw">return</span> <span class="kw">True</span>
+        i = g.index(<span class="nu">0</span>)                          <span class="cm"># first empty square</span>
+        <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>):
+            <span class="kw">if</span> fits(i, d):
+                g[i] = d; count[<span class="nu">0</span>] += <span class="nu">1</span>         <span class="cm"># choose</span>
+                <span class="kw">if</span> fill():                      <span class="cm"># explore</span>
+                    <span class="kw">return</span> <span class="kw">True</span>
+                g[i] = <span class="nu">0</span>                        <span class="cm"># un-choose</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    fill()
+    <span class="kw">return</span> <span class="st">""</span>.join(<span class="fn">map</span>(<span class="fn">str</span>, g)), count[<span class="nu">0</span>]
+
+plain_solution, placed = solve_plain(hard)
+<span class="fn">print</span>(plain_solution == solve_sudoku(hard)[<span class="nu">0</span>], placed)   <span class="cm"># True 49558</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat slow"><div class="num">49,558</div><div class="lbl">digits placed by plain backtracking</div></div>
+        <div class="stat fast"><div class="num">1,492</div><div class="lbl">rows tried by Dancing Links (about 33 times fewer)</div></div>
+      </div>
+      <p>Where does the speed-up come from? Partly from the "fewest options first" rule: DLX always attacks the most constrained square, row, column or box, so forced moves happen first and dead ends show up early. And partly from the dancing links themselves: checking "which digits are still allowed" is free, because the forbidden ones have already been unlinked.</p>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Where else the links dance</h2></div>
+      <p class="lead">Once you can describe a puzzle as "pick choices so every rule is satisfied exactly once", DLX can solve it. Puzzle fans use it for all sorts of things:</p>
+      <ul>
+        <li><b>Pentominoes:</b> the 12 shapes made of 5 squares can fill a 6×10 rectangle in 2,339 essentially different ways. Each column is "piece F is used" or "square (r, c) is filled", and each row is "this piece in this position". You'll tile a smaller board in practice problem 7.</li>
+        <li><b>Dominoes:</b> how many ways can you tile a board with 2×1 dominoes? (Practice problem 4.)</li>
+        <li><b>Puzzle design:</b> a good Sudoku must have exactly <b>one</b> solution. DLX can count solutions to check (practice problem 8).</li>
+        <li><b>Beyond puzzles:</b> scheduling, where every class needs exactly one room and time slot, is the same kind of problem.</li>
+      </ul>
+      <div class="callout fact">
+        <div class="ctitle">The professor who writes the book</div>
+        <p>Donald Knuth has been writing <i>The Art of Computer Programming</i> since the 1960s. It's one of the most famous books in computer science, and it's still not finished! Dancing Links and Algorithm X get a big section in one of its newer volumes. Knuth also pays a small reward, by check, to anyone who finds a mistake in his books. Many programmers proudly keep theirs framed instead of cashing them.</p>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">The big lesson</div>
+        <p>Plain backtracking makes you write a new solver for every puzzle. Exact cover plus Dancing Links lets you write <b>one</b> solver, then simply <b>describe</b> each new puzzle as rows and columns. Turning a new problem into one you already know how to solve is one of the most powerful ideas in computer science.</p>
+      </div>
+    </section>
+
+    <!-- ============ CHECKPOINT ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">CHECKPOINT</span><h2>Quick concept quiz</h2></div>
+      <details>
+        <summary>1. Why does Algorithm X pick the column with the fewest dots?</summary>
+        <div class="reveal"><p>Every column must be covered by one of its rows, so we have to try them all. Fewer rows means fewer branches to try. A column with 1 row is a forced move (no guessing), and a column with 0 rows tells us immediately that this branch is a dead end, so we don't waste time exploring it.</p></div>
+      </details>
+      <details>
+        <summary>2. After <code>remove(x)</code>, how does <code>restore(x)</code> know where to put x back?</summary>
+        <div class="reveal"><p><code>remove(x)</code> changes the neighbours' links but never touches <code>L[x]</code> and <code>R[x]</code>. So x still remembers its old left and right neighbours, and <code>restore(x)</code> just points them back to x. This only works if everything removed after x has already been restored (reverse order), and that's exactly what backtracking guarantees.</p></div>
+      </details>
+      <details>
+        <summary>3. In N-Queens, why are the diagonals "secondary" columns?</summary>
+        <div class="reveal"><p>There are N queens but 2N − 1 diagonals in each direction, so some diagonals must stay empty. "Exactly once" would be impossible. Diagonals only need "<b>at most</b> once", which is what secondary columns mean: the search doesn't have to cover them, but when one is covered, every other square on it is removed.</p></div>
+      </details>
+    </section>
+
+    <!-- ============ TRAINING GROUND ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">TRAINING GROUND</span><h2>Practice problems</h2></div>
+      <p class="lead">Eight problems, from warm-up ★ to boss level ★★★. Most solutions reuse <code>rows</code> (Level 2) and the <code>DLX</code> class (Level 5), so paste those in first. Only open a solution after a real try!</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. Count the dancers <span class="stars">★</span></h3>
+        <p>Write <code>coverage(chosen)</code> that returns a dictionary saying how many chosen groups dance each song. Use it to explain exactly what's wrong with picking Foxes, Owls and Dogs.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Start with <code>{song: 0 for song in "ABCDEFG"}</code> and add 1 for every song of every chosen group.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_coverage.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">coverage</span>(chosen):
+    count = {song: <span class="nu">0</span> <span class="kw">for</span> song <span class="kw">in</span> <span class="st">"ABCDEFG"</span>}
+    <span class="kw">for</span> group <span class="kw">in</span> chosen:
+        <span class="kw">for</span> song <span class="kw">in</span> rows[group]:
+            count[song] += <span class="nu">1</span>
+    <span class="kw">return</span> count
+
+<span class="fn">print</span>(coverage([<span class="st">"Foxes"</span>, <span class="st">"Owls"</span>, <span class="st">"Dogs"</span>]))
+<span class="cm"># {'A': 1, 'B': 1, 'C': 1, 'D': 1, 'E': 1, 'F': 1, 'G': 2}</span></code></pre>
+      </div>
+          <p>Everything is covered once except song G, which Foxes and Dogs both dance. Swap Foxes for Cats (A and D, without G) and you get the real answer.</p>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. Undo in the wrong order <span class="stars">★</span></h3>
+        <p>Using the linked-list code from Level 4, remove Ben (2) and then Cat (3), but restore <b>Ben first</b>. Then walk the circle to the right and to the left. What goes wrong?</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Write a <code>show_left()</code> that starts at <code>L[0]</code> and follows <code>L</code> until it gets back to the head.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_wrong_order.py</div>
+<pre><code>names = [<span class="st">"head"</span>, <span class="st">"Ann"</span>, <span class="st">"Ben"</span>, <span class="st">"Cat"</span>, <span class="st">"Dan"</span>]
+L = [<span class="nu">4</span>, <span class="nu">0</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>]
+R = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>, <span class="nu">0</span>]
+
+<span class="kw">def</span> <span class="fn">walk</span>(links):
+    out, x = [], links[<span class="nu">0</span>]
+    <span class="kw">while</span> x != <span class="nu">0</span>:
+        out.append(names[x])
+        x = links[x]
+    <span class="kw">return</span> out
+
+<span class="kw">def</span> <span class="fn">remove</span>(x):
+    R[L[x]] = R[x]; L[R[x]] = L[x]
+
+<span class="kw">def</span> <span class="fn">restore</span>(x):
+    R[L[x]] = x; L[R[x]] = x
+
+remove(<span class="nu">2</span>); remove(<span class="nu">3</span>)
+restore(<span class="nu">2</span>)                      <span class="cm"># wrong! Cat should come back first</span>
+<span class="fn">print</span>(walk(R))                  <span class="cm"># ['Ann', 'Ben', 'Cat', 'Dan']</span>
+<span class="fn">print</span>(walk(L))                  <span class="cm"># ['Dan', 'Ann']</span></code></pre>
+      </div>
+          <p>Walking right, Cat seems to be back. Walking left, Ben and Cat are both missing! The two directions disagree, so the list is broken. Ben grabbed Cat's hand while Cat was still out of the circle. That's why undoing must go in reverse order.</p>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. All the ways to pair up <span class="stars">★★</span></h3>
+        <p>Four friends, 1 to 4, sign up for activities. The options are: canoe <code>{1, 2}</code>, chess <code>{3, 4}</code>, tennis <code>{1, 3}</code>, darts <code>{2, 4}</code>, pottery <code>{1, 4}</code>, juggling <code>{2, 3}</code>, and a team game <code>{1, 2, 3, 4}</code>. Each friend must do exactly one activity. Use DLX to list <b>every</b> plan.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Columns are the friends <code>"1234"</code>. Each activity is a row. <code>solve()</code> without a limit returns all solutions.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_all_plans.py</div>
+<pre><code>activities = {<span class="st">"canoe"</span>: <span class="st">"12"</span>, <span class="st">"chess"</span>: <span class="st">"34"</span>, <span class="st">"tennis"</span>: <span class="st">"13"</span>, <span class="st">"darts"</span>: <span class="st">"24"</span>,
+              <span class="st">"pottery"</span>: <span class="st">"14"</span>, <span class="st">"juggling"</span>: <span class="st">"23"</span>, <span class="st">"team"</span>: <span class="st">"1234"</span>}
+plan = DLX(<span class="st">"1234"</span>)
+<span class="kw">for</span> name, friends <span class="kw">in</span> activities.items():
+    plan.add_row(name, friends)
+<span class="kw">for</span> solution <span class="kw">in</span> plan.solve():
+    <span class="fn">print</span>(<span class="fn">sorted</span>(solution))
+<span class="cm"># ['canoe', 'chess']</span>
+<span class="cm"># ['darts', 'tennis']</span>
+<span class="cm"># ['juggling', 'pottery']</span>
+<span class="cm"># ['team']</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. Domino tiling <span class="stars">★★</span></h3>
+        <p>In how many ways can you cover a 4×4 board with eight 2×1 dominoes? Turn it into exact cover: columns are the 16 squares, and each row is one domino placed horizontally or vertically. Also try a 2×8 board.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>For every square <code>(r, c)</code>, add a horizontal domino covering <code>(r, c)</code> and <code>(r, c + 1)</code> if it fits, and a vertical one covering <code>(r, c)</code> and <code>(r + 1, c)</code> if it fits.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_dominoes.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">dominoes</span>(h, w):
+    squares = [(r, c) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(h) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(w)]
+    board = DLX(squares)
+    <span class="kw">for</span> r, c <span class="kw">in</span> squares:
+        <span class="kw">if</span> c + <span class="nu">1</span> &lt; w:
+            board.add_row((<span class="st">"H"</span>, r, c), [(r, c), (r, c + <span class="nu">1</span>)])
+        <span class="kw">if</span> r + <span class="nu">1</span> &lt; h:
+            board.add_row((<span class="st">"V"</span>, r, c), [(r, c), (r + <span class="nu">1</span>, c)])
+    <span class="kw">return</span> <span class="fn">len</span>(board.solve())
+
+<span class="fn">print</span>(dominoes(<span class="nu">4</span>, <span class="nu">4</span>))   <span class="cm"># 36</span>
+<span class="fn">print</span>(dominoes(<span class="nu">2</span>, <span class="nu">8</span>))   <span class="cm"># 34</span></code></pre>
+      </div>
+          <p>Bonus: the 2×n counts are 1, 2, 3, 5, 8, 13, 21, 34, … the Fibonacci numbers! Can you explain why? (Look at how the leftmost column can be covered.)</p>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. What if diagonals were primary? <span class="stars">★★</span></h3>
+        <p>Change <code>queens(n)</code> so the diagonals are ordinary (primary) columns that must be covered exactly once. How many solutions do you get for n = 1 to 6? Explain the result.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Just leave out <code>secondary=diagonals</code>. Then count: how many diagonals are there, and how many queens?</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_primary_diagonals.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">queens_strict</span>(n):
+    rows_cols = [<span class="st">"R%d"</span> % i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n)] + [<span class="st">"C%d"</span> % i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n)]
+    diagonals = [<span class="st">"A%d"</span> % i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span> * n - <span class="nu">1</span>)] + [<span class="st">"B%d"</span> % i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span> * n - <span class="nu">1</span>)]
+    board = DLX(rows_cols + diagonals)          <span class="cm"># no secondary columns</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(n):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(n):
+            board.add_row((r, c), [<span class="st">"R%d"</span> % r, <span class="st">"C%d"</span> % c,
+                                   <span class="st">"A%d"</span> % (r + c), <span class="st">"B%d"</span> % (r - c + n - <span class="nu">1</span>)])
+    <span class="kw">return</span> <span class="fn">len</span>(board.solve())
+
+<span class="fn">print</span>([queens_strict(n) <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">7</span>)])   <span class="cm"># [1, 0, 0, 0, 0, 0]</span></code></pre>
+      </div>
+          <p>Each queen sits on exactly one diagonal in each direction, so N queens can cover at most N of the 2N − 1 diagonals. "Every diagonal exactly once" is only possible when N = 2N − 1, which means N = 1. That's why diagonals must be secondary.</p>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. Every 4×4 Sudoku <span class="stars">★★</span></h3>
+        <p>A 4×4 Sudoku uses digits 1–4 and 2×2 boxes. Build the exact-cover version with <b>no clues at all</b> and count every possible completed grid.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Same four kinds of rules as Level 7, but with 4 instead of 9 and boxes <code>r // 2 * 2 + c // 2</code>. That's 64 columns and 64 rows.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_all_4x4.py</div>
+<pre><code>cols = ([(<span class="st">"sq"</span>, r, c) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>)] +
+        [(<span class="st">"row"</span>, r, d) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">5</span>)] +
+        [(<span class="st">"col"</span>, c, d) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">5</span>)] +
+        [(<span class="st">"box"</span>, b, d) <span class="kw">for</span> b <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">5</span>)])
+grid = DLX(cols)
+<span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>):
+    <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>):
+        <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">5</span>):
+            b = r // <span class="nu">2</span> * <span class="nu">2</span> + c // <span class="nu">2</span>
+            grid.add_row((r, c, d), [(<span class="st">"sq"</span>, r, c), (<span class="st">"row"</span>, r, d), (<span class="st">"col"</span>, c, d), (<span class="st">"box"</span>, b, d)])
+<span class="fn">print</span>(<span class="fn">len</span>(grid.solve()))   <span class="cm"># 288</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. Pentomino challenge <span class="stars">★★★</span></h3>
+        <p>Tile a 3×20 rectangle with all 12 pentominoes, each used exactly once. Count the tilings and print one. (Pieces may be rotated and flipped.)</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Columns: the 12 piece names plus the 60 squares. For each piece, generate all its rotations and mirror images (shift them so the smallest row and column are 0), then try every position where it fits on the board. Each row covers its piece's name and its 5 squares.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_pentominoes.py</div>
+<pre><code>PIECES = {<span class="st">"F"</span>: [<span class="st">".##"</span>, <span class="st">"##."</span>, <span class="st">".#."</span>], <span class="st">"I"</span>: [<span class="st">"#####"</span>], <span class="st">"L"</span>: [<span class="st">"####"</span>, <span class="st">"#..."</span>],
+          <span class="st">"N"</span>: [<span class="st">"###."</span>, <span class="st">"..##"</span>], <span class="st">"P"</span>: [<span class="st">"###"</span>, <span class="st">"##."</span>], <span class="st">"T"</span>: [<span class="st">"###"</span>, <span class="st">".#."</span>, <span class="st">".#."</span>],
+          <span class="st">"U"</span>: [<span class="st">"#.#"</span>, <span class="st">"###"</span>], <span class="st">"V"</span>: [<span class="st">"#.."</span>, <span class="st">"#.."</span>, <span class="st">"###"</span>], <span class="st">"W"</span>: [<span class="st">"#.."</span>, <span class="st">"##."</span>, <span class="st">".##"</span>],
+          <span class="st">"X"</span>: [<span class="st">".#."</span>, <span class="st">"###"</span>, <span class="st">".#."</span>], <span class="st">"Y"</span>: [<span class="st">"####"</span>, <span class="st">".#.."</span>], <span class="st">"Z"</span>: [<span class="st">"##."</span>, <span class="st">".#."</span>, <span class="st">".##"</span>]}
+
+<span class="kw">def</span> <span class="fn">shapes</span>(picture):
+    cells = {(r, c) <span class="kw">for</span> r, line <span class="kw">in</span> <span class="fn">enumerate</span>(picture) <span class="kw">for</span> c, ch <span class="kw">in</span> <span class="fn">enumerate</span>(line) <span class="kw">if</span> ch == <span class="st">"#"</span>}
+    found = <span class="fn">set</span>()
+    <span class="kw">for</span> flip <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">2</span>):
+        <span class="kw">for</span> turn <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">4</span>):
+            cells = {(c, -r) <span class="kw">for</span> r, c <span class="kw">in</span> cells}                  <span class="cm"># rotate 90 degrees</span>
+            top = <span class="fn">min</span>(r <span class="kw">for</span> r, c <span class="kw">in</span> cells); left = <span class="fn">min</span>(c <span class="kw">for</span> r, c <span class="kw">in</span> cells)
+            found.add(frozenset((r - top, c - left) <span class="kw">for</span> r, c <span class="kw">in</span> cells))
+        cells = {(r, -c) <span class="kw">for</span> r, c <span class="kw">in</span> cells}                      <span class="cm"># mirror image</span>
+    <span class="kw">return</span> found
+
+H, W = <span class="nu">3</span>, <span class="nu">20</span>
+board = DLX(<span class="fn">list</span>(PIECES) + [(r, c) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(H) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(W)])
+<span class="kw">for</span> name, picture <span class="kw">in</span> PIECES.items():
+    <span class="kw">for</span> shape <span class="kw">in</span> shapes(picture):
+        <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(H):
+            <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(W):
+                cells = [(r + a, c + b) <span class="kw">for</span> a, b <span class="kw">in</span> shape]
+                <span class="kw">if</span> <span class="fn">all</span>(a &lt; H <span class="kw">and</span> b &lt; W <span class="kw">for</span> a, b <span class="kw">in</span> cells):
+                    board.add_row((name, <span class="fn">tuple</span>(cells)), [name] + cells)
+
+tilings = board.solve()
+<span class="fn">print</span>(<span class="fn">len</span>(tilings))   <span class="cm"># 8</span>
+art = [[<span class="st">"?"</span>] * W <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(H)]
+<span class="kw">for</span> name, cells <span class="kw">in</span> tilings[<span class="nu">0</span>]:
+    <span class="kw">for</span> r, c <span class="kw">in</span> cells:
+        art[r][c] = name
+<span class="kw">for</span> line <span class="kw">in</span> art:
+    <span class="fn">print</span>(<span class="st">""</span>.join(line))
+<span class="cm"># UUXIIIIINNNFTWYYYYZV</span>
+<span class="cm"># UXXXPPLNNFFFTWWYZZZV</span>
+<span class="cm"># UUXPPPLLLLFTTTWWZVVV</span></code></pre>
+      </div>
+          <p>8 tilings, but they come in groups of 4: flipping the board upside down or left-to-right gives another tiling. So there are really just <b>2</b> different solutions to the 3×20 pentomino puzzle. Can you find the second one in <code>tilings</code>?</p>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. The puzzle inspector <span class="stars">★★★</span></h3>
+        <p>A proper Sudoku has exactly one solution. Write <code>count_solutions(puzzle, limit)</code> that counts solutions but stops early at <code>limit</code>. Check the hard puzzle from Level 7, then the same puzzle with its first clue (the 8) erased.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Copy <code>solve_sudoku</code>, but call <code>grid.solve(limit=limit)</code> and return the number of solutions. With <code>limit=2</code>, the answer 1 means "unique" and 2 means "not unique".</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_inspector.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">count_solutions</span>(puzzle, limit):
+    cols = ([<span class="st">"sq%d%d"</span> % (r, c) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>)] +
+            [<span class="st">"r%d=%d"</span> % (r, d) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>)] +
+            [<span class="st">"c%d=%d"</span> % (c, d) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>)] +
+            [<span class="st">"b%d=%d"</span> % (b, d) <span class="kw">for</span> b <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>) <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>)])
+    grid = DLX(cols)
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>):
+            clue = puzzle[r * <span class="nu">9</span> + c]
+            <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">1</span>, <span class="nu">10</span>):
+                <span class="kw">if</span> clue == <span class="st">"0"</span> <span class="kw">or</span> <span class="fn">int</span>(clue) == d:
+                    b = r // <span class="nu">3</span> * <span class="nu">3</span> + c // <span class="nu">3</span>
+                    grid.add_row((r, c, d), [<span class="st">"sq%d%d"</span> % (r, c), <span class="st">"r%d=%d"</span> % (r, d),
+                                             <span class="st">"c%d=%d"</span> % (c, d), <span class="st">"b%d=%d"</span> % (b, d)])
+    <span class="kw">return</span> <span class="fn">len</span>(grid.solve(limit=limit))
+
+<span class="fn">print</span>(count_solutions(hard, <span class="nu">2</span>))               <span class="cm"># 1  (unique: a proper puzzle)</span>
+<span class="fn">print</span>(count_solutions(<span class="st">"0"</span> + hard[<span class="nu">1</span>:], <span class="nu">2</span>))     <span class="cm"># 2  (not unique any more)</span></code></pre>
+      </div>
+          <p>Erasing just one clue breaks the puzzle: now it has more than one solution. Puzzle makers use exactly this kind of check before printing a Sudoku in the newspaper.</p>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">Party's over, and you danced!</div>
+        <p>You started from plain backtracking, learned exact cover, ran Algorithm X by hand, discovered the remove-and-restore trick of doubly linked lists, built a full Dancing Links solver, and used it on queens, Sudoku, dominoes and pentominoes. That's the same tool serious puzzle solvers use.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>Dancing Links (DLX): Knuth's Algorithm X for exact cover, using doubly linked lists so that crossing options off and putting them back takes constant time. It builds on <a href="Backtracking_en.html">backtracking</a>. For a different kind of search, see the <a href="eight_puzzle_en.html">8 puzzle and BFS</a>.</p>
+    <p><a href="index.html">&#x2190; Back to all explainers</a> &middot; <a href="Dancing_Links_zh.html">中文版</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    group: 'group',
+    coverStart: 'Click a group to pick it.',
+    clash: function(s){ return '<span class="back">Clash!</span> Song ' + s + ' is danced by more than one picked group.'; },
+    missing: function(s){ return 'No clashes so far. Still nobody dancing: <b>' + s + '</b>'; },
+    coverWin: function(names){ return '<span class="ok">Perfect! ' + names + ' dance every song exactly once.</span> That\'s an exact cover.'; },
+    llStart: 'Everyone is holding hands. Click a kid to remove them.',
+    outside: 'outside the circle:',
+    removed: function(x, l, r){ return '<b>' + x + '</b> stepped out. ' + l + ' and ' + r + ' now hold hands, but ' + x + ' still remembers L=' + l + ', R=' + r + '.'; },
+    restored: function(x, l, r){ return '<span class="ok">' + x + ' is back</span>, grabbing ' + l + ' and ' + r + ' by the hand again.'; },
+    nothingToUndo: 'Nobody is outside the circle. Click a kid first.',
+    dlxStart: 'All 7 songs and 6 groups are in the grid. Press <b>Step</b>.',
+    pickCol: function(s, n){ return 'Fewest dots: song <b>' + s + '</b> (' + n + '). Cover it: its header leaves, and so does every group that dances it.'; },
+    tryRow: function(g, s){ return 'Try <b>' + g + '</b> for song ' + s + '. Cover its other songs too, which hides every group that clashes with it.'; },
+    dead: function(s){ return '<span class="back">Dead end:</span> song ' + s + ' has 0 dots left. Nobody can dance it.'; },
+    undoRow: function(g){ return 'Un-choose <b>' + g + '</b>: uncover its songs in reverse order. The links dance back!'; },
+    backCol: function(s){ return 'No more groups for song ' + s + '. Uncover it and go back one level.'; },
+    found: function(names){ return '<span class="ok">Solved! ' + names + '.</span> The root has no columns left.'; },
+    stepOf: function(i, n){ return '[' + i + '/' + n + ']'; },
+    play: 'Play', pause: 'Pause'
+  };
+
+  var SONGS = 'ABCDEFG'.split('');
+  var GROUPS = [['Owls', 'CEF'], ['Foxes', 'ADG'], ['Bees', 'BCF'], ['Cats', 'AD'], ['Dogs', 'BG'], ['Frogs', 'DEG']];
+
+  function matrixHtml(extraHead){
+    var h = '<thead><tr><th>' + T.group + '</th>';
+    SONGS.forEach(function(s, k){ h += '<th data-col="' + k + '">' + s + (extraHead ? '<span class="sz"></span>' : '') + '</th>'; });
+    h += '</tr></thead><tbody>';
+    GROUPS.forEach(function(g, i){
+      h += '<tr data-row="' + i + '"><th>' + g[0] + '</th>';
+      SONGS.forEach(function(s, k){ h += '<td data-col="' + k + '">' + (g[1].indexOf(s) >= 0 ? '&#x25CF;' : '') + '</td>'; });
+      h += '</tr>';
+    });
+    return h + '</tbody>';
+  }
+
+  /* ---------- Widget 1: be the DJ (exact cover by hand) ---------- */
+  var coverTable = document.getElementById('coverTable'), coverMsg = document.getElementById('coverMsg');
+  var picked = [];
+  coverTable.innerHTML = matrixHtml(false);
+  function drawCover(){
+    var count = SONGS.map(function(){ return 0; });
+    picked.forEach(function(i){ SONGS.forEach(function(s, k){ if (GROUPS[i][1].indexOf(s) >= 0) count[k]++; }); });
+    coverTable.querySelectorAll('tbody tr').forEach(function(tr){
+      tr.classList.toggle('sel', picked.indexOf(+tr.getAttribute('data-row')) >= 0);
+    });
+    coverTable.querySelectorAll('[data-col]').forEach(function(cell){
+      var k = +cell.getAttribute('data-col');
+      cell.classList.toggle('cov1', count[k] === 1);
+      cell.classList.toggle('cov2', count[k] > 1);
+    });
+    var missing = [], clash = [];
+    SONGS.forEach(function(s, k){ if (count[k] === 0) missing.push(s); if (count[k] > 1) clash.push(s); });
+    var names = picked.map(function(i){ return GROUPS[i][0]; });
+    if (!picked.length) coverMsg.innerHTML = T.coverStart;
+    else if (clash.length) coverMsg.innerHTML = T.clash(clash.join(', '));
+    else if (missing.length) coverMsg.innerHTML = T.missing(missing.join(', '));
+    else coverMsg.innerHTML = T.coverWin(names.join(' + '));
+  }
+  coverTable.addEventListener('click', function(e){
+    var tr = e.target.closest('tbody tr');
+    if (!tr) return;
+    var i = +tr.getAttribute('data-row'), at = picked.indexOf(i);
+    if (at >= 0) picked.splice(at, 1); else picked.push(i);
+    drawCover();
+  });
+  document.getElementById('coverClear').addEventListener('click', function(){ picked = []; drawCover(); });
+  drawCover();
+
+  /* ---------- Widget 2: the hand-holding circle (doubly linked list) ---------- */
+  var KIDS = ['head', 'Ann', 'Ben', 'Cat', 'Dan', 'Eva'];
+  var llRow = document.getElementById('llRow'), llGone = document.getElementById('llGone');
+  var llTable = document.getElementById('llTable'), llMsg = document.getElementById('llMsg');
+  var LL, RR, gone;
+  function llReset(){
+    var n = KIDS.length;
+    LL = KIDS.map(function(_, x){ return (x + n - 1) % n; });
+    RR = KIDS.map(function(_, x){ return (x + 1) % n; });
+    gone = [];
+    llMsg.innerHTML = T.llStart;
+    drawLL();
+  }
+  function drawLL(){
+    var h = '<span class="kid head">head</span>', x = RR[0];
+    while (x !== 0){ h += '<span class="hands">&#x21C4;</span><button type="button" class="kid" data-x="' + x + '">' + KIDS[x] + '</button>'; x = RR[x]; }
+    llRow.innerHTML = h + '<span class="hands">&#x21C4;</span><span class="kid head ghost">head</span>';
+    llGone.innerHTML = gone.length ? '<span class="lbl">' + T.outside + '</span>' + gone.map(function(x){
+      return '<span class="kid out">' + KIDS[x] + '<small>L=' + KIDS[LL[x]] + ' &middot; R=' + KIDS[RR[x]] + '</small></span>';
+    }).join('') : '';
+    var t = '<thead><tr><th>x</th>' + KIDS.map(function(k){ return '<th>' + k + '</th>'; }).join('') + '</tr></thead><tbody>';
+    t += '<tr><td>L[x]</td>' + KIDS.map(function(_, i){ return '<td' + (gone.indexOf(i) >= 0 ? ' class="even"' : '') + '>' + KIDS[LL[i]] + '</td>'; }).join('') + '</tr>';
+    t += '<tr><td>R[x]</td>' + KIDS.map(function(_, i){ return '<td' + (gone.indexOf(i) >= 0 ? ' class="even"' : '') + '>' + KIDS[RR[i]] + '</td>'; }).join('') + '</tr>';
+    llTable.innerHTML = t + '</tbody>';
+  }
+  llRow.addEventListener('click', function(e){
+    var b = e.target.closest('button.kid');
+    if (!b) return;
+    var x = +b.getAttribute('data-x');
+    RR[LL[x]] = RR[x]; LL[RR[x]] = LL[x];          /* remove(x) */
+    gone.push(x);
+    llMsg.innerHTML = T.removed(KIDS[x], KIDS[LL[x]], KIDS[RR[x]]);
+    drawLL();
+  });
+  document.getElementById('llUndo').addEventListener('click', function(){
+    if (!gone.length){ llMsg.innerHTML = T.nothingToUndo; return; }
+    var x = gone.pop();
+    RR[LL[x]] = x; LL[RR[x]] = x;                  /* restore(x) */
+    llMsg.innerHTML = T.restored(KIDS[x], KIDS[LL[x]], KIDS[RR[x]]);
+    drawLL();
+  });
+  document.getElementById('llReset').addEventListener('click', llReset);
+  llReset();
+
+  /* ---------- Widget 3: step through Dancing Links (same algorithm as dlx.py) ---------- */
+  function recordDLX(){
+    var n = SONGS.length;
+    var L = [n], R = [], U = [], D = [], C = [], S = [], rowOf = [];
+    for (var i = 0; i <= n; i++){ if (i > 0) L.push(i - 1); R.push((i + 1) % (n + 1)); U.push(i); D.push(i); C.push(i); S.push(0); rowOf.push(-1); }
+    GROUPS.forEach(function(g, gi){
+      var first = -1;
+      g[1].split('').forEach(function(s){
+        var c = SONGS.indexOf(s) + 1, x = C.length;
+        C.push(c); rowOf.push(gi); U.push(U[c]); D.push(c); D[U[c]] = x; U[c] = x; S[c]++;
+        if (first < 0){ L.push(x); R.push(x); first = x; }
+        else { L.push(L[first]); R.push(first); R[L[first]] = x; L[first] = x; }
+      });
+    });
+    function cover(c){
+      R[L[c]] = R[c]; L[R[c]] = L[c];
+      for (var i = D[c]; i !== c; i = D[i]) for (var j = R[i]; j !== i; j = R[j]){ D[U[j]] = D[j]; U[D[j]] = U[j]; S[C[j]]--; }
+    }
+    function uncover(c){
+      for (var i = U[c]; i !== c; i = U[i]) for (var j = L[i]; j !== i; j = L[j]){ S[C[j]]++; D[U[j]] = j; U[D[j]] = j; }
+      R[L[c]] = c; L[R[c]] = c;
+    }
+    var frames = [], chosen = [], tries = 0, solution = null;
+    function snap(msg, focusCol, focusRow){
+      var visCols = [];
+      for (var c = R[0]; c !== 0; c = R[c]) visCols.push(c - 1);
+      var alive = GROUPS.map(function(g, gi){
+        if (chosen.indexOf(gi) >= 0) return false;
+        for (var x = n + 1; x < C.length; x++){
+          if (rowOf[x] !== gi) continue;
+          if (visCols.indexOf(C[x] - 1) < 0 || D[U[x]] !== x) return false;
+        }
+        return true;
+      });
+      frames.push({ msg: msg, cols: visCols, alive: alive, chosen: chosen.slice(), sizes: S.slice(1), fc: focusCol, fr: focusRow });
+    }
+    function names(){ return chosen.map(function(gi){ return GROUPS[gi][0]; }).join(' + '); }
+    snap(T.dlxStart, -1, -1);
+    function search(){
+      if (R[0] === 0){ solution = chosen.slice(); snap(T.found(names()), -1, -1); return true; }
+      var c = R[0];
+      for (var j = R[c]; j !== 0; j = R[j]) if (S[j] < S[c]) c = j;
+      if (S[c] === 0){ snap(T.dead(SONGS[c - 1]), c - 1, -1); return false; }
+      snap(T.pickCol(SONGS[c - 1], S[c]), c - 1, -1);
+      cover(c);
+      for (var r = D[c]; r !== c; r = D[r]){
+        tries++;
+        chosen.push(rowOf[r]);
+        for (var j2 = R[r]; j2 !== r; j2 = R[j2]) cover(C[j2]);
+        snap(T.tryRow(GROUPS[rowOf[r]][0], SONGS[c - 1]), -1, rowOf[r]);
+        if (search()) return true;
+        for (j2 = L[r]; j2 !== r; j2 = L[j2]) uncover(C[j2]);
+        chosen.pop();
+        snap(T.undoRow(GROUPS[rowOf[r]][0]), -1, -1);
+      }
+      uncover(c);
+      snap(T.backCol(SONGS[c - 1]), c - 1, -1);
+      return false;
+    }
+    search();
+    return { frames: frames, tries: tries, solution: solution };
+  }
+
+  var dlxTable = document.getElementById('dlxTable'), dlxMsg = document.getElementById('dlxMsg');
+  var dlxPlay = document.getElementById('dlxPlay');
+  var run = recordDLX(), at = 0, timer = null;
+  dlxTable.innerHTML = matrixHtml(true);
+  function drawDLX(){
+    var f = run.frames[at];
+    dlxTable.querySelectorAll('thead th[data-col]').forEach(function(th){
+      var k = +th.getAttribute('data-col');
+      th.classList.toggle('hid', f.cols.indexOf(k) < 0);
+      th.classList.toggle('focus', k === f.fc);
+      th.querySelector('.sz').textContent = f.cols.indexOf(k) < 0 ? '' : f.sizes[k];
+    });
+    dlxTable.querySelectorAll('tbody tr').forEach(function(tr){
+      var i = +tr.getAttribute('data-row');
+      tr.classList.toggle('pick', f.chosen.indexOf(i) >= 0);
+      tr.classList.toggle('hid', !f.alive[i] && f.chosen.indexOf(i) < 0);
+      tr.classList.toggle('try', i === f.fr);
+    });
+    dlxTable.querySelectorAll('tbody td').forEach(function(td){
+      td.classList.toggle('hid', f.cols.indexOf(+td.getAttribute('data-col')) < 0);
+    });
+    dlxMsg.innerHTML = T.stepOf(at, run.frames.length - 1) + ' ' + f.msg;
+  }
+  function stopDLX(){ if (timer){ clearInterval(timer); timer = null; } dlxPlay.textContent = T.play; }
+  function stepDLX(){
+    if (at >= run.frames.length - 1){ stopDLX(); return; }
+    at++; drawDLX();
+    if (at >= run.frames.length - 1) stopDLX();
+  }
+  document.getElementById('dlxStep').addEventListener('click', function(){ stopDLX(); stepDLX(); });
+  document.getElementById('dlxReset').addEventListener('click', function(){ stopDLX(); at = 0; drawDLX(); });
+  dlxPlay.addEventListener('click', function(){
+    if (timer){ stopDLX(); return; }
+    if (at >= run.frames.length - 1) at = 0;
+    dlxPlay.textContent = T.pause;
+    timer = setInterval(stepDLX, 1100);
+  });
+  drawDLX();
+})();
+</script>
+</body>
+</html>
