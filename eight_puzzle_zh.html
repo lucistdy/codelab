@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>滑块密室大逃脱：用 BFS 解八数码问题</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+
+  /* ---------- Bug detective (diff view) ---------- */
+  .codebox pre.diff{padding:12px 0;}
+  .codebox pre.diff code{display:block;}
+  .codebox pre.diff span.ln{display:block;padding:0 18px;white-space:pre;}
+  .bugs{counter-reset:bug;list-style:none;padding:0;margin:20px 0;}
+  .bugs li{position:relative;background:var(--paper-raised);border:1px solid var(--line);border-left:4px solid var(--alert);border-radius:var(--radius);padding:12px 16px 12px 52px;margin:10px 0;box-shadow:var(--shadow);}
+  .bugs li::before{counter-increment:bug;content:"🐞" counter(bug);position:absolute;left:12px;top:12px;font-family:var(--font-mono);font-size:13px;font-weight:800;color:var(--alert);}
+  .bugs li .err{display:block;font-family:var(--font-mono);font-size:12.5px;color:var(--alert);margin-top:4px;}
+  .codebox pre.diff span.bug{background:var(--alert-soft);box-shadow:inset 3px 0 0 var(--alert);}
+
+  /* ---------- Sliding-tile boards ---------- */
+  .puzzle{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:252px;max-width:100%;margin:14px auto;padding:8px;background:var(--paper-raised-2);border:2px solid var(--line);border-radius:14px;}
+  .puzzle.mini{width:126px;gap:3px;padding:4px;border-radius:9px;margin:6px auto;}
+  .puzzle.won{border-color:var(--clue);background:var(--clue-soft);}
+  .tile{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;margin:0;padding:0;border:1px solid var(--accent);border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);font-family:var(--font-mono);font-weight:800;font-size:34px;line-height:1;box-shadow:inset 0 -4px 0 rgba(0,0,0,.10);user-select:none;}
+  .puzzle.mini .tile{font-size:17px;border-radius:6px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.10);}
+  .tile.home{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .tile.blank{background:transparent;border:2px dashed var(--line);box-shadow:none;}
+  .tile.idx{background:var(--paper-raised);border-color:var(--line);color:var(--ink-soft);box-shadow:none;}
+  button.tile{cursor:default;}
+  button.tile.can{cursor:pointer;outline:2px dashed var(--clue);outline-offset:2px;}
+  button.tile.can:hover{filter:brightness(1.06);transform:translateY(-2px);}
+  button.tile:focus-visible{outline:3px solid var(--accent-strong);outline-offset:2px;}
+  .tile.moved{animation:tilepop .22s ease-out;}
+  @keyframes tilepop{from{transform:scale(.82);}to{transform:scale(1);}}
+  @media (prefers-reduced-motion:reduce){.tile.moved{animation:none;}}
+  .status{font-family:var(--font-mono);font-size:14px;line-height:1.6;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;min-height:3.4em;word-break:break-word;}
+  .status b{color:var(--accent-strong);}
+  .status .ok{color:var(--clue);font-weight:800;}
+  .status .back{color:var(--alert);font-weight:700;}
+  .status .seq{letter-spacing:.06em;font-size:16px;font-weight:700;}
+  .status .seq span.done{color:var(--ink-soft);opacity:.55;}
+  .status .seq span.cur{background:var(--accent-soft);color:var(--accent-strong);border-radius:3px;outline:1px solid var(--accent);}
+  .gcap{font-size:13px;color:var(--ink-soft);text-align:center;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="eight_puzzle_en.html">English &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">搜索算法 &middot; 技能讲解</div>
+      <h1>滑块密室大逃脱：<em>用 BFS 解八数码问题</em></h1>
+      <p class="sub">八块写着数字的方块，一个空位，只有一条规则：只能把方块滑进空位。你能把方块排回原来的顺序吗？能用<b>最少的步数</b>做到吗？我们会先玩一玩这个谜题，再教 Python <b>瞬间</b>解出任何一个棋盘，抓出示例代码里藏着的 <b>bug</b>，最后揭开一个秘密：有一半的棋盘根本解不开！</p>
+      <div class="stampbar">
+        <span class="stamp hot">适合 13 岁+</span>
+        <span class="stamp">广度优先搜索</span>
+        <span class="stamp">可玩的谜题</span>
+        <span class="stamp">捉虫</span>
+        <span class="stamp">8 道练习题</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">第 1 关</span><h2>认识这个谜题</h2></div>
+      <p class="lead">想象你被锁在一间密室里。门上有一块 3×3 的滑块面板，方块上写着 1 到 8，还有一个空格。只有当方块排成 <b>1 2 3 / 4 5 6 / 7 8</b>、空格在右下角时，门才会打开。</p>
+      <p>自己试试吧！点击空格<b>旁边</b>的方块，它就会滑进空格。带虚线框的方块可以移动，绿色的方块已经回到了自己的家。</p>
+      <div class="widget" id="gameWidget">
+        <h3>🧩 密室之门</h3>
+        <div class="hint">点<b>"打乱"</b>换一道新题。打乱时只用合法的滑动，所以一定有解。</div>
+        <div class="puzzle" id="game" role="grid" aria-label="八数码棋盘"></div>
+        <div class="controls">
+          <button class="btn" id="shuffleBtn" type="button">打乱</button>
+          <button class="btn ghost" id="resetBtn" type="button">重来</button>
+        </div>
+        <div class="status" id="gameMsg"></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">一个让全世界疯狂的谜题</div>
+        <p>八数码是 <b>15 数码</b>（4×4，十五个方块）的小弟弟。1880 年，15 数码风靡全世界：人们在家里玩、在单位玩、在火车上也玩。著名的谜题作家萨姆·劳埃德后来声称，他曾为某一个特定的棋盘悬赏 1000 美元。从来没有人拿到这笔奖金，在第 7 关你就会知道为什么没人<i>能</i>拿到。</p>
+      </div>
+      <p>用手玩的话，你大概用了 30 步、50 步，甚至 100 步。可<b>最短</b>的解法是多少步呢？靠猜是猜不出来的。我们需要一套<b>系统的方法</b>，这正是计算机科学的用武之地。</p>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">第 2 关</span><h2>把棋盘变成一个字符串</h2></div>
+      <p class="lead">计算机看不懂图片，所以我们先要想办法把棋盘"写下来"。窍门是：一行一行、从左到右读出方块，空格写成 <code>x</code>。</p>
+      <div class="pair">
+        <div class="puzzle" aria-hidden="true"><div class="tile">2</div><div class="tile">3</div><div class="tile">4</div><div class="tile">1</div><div class="tile">5</div><div class="tile blank"></div><div class="tile">7</div><div class="tile">6</div><div class="tile">8</div></div>
+        <span class="arrow">&#x2192;</span>
+        <code style="font-size:20px">"23415x768"</code>
+      </div>
+      <p>每个格子都有一个从 0 到 8 的<b>位置编号</b>。因为每行有 3 个格子，用两个小公式就能把位置换成（行，列）：</p>
+      <div class="pair">
+        <div class="puzzle mini" aria-hidden="true"><div class="tile idx">0</div><div class="tile idx">1</div><div class="tile idx">2</div><div class="tile idx">3</div><div class="tile idx">4</div><div class="tile idx">5</div><div class="tile idx">6</div><div class="tile idx">7</div><div class="tile idx">8</div></div>
+        <div><p style="margin:0"><code>row = pos // 3</code> &nbsp;（前面能装下几个整行）<br><code>col = pos % 3</code> &nbsp;（剩下的余数）</p></div>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>state_basics.py</div>
+<pre><code>state = <span class="st">"23415x768"</span>
+pos = state.index(<span class="st">"x"</span>)         <span class="cm"># 空格在哪里？</span>
+<span class="fn">print</span>(pos)                     <span class="cm"># 5</span>
+row, col = pos // <span class="nu">3</span>, pos % <span class="nu">3</span>   <span class="cm"># 位置 -&gt; (行, 列)</span>
+<span class="fn">print</span>(row, col)                <span class="cm"># 1 2</span>
+<span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">3</span>):             <span class="cm"># 打印棋盘，每行 3 个格子</span>
+    <span class="fn">print</span>(<span class="st">" "</span>.join(state[<span class="nu">3</span> * r : <span class="nu">3</span> * r + <span class="nu">3</span>]))
+<span class="cm"># 2 3 4</span>
+<span class="cm"># 1 5 x</span>
+<span class="cm"># 7 6 8</span></code></pre>
+      </div>
+      <h3>移动的是空格</h3>
+      <p>换个巧妙的角度：不要想"方块滑进空格"，而是想"<b>空格在移动</b>"，它和旁边的方块交换位置。这样一来只有四种移动，每种移动只是给空格的位置加上一个数：</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>空格移动方向</th><th>字母</th><th>位置变化</th><th>什么时候不允许</th></tr></thead>
+          <tbody>
+            <tr><td>上</td><td>u</td><td>−3</td><td class="left">在最上面一行（pos − 3 &lt; 0）</td></tr>
+            <tr><td>下</td><td>d</td><td>+3</td><td class="left">在最下面一行（pos + 3 &gt; 8）</td></tr>
+            <tr><td>左</td><td>l</td><td>−1</td><td class="left">在最左边一列（pos % 3 == 0）</td></tr>
+            <tr><td>右</td><td>r</td><td>+1</td><td class="left">在最右边一列（pos % 3 == 2）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <div class="ctitle">"穿墙"陷阱</div>
+        <p>上下很好检查：新位置小于 0 或大于 8，就是掉出棋盘了。左右却很狡猾。如果空格在位置 3（中间一行的开头），3 − 1 = 2 是一个完全合法的数字，可位置 2 却是<b>第一行的末尾</b>！空格会"穿墙"跑到另一边去。所以我们还需要额外的 <code>pos % 3</code> 检查。</p>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>neighbours.py</div>
+<pre><code>MOVES = [(-<span class="nu">3</span>, <span class="st">"u"</span>), (<span class="nu">3</span>, <span class="st">"d"</span>), (-<span class="nu">1</span>, <span class="st">"l"</span>), (<span class="nu">1</span>, <span class="st">"r"</span>)]   <span class="cm"># (位置变化, 字母)</span>
+
+<span class="kw">def</span> <span class="fn">neighbours</span>(state):
+    pos = state.index(<span class="st">"x"</span>)
+    result = []
+    <span class="kw">for</span> offset, letter <span class="kw">in</span> MOVES:
+        npos = pos + offset
+        <span class="kw">if</span> npos &lt; <span class="nu">0</span> <span class="kw">or</span> npos &gt;= <span class="nu">9</span>:            <span class="cm"># 从上边或下边掉出去了</span>
+            <span class="kw">continue</span>
+        <span class="kw">if</span> offset == -<span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">0</span>:    <span class="cm"># 在最左列：不能再往左</span>
+            <span class="kw">continue</span>
+        <span class="kw">if</span> offset == <span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">2</span>:     <span class="cm"># 在最右列：不能再往右</span>
+            <span class="kw">continue</span>
+        cells = <span class="fn">list</span>(state)                  <span class="cm"># 字符串不能修改，列表可以</span>
+        cells[pos], cells[npos] = cells[npos], cells[pos]   <span class="cm"># 交换空格和方块</span>
+        result.append((letter, <span class="st">""</span>.join(cells)))
+    <span class="kw">return</span> result
+
+<span class="kw">for</span> letter, s <span class="kw">in</span> neighbours(<span class="st">"23415x768"</span>):
+    <span class="fn">print</span>(letter, s)
+<span class="cm"># u 23x154768</span>
+<span class="cm"># d 23415876x</span>
+<span class="cm"># l 2341x5768</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">第 3 关</span><h2>一张画满所有棋盘的地图</h2></div>
+      <p class="lead">现在想象一张巨大的地图。每一种可能的棋盘都是地图上的一个<b>点</b>，如果滑动一次就能把一个棋盘变成另一个，就在这两个点之间连一条线。数学家把这种地图叫作<b>图</b>：点是<b>状态</b>，线是<b>移动</b>。</p>
+      <p>解谜就是：在这张地图上找一条从你的棋盘到目标棋盘 <code>12345678x</code> 的路线。<b>最短</b>的解法就是经过的线最少的那条路线。</p>
+      <div class="stats">
+        <div class="stat slow"><div class="num">9! = 362,880</div><div class="lbl">8 个方块和 1 个空格在 9 个格子里的排列数</div></div>
+        <div class="stat fast"><div class="num">2 到 4</div><div class="lbl">每个棋盘能走的步数（空格在角上 2 种，在边上 3 种，在中心 4 种）</div></div>
+      </div>
+      <p>这么多棋盘，靠瞎试是试不完的。如果随便乱走，还可能永远在原地绕圈。我们需要一种<b>有条理</b>的搜索：不重复访问任何棋盘，并且保证找到最短路线。来认识 <b>BFS</b> 吧。</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">第 4 关</span><h2>BFS：池塘里的涟漪</h2></div>
+      <p class="lead">往池塘里扔一颗石子，一圈圈涟漪向外扩散：先是 1 步远的地方，然后是 2 步远的，再然后是 3 步远的……<b>广度优先搜索（BFS）</b>探索地图的方式一模一样。</p>
+      <div class="recipe">
+        <div class="step"><div class="k">工具 1</div><div class="t">一个队列</div><div class="d">一条排队的队伍：棋盘从队尾加入，从队头离开。先来先走，就像食堂打饭排队。</div></div>
+        <div class="step"><div class="k">工具 2</div><div class="t">"见过"记录本</div><div class="d">一个字典，记下所有已经找到过的棋盘，这样同一个棋盘绝不会探索两次。</div></div>
+        <div class="step"><div class="k">循环</div><div class="t">取出、展开、加入</div><div class="d">取出队头的棋盘，找出它的邻居，把每个<b>新</b>棋盘加到队尾。</div></div>
+      </div>
+      <p>因为队列是先进先出的，所有距离为 1 的棋盘都会在距离为 2 的棋盘之前处理，依此类推。所以 <b>BFS 第一次到达某个棋盘时，走的一定是最短路线</b>。这就是全部的魔法。</p>
+      <p>从目标棋盘出发，涟漪是这样一圈圈变大的：</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>第几圈（离目标几步）</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>…</th><th>24</th><th>…</th><th>30</th><th>31</th></tr></thead>
+          <tbody>
+            <tr><td>棋盘数量</td><td>1</td><td>2</td><td>4</td><td>8</td><td>16</td><td>20</td><td>…</td><td class="odd">24,047</td><td>…</td><td>221</td><td class="odd">2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>最大的一圈在 24 步远的地方，而最后一圈在 31 步，只有 <b>2</b> 个棋盘。它们就是世界上最难的八数码！你会在练习 6 里找到它们。</p>
+      <p>我们来写 BFS。除了"见过"记录，还要记住<b>每个棋盘是从哪里来的</b>（它的上一个棋盘和用到的移动），这样最后就能从目标往回走，读出整条路线。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>bfs_solve.py</div>
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> <span class="fn">deque</span>
+
+<span class="kw">def</span> <span class="fn">bfs_solve</span>(start, goal=<span class="st">"12345678x"</span>):
+    parent = {start: <span class="kw">None</span>}                 <span class="cm"># 棋盘 -&gt; (上一个棋盘, 移动字母)</span>
+    q = <span class="fn">deque</span>([start])                     <span class="cm"># 排队的队伍</span>
+    <span class="kw">while</span> q:
+        s = q.popleft()                    <span class="cm"># 取出队头的棋盘</span>
+        <span class="kw">if</span> s == goal:
+            <span class="kw">break</span>                          <span class="cm"># 到达目标：停止搜索</span>
+        <span class="kw">for</span> letter, t <span class="kw">in</span> neighbours(s):
+            <span class="kw">if</span> t <span class="kw">not</span> <span class="kw">in</span> parent:            <span class="cm"># 一个全新的棋盘？</span>
+                parent[t] = (s, letter)    <span class="cm"># 记住是怎么来的</span>
+                q.append(t)                <span class="cm"># 排到队尾</span>
+    <span class="kw">if</span> goal <span class="kw">not</span> <span class="kw">in</span> parent:
+        <span class="kw">return</span> <span class="kw">None</span>, <span class="fn">len</span>(parent)           <span class="cm"># 从来没到过目标</span>
+    path = <span class="st">""</span>
+    s = goal
+    <span class="kw">while</span> parent[s] <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>:           <span class="cm"># 从目标往回走到起点</span>
+        s, letter = parent[s]
+        path = letter + path               <span class="cm"># 每一步都放到最前面</span>
+    <span class="kw">return</span> path, <span class="fn">len</span>(parent)
+
+<span class="fn">print</span>(bfs_solve(<span class="st">"1234567x8"</span>))   <span class="cm"># ('r', 8)</span>
+<span class="fn">print</span>(bfs_solve(<span class="st">"23415x768"</span>))   <span class="cm"># ('ullddrurdllurdruldr', 46289)</span>
+<span class="fn">print</span>(bfs_solve(<span class="st">"21345678x"</span>))   <span class="cm"># (None, 181440)</span></code></pre>
+      </div>
+      <p>看每个答案里的第二个数：它表示 BFS 一共发现了多少个棋盘。简单的棋盘只需要很少几个；一个 19 步的棋盘大约要 46,000 个。最后那个棋盘呢？BFS 找遍了 <b>181,440</b> 个棋盘之后放弃了：这个棋盘永远解不开。先记住这件事，第 7 关会揭晓答案。</p>
+      <div class="callout tip">
+        <div class="ctitle">怎么读答案</div>
+        <p>每个字母都表示<b>空格</b>移动的方向。对于棋盘 <code>1234567x8</code>，<code>"r"</code> 的意思是"空格向右移"，也就是方块 8 向左滑。一步搞定！</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">第 5 关</span><h2>妙招：倒着搜，只搜一次</h2></div>
+      <p class="lead">假设比赛给了我们<b>很多</b>个棋盘要解。每个棋盘都跑一遍完整的 BFS 太慢了，遇到无解的棋盘更慢。有个更聪明的想法：所有谜题的终点都是<b>同一个目标</b>。那就只做一次 BFS，<b>从目标出发</b>，扩散到所有能到达的棋盘。</p>
+      <p>每一次滑动都可以撤销（空格往上移了，再往下移就回来了），所以从目标到某个棋盘的路线，倒过来读就是从这个棋盘到目标的路线。一次 BFS 就能得到一本"答案电话簿"：</p>
+      <div class="pair">
+        <div style="text-align:center"><code>bfs_tree["12345678x"]</code><br>→ <code>""</code>（已经解好了）</div>
+        <div style="text-align:center"><code>bfs_tree["12345x786"]</code><br>→ <code>"d"</code></div>
+        <div style="text-align:center"><code>bfs_tree["23415x768"]</code><br>→ <code>"ullddrurdllurrdlurd"</code></div>
+      </div>
+      <p>答案簿建好之后，回答任何棋盘都只需要查一次字典，几乎是瞬间完成。不在答案簿里的棋盘就是无解的。</p>
+      <h3>为什么字母看起来是反的</h3>
+      <p>这是每个人一开始都会搞糊涂的地方，我们慢慢来。BFS 从目标出发，把空格<b>远离</b>目标移动。可是我们存下来的答案必须把空格<b>移回</b>目标。所以每个字母都要反过来：</p>
+      <div class="pair">
+        <figure style="margin:0;text-align:center"><div class="puzzle mini" aria-hidden="true"><div class="tile">1</div><div class="tile">2</div><div class="tile">3</div><div class="tile">4</div><div class="tile">5</div><div class="tile">6</div><div class="tile">7</div><div class="tile">8</div><div class="tile blank"></div></div><figcaption class="gcap">目标（空格在 8）</figcaption></figure>
+        <span class="arrow">&#x2192;</span>
+        <figure style="margin:0;text-align:center"><div class="puzzle mini" aria-hidden="true"><div class="tile">1</div><div class="tile">2</div><div class="tile">3</div><div class="tile">4</div><div class="tile">5</div><div class="tile blank"></div><div class="tile">7</div><div class="tile">8</div><div class="tile">6</div></div><figcaption class="gcap">BFS 把空格往<b>上</b>移（−3）</figcaption></figure>
+      </div>
+      <p>要解开 <code>12345x786</code>，空格必须<b>往下</b>移回去。所以移动表里把位置变化 −3 和字母 <code>"d"</code> 配成一对：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>moves_table.py</div>
+<pre><code>moves = [(-<span class="nu">3</span>, <span class="st">"d"</span>), (<span class="nu">3</span>, <span class="st">"u"</span>), (-<span class="nu">1</span>, <span class="st">"r"</span>), (<span class="nu">1</span>, <span class="st">"l"</span>)]
+<span class="cm"># BFS 把空格往上移 (-3)  -&gt; 答案要把它往下移 ("d")</span>
+<span class="cm"># BFS 把空格往下移 (+3)  -&gt; 答案要把它往上移 ("u")</span>
+<span class="cm"># BFS 把空格往左移 (-1)  -&gt; 答案要把它往右移 ("r")</span>
+<span class="cm"># BFS 把空格往右移 (+1)  -&gt; 答案要把它往左移 ("l")</span></code></pre>
+      </div>
+      <h3>为什么新字母要放在最前面</h3>
+      <p>假设 BFS 正在棋盘 A，答案簿里已经写着 A 需要走 <code>"lu"</code> 才能到目标。现在 BFS 从 A 走到一个新棋盘 B。要解开 B，你必须<b>先</b>撤销这一步（回到 A），<b>然后</b>再按 A 的步骤走。所以新字母要放在<b>最前面</b>：</p>
+      <div class="answer-line">bfs_tree[B] = <b>回到A的字母</b> + bfs_tree[A]</div>
+      <p>如果把它加在末尾，步骤的顺序就错了，空格最后会跑到奇怪的地方去。</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">第 6 关</span><h2>侦探捉虫：修好示例代码</h2></div>
+      <p class="lead">这是我们拿到的示例代码。它的思路正是第 5 关的"倒着 BFS"妙招，是个很棒的想法！可是如果你把它敲进电脑，<b>Python 根本不肯运行</b>。戴上侦探帽吧：高亮的那几行里藏着 bug。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>original.py（原样照抄，无法运行）</div>
+<pre class="diff"><code><span class="ln">from collections import deque</span><span class="ln">config = ["1", "2", "3", "4", "5", "6", "7",</span><span class="ln">"8", "x"]</span><span class="ln">target = "".join(config) # "12345678x"</span><span class="ln">bfs_tree = {target: ""}</span><span class="ln"># each thing in the queue is (state, pos_x)</span><span class="ln">q = deque([(target, target.index("x"))])</span><span class="ln">moves = [(-3, "d"), (3, "u"), (-1, "r"),</span><span class="ln">(1, "l")]</span><span class="ln">while q:</span><span class="ln">curr_state, pos = q.popleft()</span><span class="ln">current_path = bfs_tree[curr_state]</span><span class="ln">for offset, solution_char in moves:</span><span class="ln">npos = pos + offset</span><span class="ln">if npos &lt; 0 or npos &gt;= 9: continue</span><span class="ln bug">if offset = -1 and pos % 3 = 0:</span><span class="ln">continue</span><span class="ln bug">if offset = 1 and pos % 3 = 2:</span><span class="ln">continue</span><span class="ln bug">state_list = list(current_state)</span><span class="ln"># e.g. ["1", "2", ., "x"]</span><span class="ln">state_list[pos], state_list[npos] = (</span><span class="ln">state_list[npos], state_list[pos]</span><span class="ln">)</span><span class="ln">new_state = "".join(state_list)</span><span class="ln bug">if new_state is not in bfs_tree:</span><span class="ln">bfs_tree[new_state] = (solution_char +</span><span class="ln">current_path)</span><span class="ln">q.append((new_state, npos))</span><span class="ln bug">while (s =input()):</span><span class="ln">s = "".join(s.split()).strip()</span><span class="ln bug">if s is not in bfs_tree: print("unsolvable")</span><span class="ln">else: print(bfs_tree[s])</span></code></pre>
+      </div>
+      <ol class="bugs">
+        <li><b>把 <code>==</code> 写成了 <code>=</code>。</b>在 Python 里，<code>=</code> 是<i>存</i>一个值，<code>==</code> 才是<i>比较</i>两个值。两行边界检查里有四处本该是"是否等于"，却写成了 <code>=</code>：<code>offset = -1</code>、<code>pos % 3 = 0</code>、<code>offset = 1</code> 和 <code>pos % 3 = 2</code>。<span class="err">SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?</span></li>
+        <li><b>一个不存在的名字。</b>从队列里取出的棋盘叫 <code>curr_state</code>，后面却写成了 <code>list(current_state)</code>。Python 从来没听说过 <code>current_state</code>。<span class="err">NameError: name 'current_state' is not defined. Did you mean: 'curr_state'?</span></li>
+        <li><b>Python 里没有 <code>is not in</code>。</b>Python 有 <code>not in</code>（"是不是不在里面"）和 <code>is not</code>（"是不是另一个对象"），但不能把它们粘在一起。<code>if new_state is not in bfs_tree</code> 和 <code>if s is not in bfs_tree</code> 都要改成 <code>not in</code>。<span class="err">SyntaxError: invalid syntax</span></li>
+        <li><b>在 <code>while (…)</code> 里赋值。</b><code>while (s = input())</code> 是 C 语言的写法，Python 不允许在条件里用普通的 <code>=</code>。Python 3.8 以后有"海象运算符"<code>while (s := input()):</code>，但输入读完时它还是会因为 <code>EOFError</code> 崩溃。稳妥的改法是用 <code>try / except EOFError</code> 循环。<span class="err">SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?</span></li>
+        <li><b>缩进丢了。</b>Python 靠缩进来判断哪些行属于 <code>while</code>、<code>for</code> 和 <code>if</code>。没有缩进，程序连启动都做不到。（从网页或聊天里复制代码时经常会这样。）<span class="err">IndentationError: expected an indented block after 'while' statement on line 10</span></li>
+      </ol>
+      <div class="callout fact">
+        <div class="ctitle">不算 bug，只是多余</div>
+        <p><code>"".join(s.split()).strip()</code> 里的 <code>.strip()</code> 其实什么也没做。<code>s.split()</code> 已经把<b>所有</b>空格都扔掉了，拼起来的字符串里没有空格可去。它没有害处，所以我们直接省掉。</p>
+      </div>
+      <p>下面是修好的程序，<b>每一行</b>都有注释，说明它做了什么、为什么这么做：</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>eight_puzzle.py（修复版，逐行注释）</div>
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> <span class="fn">deque</span>     <span class="cm"># deque 是一种快速队列：从队尾加入，从队头取出</span>
+
+config = [<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"4"</span>, <span class="st">"5"</span>, <span class="st">"6"</span>, <span class="st">"7"</span>, <span class="st">"8"</span>, <span class="st">"x"</span>]   <span class="cm"># 目标棋盘，一格一格列出来（"x" 是空格）</span>
+target = <span class="st">""</span>.join(config)          <span class="cm"># 把它们拼成一个字符串："12345678x"</span>
+bfs_tree = {target: <span class="st">""</span>}           <span class="cm"># 答案簿：棋盘 -&gt; 解开它的步骤（"" 表示已经解好）</span>
+
+<span class="cm"># each thing in the queue is (state, pos_x)：队列里每一项是（棋盘，空格位置）</span>
+q = <span class="fn">deque</span>([(target, target.index(<span class="st">"x"</span>))])   <span class="cm"># BFS 从【目标】出发，它的空格在位置 8</span>
+moves = [(-<span class="nu">3</span>, <span class="st">"d"</span>), (<span class="nu">3</span>, <span class="st">"u"</span>), (-<span class="nu">1</span>, <span class="st">"r"</span>), (<span class="nu">1</span>, <span class="st">"l"</span>)]   <span class="cm"># (BFS 怎么移空格, 能【撤销】这一步的字母)</span>
+
+<span class="kw">while</span> q:                                        <span class="cm"># 只要队伍里还有棋盘在等，就继续</span>
+    curr_state, pos = q.popleft()               <span class="cm"># 取出排得最久的棋盘（先进先出）</span>
+    current_path = bfs_tree[curr_state]         <span class="cm"># 解开这个棋盘的步骤</span>
+    <span class="kw">for</span> offset, solution_char <span class="kw">in</span> moves:         <span class="cm"># 试着把空格往 4 个方向移</span>
+        npos = pos + offset                     <span class="cm"># 空格的新位置</span>
+        <span class="kw">if</span> npos &lt; <span class="nu">0</span> <span class="kw">or</span> npos &gt;= <span class="nu">9</span>:               <span class="cm"># 从上边或下边掉出去了？</span>
+            <span class="kw">continue</span>                            <span class="cm">#   那这个方向不能走</span>
+        <span class="kw">if</span> offset == -<span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">0</span>:       <span class="cm"># ✅ ==  在最左列还想往左？</span>
+            <span class="kw">continue</span>                            <span class="cm">#   不许穿墙！</span>
+        <span class="kw">if</span> offset == <span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">2</span>:        <span class="cm"># ✅ ==  在最右列还想往右？</span>
+            <span class="kw">continue</span>                            <span class="cm">#   不许穿墙！</span>
+        state_list = <span class="fn">list</span>(curr_state)           <span class="cm"># ✅ curr_state  字符串 -&gt; 列表，才能交换</span>
+        <span class="cm"># e.g. ["1", "2", ..., "x"]</span>
+        state_list[pos], state_list[npos] = (   <span class="cm"># 交换空格和旁边的方块……</span>
+            state_list[npos], state_list[pos]   <span class="cm"># ……Python 可以一次换两个</span>
+        )
+        new_state = <span class="st">""</span>.join(state_list)         <span class="cm"># 列表 -&gt; 字符串（字符串才能当字典的键）</span>
+        <span class="kw">if</span> new_state <span class="kw">not</span> <span class="kw">in</span> bfs_tree:           <span class="cm"># ✅ not in  一个从没见过的棋盘？</span>
+            bfs_tree[new_state] = (solution_char +    <span class="cm"># 先撤销这一步，</span>
+                                   current_path)      <span class="cm"># 再按旧棋盘的步骤走</span>
+            q.append((new_state, npos))         <span class="cm"># 以后再探索它：排到队尾</span>
+
+<span class="kw">while</span> <span class="kw">True</span>:                                     <span class="cm"># ✅ 一直回答问题，直到输入结束</span>
+    <span class="kw">try</span>:
+        s = <span class="fn">input</span>()                             <span class="cm"># 读一行，例如 "2 3 4 1 5 x 7 6 8"</span>
+    <span class="kw">except</span> EOFError:                            <span class="cm"># 没有更多行了？</span>
+        <span class="kw">break</span>                                   <span class="cm">#   那就结束</span>
+    s = <span class="st">""</span>.join(s.split())                      <span class="cm"># 去掉所有空格："23415x768"</span>
+    <span class="kw">if</span> s <span class="kw">not</span> <span class="kw">in</span> bfs_tree:                       <span class="cm"># ✅ not in  答案簿里没有？</span>
+        <span class="fn">print</span>(<span class="st">"unsolvable"</span>)                     <span class="cm">#   那怎么移动都解不开</span>
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(bfs_tree[s])                      <span class="cm"># 否则直接查出答案</span>
+
+<span class="cm"># 输入:  2 3 4 1 5 x 7 6 8</span>
+<span class="cm"># 输出: ullddrurdllurrdlurd</span></code></pre>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">在棋盘上验证答案</div>
+        <p>把起始棋盘 <code>2 3 4 1 5 x 7 6 8</code> 输入第 8 关的求解器，然后点<b>"播放"</b>。你会看到 <code>ullddrurdllurrdlurd</code> 这 19 步把方块全部送回家。Python 建答案簿不到一秒，之后每个棋盘都是瞬间回答。</p>
+      </div>
+      <p>你注意到了吗？第 4 关的 <code>bfs_solve</code> 对同一个棋盘给出的是<b>另一个</b> 19 步答案（<code>ullddrurdllurdruldr</code>）。两个都对！很多棋盘有好几种最短解法，得到哪一种取决于四个方向的尝试顺序。所以这道题的评测系统接受任何一种正确的解法。</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">第 7 关</span><h2>奇偶性的秘密：为什么一半的棋盘无解</h2></div>
+      <p class="lead">棋盘一共有 9! = 362,880 种，可答案簿里恰好只有 <b>181,440</b> 条：正好<b>一半</b>。另一半无论你多聪明都解不开。为什么？</p>
+      <p>按阅读顺序写下方块，跳过空格。一个<b>逆序对</b>就是顺序反了的一对方块：大的数排在了小的数前面。</p>
+      <div class="pair">
+        <div class="puzzle mini" aria-hidden="true"><div class="tile">2</div><div class="tile">1</div><div class="tile">3</div><div class="tile">4</div><div class="tile">5</div><div class="tile">6</div><div class="tile">7</div><div class="tile">8</div><div class="tile blank"></div></div>
+        <div><p style="margin:0">阅读顺序：<code>2 1 3 4 5 6 7 8</code><br>顺序反了的对：只有 (2, 1)<br>→ <b>1 个逆序对</b>（奇数）</p></div>
+      </div>
+      <p>现在看看每种移动对逆序对有什么影响：</p>
+      <ul>
+        <li><b>左右移动：</b>空格和同一行的方块交换，方块的阅读顺序完全不变。逆序对：<b>+0</b>。</li>
+        <li><b>上下移动：</b>一个方块在阅读顺序里正好跳过了另外 <b>2</b> 个方块。这 2 对的顺序各自翻转一次，所以逆序对的数量变化 −2、0 或 +2。</li>
+      </ul>
+      <p>不管哪种情况，变化量都是<b>偶数</b>，所以逆序对是奇数还是偶数（它的<b>奇偶性</b>）永远不会改变。目标棋盘有 0 个逆序对，是偶数。所以逆序对为<b>奇数</b>的棋盘永远到不了目标！</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>parity.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">inversions</span>(state):
+    tiles = [c <span class="kw">for</span> c <span class="kw">in</span> state <span class="kw">if</span> c != <span class="st">"x"</span>]   <span class="cm"># 阅读顺序，去掉空格</span>
+    count = <span class="nu">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(tiles)):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i + <span class="nu">1</span>, <span class="fn">len</span>(tiles)):
+            <span class="kw">if</span> tiles[i] &gt; tiles[j]:           <span class="cm"># 大的在小的前面：顺序反了</span>
+                count += <span class="nu">1</span>
+    <span class="kw">return</span> count
+
+<span class="kw">def</span> <span class="fn">solvable</span>(state):
+    <span class="kw">return</span> inversions(state) % <span class="nu">2</span> == <span class="nu">0</span>         <span class="cm"># 偶数 -&gt; 有解，奇数 -&gt; 无解</span>
+
+<span class="fn">print</span>(inversions(<span class="st">"23415x768"</span>), solvable(<span class="st">"23415x768"</span>))   <span class="cm"># 4 True</span>
+<span class="fn">print</span>(inversions(<span class="st">"21345678x"</span>), solvable(<span class="st">"21345678x"</span>))   <span class="cm"># 1 False</span>
+
+<span class="cm"># 和第 6 关的答案簿对照一下：</span>
+<span class="fn">print</span>(<span class="fn">len</span>(bfs_tree))                              <span class="cm"># 181440</span>
+<span class="fn">print</span>(<span class="fn">all</span>(solvable(s) <span class="kw">for</span> s <span class="kw">in</span> bfs_tree))         <span class="cm"># True</span></code></pre>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">没人赢得的 1000 美元</div>
+        <p>萨姆·劳埃德那道著名的挑战题，是一个只把 14 和 15 两块交换了的 15 数码：恰好一个逆序对。类似的奇偶性论证可以证明它无解，所以那笔奖金一直都很安全。我们的 BFS 用"暴力"证明了八数码的版本：362,880 个棋盘里，能到达的恰好是逆序对为偶数的那 181,440 个。</p>
+      </div>
+      <p>这给了我们一个闪电般的测试：搜索之前先数逆序对。如果是奇数，直接输出 <code>unsolvable</code>，完全不用搜索。</p>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">第 8 关</span><h2>更进一步：求解器和 A* 搜索</h2></div>
+      <p class="lead">把所有知识组合起来吧！这个求解器会建出和 Python 程序完全一样的倒推答案簿（全部 181,440 个棋盘，就在你的浏览器里），检查逆序对的奇偶性，再一步一步播放解法。</p>
+      <div class="widget" id="solverWidget">
+        <h3>🤖 瞬间求解器</h3>
+        <div class="hint">输入 9 个符号（数字 1–8 和一个 <code>x</code>），有没有空格都行；也可以直接用第 1 关游戏里的棋盘。</div>
+        <div class="field-row">
+          <div class="field"><label for="boardIn">棋盘</label><input class="wide" id="boardIn" type="text" value="2 3 4 1 5 x 7 6 8" spellcheck="false" autocomplete="off"></div>
+          <button class="btn" id="solveBtn" type="button">求解</button>
+          <button class="btn ghost" id="fromGameBtn" type="button">用游戏棋盘</button>
+        </div>
+        <div class="puzzle mini" id="solveBoard" aria-label="求解器棋盘"></div>
+        <div class="controls">
+          <button class="btn" id="playBtn" type="button">播放</button>
+          <button class="btn ghost" id="stepBtn" type="button">单步</button>
+        </div>
+        <div class="status" id="solveOut"></div>
+      </div>
+      <h3>A*：带着方向感去搜索</h3>
+      <p>BFS 很公平，但它是"瞎"的：它向所有方向平均扩散，连远离目标的方向也不放过。<b>A*</b>（读作"A-star"）更聪明。它会估计每个棋盘离目标还有多远，并且总是先探索最有希望的棋盘。</p>
+      <p>一个好的估计是<b>曼哈顿距离</b>：对每个方块，数一数它离自己的家差几行加几列，再把它们加起来。每一步只能把一个方块移动一格，所以你需要的步数永远不可能<i>少于</i>这个数。因为这个估计从不高估，A* 仍然保证能找到最短解法。</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>astar.py</div>
+<pre><code><span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="fn">manhattan</span>(state):
+    total = <span class="nu">0</span>
+    <span class="kw">for</span> i, c <span class="kw">in</span> <span class="fn">enumerate</span>(state):
+        <span class="kw">if</span> c != <span class="st">"x"</span>:
+            home = <span class="fn">int</span>(c) - <span class="nu">1</span>                 <span class="cm"># 方块 1 的家在位置 0，依此类推</span>
+            total += <span class="fn">abs</span>(i // <span class="nu">3</span> - home // <span class="nu">3</span>) + <span class="fn">abs</span>(i % <span class="nu">3</span> - home % <span class="nu">3</span>)
+    <span class="kw">return</span> total
+
+<span class="kw">def</span> <span class="fn">astar</span>(start, goal=<span class="st">"12345678x"</span>):
+    best = {start: <span class="nu">0</span>}                         <span class="cm"># 到每个棋盘目前找到的最少步数</span>
+    heap = [(manhattan(start), <span class="nu">0</span>, start, <span class="st">""</span>)] <span class="cm"># (总步数估计, 已走步数, 棋盘, 路线)</span>
+    explored = <span class="nu">0</span>
+    <span class="kw">while</span> heap:
+        f, g, s, path = heapq.heappop(heap)   <span class="cm"># 最有希望的棋盘</span>
+        <span class="kw">if</span> g &gt; best[s]:                       <span class="cm"># 过时的、更差的记录：跳过</span>
+            <span class="kw">continue</span>
+        explored += <span class="nu">1</span>
+        <span class="kw">if</span> s == goal:
+            <span class="kw">return</span> path, explored
+        <span class="kw">for</span> letter, t <span class="kw">in</span> neighbours(s):
+            <span class="kw">if</span> t <span class="kw">not</span> <span class="kw">in</span> best <span class="kw">or</span> g + <span class="nu">1</span> &lt; best[t]:
+                best[t] = g + <span class="nu">1</span>
+                heapq.heappush(heap, (g + <span class="nu">1</span> + manhattan(t), g + <span class="nu">1</span>, t, path + letter))
+    <span class="kw">return</span> <span class="kw">None</span>, explored
+
+path, explored = astar(<span class="st">"23415x768"</span>)
+<span class="fn">print</span>(<span class="fn">len</span>(path), explored)        <span class="cm"># 19 651</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat slow"><div class="num">46,289</div><div class="lbl">BFS 解 23415x768 时发现的棋盘数</div></div>
+        <div class="stat fast"><div class="num">651</div><div class="lbl">A* 找到同样 19 步解法时探索的棋盘数</div></div>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">该用哪一个？</div>
+        <ul>
+          <li><b>棋盘很多、谜题很小（3×3）：</b>做一次倒推 BFS，然后逐个查答案。这就是示例代码的做法。</li>
+          <li><b>只有一个棋盘、谜题更大（4×4）：</b>15 数码能到达的棋盘超过 10 万亿个，根本存不下。用带好估计的 A*（或者它省内存的表亲 IDA*）才是正道。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ CHECKPOINT ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">小测验</span><h2>概念快问快答</h2></div>
+      <details>
+        <summary>1. 为什么 BFS 第一次找到某个棋盘的路线一定是最短的？</summary>
+        <div class="reveal"><p>因为队列是先进先出的。所有 1 步远的棋盘都会在 2 步远的棋盘之前取出，2 步远的又在 3 步远的之前，依此类推。所以 BFS 第一次到达某个棋盘时，所有更短的路线都已经探索完了。如果真有更短的路线，BFS 早就该更早找到这个棋盘了。</p></div>
+      </details>
+      <details>
+        <summary>2. 示例代码里为什么是 <code>solution_char + current_path</code>，而不是 <code>current_path + solution_char</code>？</summary>
+        <div class="reveal"><p>新棋盘比当前棋盘离目标<b>更远</b>一步。要解开它，你必须先走回到当前棋盘的那一步（<code>solution_char</code>），然后再按当前棋盘的步骤走（<code>current_path</code>）。先做的事放在前面。</p></div>
+      </details>
+      <details>
+        <summary>3. <code>1 2 3 / 4 5 6 / 8 7 x</code> 能解开吗？不许运行任何搜索来回答。</summary>
+        <div class="reveal"><p>阅读顺序（跳过空格）：1 2 3 4 5 6 8 7。唯一顺序反了的对是 (8, 7)，所以有 <b>1</b> 个逆序对，是奇数。奇偶性永远不会改变，而目标有 0 个逆序对，所以这个棋盘<b>无解</b>。</p></div>
+      </details>
+    </section>
+
+    <!-- ============ TRAINING GROUND ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">训练场</span><h2>练习题</h2></div>
+      <p class="lead">八道题，从热身的 ★ 到 Boss 级的 ★★★。好几道题的答案要用到第 2 关的 <code>neighbours()</code> 和第 6 关的 <code>bfs_tree</code>，先把它们粘贴进来。一定要认真试过再看答案！</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. 位置侦探 <span class="stars">★</span></h3>
+        <p>写一个 <code>to_rc(pos)</code>，把位置（0–8）变成 <code>(row, col)</code>，再写一个 <code>to_pos(row, col)</code> 做相反的事。检查一下，对全部 9 个格子，这两个函数都能互相还原。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>正着算用 <code>//</code> 和 <code>%</code>。反着算：每一行占 3 个位置，所以 <code>pos = row * 3 + col</code>。</p></div></details>
+        <details><summary>✅ 答案</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_positions.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">to_rc</span>(pos):
+    <span class="kw">return</span> pos // <span class="nu">3</span>, pos % <span class="nu">3</span>
+
+<span class="kw">def</span> <span class="fn">to_pos</span>(row, col):
+    <span class="kw">return</span> row * <span class="nu">3</span> + col
+
+<span class="fn">print</span>(to_rc(<span class="nu">5</span>), to_rc(<span class="nu">7</span>))                                 <span class="cm"># (1, 2) (2, 1)</span>
+<span class="fn">print</span>(to_pos(<span class="nu">1</span>, <span class="nu">2</span>), to_pos(<span class="nu">2</span>, <span class="nu">1</span>))                         <span class="cm"># 5 7</span>
+<span class="fn">print</span>(<span class="fn">all</span>(to_pos(*to_rc(p)) == p <span class="kw">for</span> p <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>)))      <span class="cm"># True</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. 这里能走几步？ <span class="stars">★</span></h3>
+        <p>用 <code>neighbours()</code> 算出空格在 9 个位置时各有几种走法，并打印成 3×3 的格子。和"角上 2 种、边上 3 种、中心 4 种"对得上吗？</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>对位置 <code>p</code>，造一个空格在那里的棋盘，比如把 <code>"x"</code> 插进 <code>"12345678"</code> 的第 <code>p</code> 个位置。</p></div></details>
+        <details><summary>✅ 答案</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_move_count.py</div>
+<pre><code><span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">3</span>):
+    row = []
+    <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">3</span>):
+        p = r * <span class="nu">3</span> + c
+        board = <span class="st">"12345678"</span>[:p] + <span class="st">"x"</span> + <span class="st">"12345678"</span>[p:]   <span class="cm"># 空格在位置 p</span>
+        row.append(<span class="fn">str</span>(<span class="fn">len</span>(neighbours(board))))
+    <span class="fn">print</span>(<span class="st">" "</span>.join(row))
+<span class="cm"># 2 3 2</span>
+<span class="cm"># 3 4 3</span>
+<span class="cm"># 2 3 2</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. 答案检查器 <span class="stars">★★</span></h3>
+        <p>写一个 <code>apply_moves(state, moves)</code>，按照 <code>"ullddr"</code> 这样的步骤字符串移动（每个字母是空格移动的方向），返回最后的棋盘；如果某一步会走出棋盘，就返回 <code>None</code>。用它验证示例代码的答案真的能解开 <code>23415x768</code>。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>把 <code>neighbours(state)</code> 变成字典 <code>{字母: 新棋盘}</code>。如果字母不在字典里，这一步就不合法。</p></div></details>
+        <details><summary>✅ 答案</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_apply.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">apply_moves</span>(state, moves):
+    <span class="kw">for</span> m <span class="kw">in</span> moves:
+        options = <span class="fn">dict</span>(neighbours(state))   <span class="cm"># 例如 {"u": "...", "d": "...", "l": "..."}</span>
+        <span class="kw">if</span> m <span class="kw">not</span> <span class="kw">in</span> options:
+            <span class="kw">return</span> <span class="kw">None</span>                     <span class="cm"># 这一步会走出棋盘</span>
+        state = options[m]
+    <span class="kw">return</span> state
+
+<span class="fn">print</span>(apply_moves(<span class="st">"23415x768"</span>, <span class="st">"ullddrurdllurrdlurd"</span>))   <span class="cm"># 12345678x</span>
+<span class="fn">print</span>(apply_moves(<span class="st">"23415x768"</span>, <span class="st">"r"</span>))                     <span class="cm"># None  (空格在最右列)</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. 快速拒绝 <span class="stars">★★</span></h3>
+        <p>让示例代码处理无解棋盘时更快：查答案簿之前，先用第 7 关的 <code>solvable()</code> 判断。然后用这几个棋盘测试：<code>8 1 3 4 x 2 7 6 5</code>、<code>1 2 3 4 5 6 8 7 x</code> 和 <code>x 8 7 6 5 4 3 2 1</code>。</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>先数逆序对。只有是偶数时才需要查答案簿，而且这时它一定在答案簿里。</p></div></details>
+        <details><summary>✅ 答案</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_quick_reject.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">answer</span>(line):
+    s = <span class="st">""</span>.join(line.split())
+    <span class="kw">if</span> <span class="kw">not</span> solvable(s):                 <span class="cm"># 逆序对是奇数：无解，不用查</span>
+        <span class="kw">return</span> <span class="st">"unsolvable"</span>
+    <span class="kw">return</span> bfs_tree[s]                  <span class="cm"># 偶数：一定在答案簿里</span>
+
+<span class="kw">for</span> line <span class="kw">in</span> [<span class="st">"8 1 3 4 x 2 7 6 5"</span>, <span class="st">"1 2 3 4 5 6 8 7 x"</span>, <span class="st">"x 8 7 6 5 4 3 2 1"</span>]:
+    <span class="fn">print</span>(inversions(<span class="st">""</span>.join(line.split())), answer(line))
+<span class="cm"># 12 rdlluurdldrurd</span>
+<span class="cm"># 1 unsolvable</span>
+<span class="cm"># 28 rrddlluurrddlluurrddlluurrdd</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. 涟漪普查 <span class="stars">★★</span></h3>
+        <p>用 <code>bfs_tree</code> 数一数恰好需要 0、1、2……步的棋盘各有多少个。（每个答案字符串的长度就是它的步数。）哪个距离的棋盘最多？</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p><code>collections.Counter</code> 会帮你计数：<code>Counter(len(p) for p in bfs_tree.values())</code>。</p></div></details>
+        <details><summary>✅ 答案</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_census.py</div>
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> <span class="fn">Counter</span>
+
+census = <span class="fn">Counter</span>(<span class="fn">len</span>(path) <span class="kw">for</span> path <span class="kw">in</span> bfs_tree.values())
+<span class="fn">print</span>([census[d] <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">6</span>)])         <span class="cm"># [1, 2, 4, 8, 16, 20]</span>
+<span class="fn">print</span>(<span class="fn">max</span>(census))                           <span class="cm"># 31  (最远的一圈)</span>
+<span class="fn">print</span>(<span class="fn">max</span>(census, key=census.get))           <span class="cm"># 24  (最大的一圈)</span>
+<span class="fn">print</span>(census[<span class="nu">24</span>])                            <span class="cm"># 24047</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. 世界上最难的八数码 <span class="stars">★★</span></h3>
+        <p>找出所有需要最多步数的棋盘，把每一个和它的答案一起打印出来。然后在求解器里试一个！</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>先找出最长的答案长度，再收集所有答案长度等于它的棋盘。</p></div></details>
+        <details><summary>✅ 答案</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_hardest.py</div>
+<pre><code>longest = <span class="fn">max</span>(<span class="fn">len</span>(p) <span class="kw">for</span> p <span class="kw">in</span> bfs_tree.values())
+hardest = <span class="fn">sorted</span>(s <span class="kw">for</span> s, p <span class="kw">in</span> bfs_tree.items() <span class="kw">if</span> <span class="fn">len</span>(p) == longest)
+<span class="fn">print</span>(longest, hardest)      <span class="cm"># 31 ['64785x321', '8672543x1']</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. 五数码（2×3） <span class="stars">★★★</span></h3>
+        <p>一个更小的版本有 2 行 3 列：方块 1–5 和一个空格，目标是 <code>12345x</code>。改一改倒推 BFS，让它能处理这个谜题。有多少个棋盘有解？最难的棋盘是哪个？</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>只有棋盘大小变了：位置是 0–5 而不是 0–8。每行还是 3 个格子，所以上下还是 ±3，用 <code>% 3</code> 的边界检查也不变。</p></div></details>
+        <details><summary>✅ 答案</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_five_puzzle.py</div>
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> <span class="fn">deque</span>
+
+goal = <span class="st">"12345x"</span>
+book = {goal: <span class="st">""</span>}
+q = <span class="fn">deque</span>([(goal, goal.index(<span class="st">"x"</span>))])
+moves = [(-<span class="nu">3</span>, <span class="st">"d"</span>), (<span class="nu">3</span>, <span class="st">"u"</span>), (-<span class="nu">1</span>, <span class="st">"r"</span>), (<span class="nu">1</span>, <span class="st">"l"</span>)]
+<span class="kw">while</span> q:
+    s, pos = q.popleft()
+    <span class="kw">for</span> offset, ch <span class="kw">in</span> moves:
+        npos = pos + offset
+        <span class="kw">if</span> npos &lt; <span class="nu">0</span> <span class="kw">or</span> npos &gt;= <span class="nu">6</span>:                 <span class="cm"># 现在只有 6 个格子</span>
+            <span class="kw">continue</span>
+        <span class="kw">if</span> offset == -<span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">0</span>:
+            <span class="kw">continue</span>
+        <span class="kw">if</span> offset == <span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">2</span>:
+            <span class="kw">continue</span>
+        cells = <span class="fn">list</span>(s)
+        cells[pos], cells[npos] = cells[npos], cells[pos]
+        t = <span class="st">""</span>.join(cells)
+        <span class="kw">if</span> t <span class="kw">not</span> <span class="kw">in</span> book:
+            book[t] = ch + book[s]
+            q.append((t, npos))
+
+<span class="fn">print</span>(<span class="fn">len</span>(book))                                  <span class="cm"># 360  (= 6! / 2)</span>
+far = <span class="fn">max</span>(book, key=<span class="kw">lambda</span> s: <span class="fn">len</span>(book[s]))
+<span class="fn">print</span>(far, <span class="fn">len</span>(book[far]))                        <span class="cm"># 45x123 21</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. BFS 对决 A* <span class="stars">★★★</span></h3>
+        <p>对下面三个有解的棋盘，比较第 4 关的 <code>bfs_solve()</code> 和第 8 关的 <code>astar()</code>。它们找到的解法长度总是一样吗？哪一个探索的棋盘更少？</p>
+        <details><summary>💡 提示</summary><div class="reveal"><p>两个函数都返回 <code>(path, count)</code>。用 <code>len(path)</code> 比较长度，用第二个数比较工作量。</p></div></details>
+        <details><summary>✅ 答案</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_showdown.py</div>
+<pre><code><span class="kw">for</span> board <span class="kw">in</span> [<span class="st">"23415x768"</span>, <span class="st">"8134x2765"</span>, <span class="st">"x87654321"</span>]:
+    p1, n1 = bfs_solve(board)
+    p2, n2 = astar(board)
+    <span class="fn">print</span>(board, <span class="fn">len</span>(p1), <span class="fn">len</span>(p2), n1, n2)
+<span class="cm"># 23415x768 19 19 46289 651</span>
+<span class="cm"># 8134x2765 14 14 9021 77</span>
+<span class="cm"># x87654321 28 28 180899 727</span></code></pre>
+      </div>
+          <p>每次长度都一样，因为两者都保证找到最优解。但 A* 只做了很小一部分工作，因为曼哈顿距离的估计一直把它指向目标。</p>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">成功逃脱！</div>
+        <p>你把一个滑块玩具变成了字符串，画出了一张有 181,440 个棋盘的地图，用 BFS 的涟漪探索了它，用倒推妙招瞬间回答任何棋盘，修好了五个 bug，用奇偶性证明了一半的棋盘无解，还认识了 A*。导航软件和游戏 AI 每天用的，正是这些思想。</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>八数码：滑动方块，到达 12345678x。从目标出发做一次倒推广度优先搜索，就能解出全部 181,440 个有解的棋盘；逆序对的奇偶性能识别出无解的棋盘。深度优先搜索请看<a href="Backtracking_zh.html">回溯</a>，另一种图上的搜索请看<a href="Regular_Dodecahedron_zh.html">哈密顿回路</a>。</p>
+    <p><a href="index_cn.html">&#x2190; 返回全部讲解</a> &middot; <a href="eight_puzzle_en.html">English version</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    gameMsg: function(n, s){ return '步数：<b>' + n + '</b> &middot; state = <b>"' + s + '"</b>'; },
+    won: function(n, best){ return '<span class="ok">门开了！你用 ' + n + ' 步解开了谜题。</span>这个棋盘的最短解法是 <b>' + best + '</b> 步。' + (n === best ? '完美！' : '你能追平它吗？点"重来"再试一次。'); },
+    pressShuffle: '点<b>"打乱"</b>把方块打乱。',
+    solverStart: '点<b>"求解"</b>找出最短解法。',
+    bad: '<span class="back">请输入恰好 9 个符号：数字 1&ndash;8 各一次，外加一个 x。</span>',
+    unsolvable: function(inv){ return '<span class="back">unsolvable（无解）</span>：这个棋盘有 <b>' + inv + '</b> 个逆序对，是奇数。无论怎么移动都解不开（见第 7 关）。'; },
+    already: '<span class="ok">这个棋盘已经是目标状态了！</span>',
+    solved: function(n, inv){ return '逆序对：<b>' + inv + '</b>（偶数，有解）。最短解法：<b>' + n + '</b> 步'; },
+    stepOf: function(i, n){ return '第 ' + i + ' / ' + n + ' 步。每个字母表示空格移动的方向。'; },
+    done: '<span class="ok">完成：12345678x！</span>',
+    play: '播放', pause: '暂停'
+  };
+
+  var GOAL = '12345678x';
+  var STEP = { u: -3, d: 3, l: -1, r: 1 };      /* letter = the direction the hole moves */
+
+  function canMove(p, n){
+    if (n < 0 || n > 8) return false;
+    if (n === p - 1 && p % 3 === 0) return false; /* no wrapping off the left edge */
+    if (n === p + 1 && p % 3 === 2) return false; /* no wrapping off the right edge */
+    return n === p - 3 || n === p + 3 || n === p - 1 || n === p + 1;
+  }
+  function swap(s, p, n){
+    var a = s.split(''); a[p] = a[n]; a[n] = 'x'; return a.join('');
+  }
+  function inversions(s){
+    var t = s.replace('x', ''), c = 0;
+    for (var i = 0; i < t.length; i++) for (var j = i + 1; j < t.length; j++) if (t[i] > t[j]) c++;
+    return c;
+  }
+
+  /* ---------- The answer book: the same backwards BFS as the Python program ---------- */
+  var book = null;
+  function buildBook(){
+    if (book) return book;
+    var moves = [[-3, 'd'], [3, 'u'], [-1, 'r'], [1, 'l']];
+    book = new Map(); book.set(GOAL, '');
+    var qs = [GOAL], qp = [8], head = 0;
+    while (head < qs.length){
+      var s = qs[head], pos = qp[head]; head++;
+      var path = book.get(s);
+      for (var k = 0; k < 4; k++){
+        var npos = pos + moves[k][0];
+        if (npos < 0 || npos >= 9) continue;
+        if (moves[k][0] === -1 && pos % 3 === 0) continue;
+        if (moves[k][0] === 1 && pos % 3 === 2) continue;
+        var t = swap(s, pos, npos);
+        if (!book.has(t)){ book.set(t, moves[k][1] + path); qs.push(t); qp.push(npos); }
+      }
+    }
+    return book;
+  }
+  /* build it in the background shortly after load, so clicks feel instant */
+  setTimeout(buildBook, 600);
+
+  function render(el, s, clickable, moved){
+    var p = s.indexOf('x'), html = '';
+    for (var i = 0; i < 9; i++){
+      var c = s[i], cls = 'tile';
+      if (c === 'x') cls += ' blank';
+      else if (c === GOAL[i]) cls += ' home';
+      if (clickable && c !== 'x' && canMove(p, i)) cls += ' can';
+      if (i === moved) cls += ' moved';
+      var label = c === 'x' ? '' : c;
+      html += clickable
+        ? '<button type="button" class="' + cls + '" data-pos="' + i + '"' + (c === 'x' ? ' aria-label="empty" tabindex="-1"' : '') + '>' + label + '</button>'
+        : '<div class="' + cls + '">' + label + '</div>';
+    }
+    el.innerHTML = html;
+  }
+
+  /* ---------- Widget 1: the playable puzzle ---------- */
+  var gameEl = document.getElementById('game'), gameMsg = document.getElementById('gameMsg');
+  var game = { s: GOAL, start: GOAL, moves: 0, won: false };
+
+  function drawGame(moved){
+    render(gameEl, game.s, !game.won, moved);
+    gameEl.classList.toggle('won', game.won);
+    if (game.won){
+      var best = buildBook().get(game.start).length;
+      gameMsg.innerHTML = T.won(game.moves, best);
+    } else if (game.s === GOAL){
+      gameMsg.innerHTML = T.pressShuffle;
+    } else {
+      gameMsg.innerHTML = T.gameMsg(game.moves, game.s);
+    }
+  }
+  function shuffle(){
+    var s = GOAL, p = 8, last = -1;
+    var n = 30 + Math.floor(Math.random() * 40);
+    for (var k = 0; k < n || s === GOAL; k++){
+      var opts = [];
+      [p - 3, p + 3, p - 1, p + 1].forEach(function(q){ if (canMove(p, q) && q !== last) opts.push(q); });
+      var q = opts[Math.floor(Math.random() * opts.length)];
+      s = swap(s, p, q); last = p; p = q;
+    }
+    game = { s: s, start: s, moves: 0, won: false };
+    drawGame();
+  }
+  gameEl.addEventListener('click', function(e){
+    var b = e.target.closest('button.tile');
+    if (!b || game.won) return;
+    var i = +b.getAttribute('data-pos'), p = game.s.indexOf('x');
+    if (!canMove(p, i)) return;
+    game.s = swap(game.s, p, i);
+    game.moves++;
+    if (game.s === GOAL && game.start !== GOAL) game.won = true;
+    drawGame(p);
+  });
+  document.getElementById('shuffleBtn').addEventListener('click', shuffle);
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    game = { s: game.start, start: game.start, moves: 0, won: false };
+    drawGame();
+  });
+
+  /* ---------- Widget 2: the instant solver ---------- */
+  var boardIn = document.getElementById('boardIn'), solveBoard = document.getElementById('solveBoard');
+  var solveOut = document.getElementById('solveOut'), playBtn = document.getElementById('playBtn');
+  var sv = { s: null, path: '', i: 0, inv: 0, timer: null };
+
+  function stopPlay(){
+    if (sv.timer){ clearInterval(sv.timer); sv.timer = null; }
+    playBtn.textContent = T.play;
+  }
+  function seqHtml(){
+    var h = '';
+    for (var k = 0; k < sv.path.length; k++){
+      h += '<span class="' + (k < sv.i ? 'done' : (k === sv.i ? 'cur' : '')) + '">' + sv.path[k] + '</span>';
+    }
+    return '<span class="seq">' + h + '</span>';
+  }
+  function drawSolver(moved){
+    render(solveBoard, sv.s, false, moved);
+    if (sv.path.length === 0){ solveOut.innerHTML = T.already; return; }
+    solveOut.innerHTML = T.solved(sv.path.length, sv.inv) + '<br>' + seqHtml() +
+      (sv.i === sv.path.length ? '<br>' + T.done : '<br>' + T.stepOf(sv.i, sv.path.length));
+  }
+  function solve(){
+    stopPlay();
+    var s = boardIn.value.replace(/\s+/g, '').toLowerCase();
+    if (s.length !== 9 || s.split('').sort().join('') !== '12345678x'){
+      sv.s = null; solveBoard.innerHTML = ''; solveOut.innerHTML = T.bad; return;
+    }
+    sv.inv = inversions(s);
+    if (sv.inv % 2 === 1){
+      sv.s = null; render(solveBoard, s, false); solveOut.innerHTML = T.unsolvable(sv.inv); return;
+    }
+    sv.s = s; sv.path = buildBook().get(s); sv.i = 0;
+    drawSolver();
+  }
+  function step(){
+    if (!sv.s || sv.i >= sv.path.length){ stopPlay(); return false; }
+    var p = sv.s.indexOf('x');
+    sv.s = swap(sv.s, p, p + STEP[sv.path[sv.i]]);
+    sv.i++;
+    drawSolver(p);
+    if (sv.i >= sv.path.length) stopPlay();
+    return true;
+  }
+  document.getElementById('solveBtn').addEventListener('click', solve);
+  boardIn.addEventListener('keydown', function(e){ if (e.key === 'Enter') solve(); });
+  document.getElementById('fromGameBtn').addEventListener('click', function(){
+    boardIn.value = game.s.split('').join(' ');
+    solve();
+  });
+  document.getElementById('stepBtn').addEventListener('click', function(){ stopPlay(); step(); });
+  playBtn.addEventListener('click', function(){
+    if (sv.timer){ stopPlay(); return; }
+    if (!sv.s || sv.i >= sv.path.length){ solve(); if (!sv.s) return; }
+    playBtn.textContent = T.pause;
+    sv.timer = setInterval(step, 450);
+  });
+
+  shuffle();
+  solveOut.innerHTML = T.solverStart;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Sliding Tile Escape Room: Solving the 8 Puzzle with BFS</title>
+<style>
+  :root{
+    --paper:#eef1ec;
+    --paper-raised:#ffffff;
+    --paper-raised-2:#f7f8f4;
+    --ink:#202a2f;
+    --ink-soft:#55636b;
+    --line:#ccd4c8;
+    --accent:#c8791f;
+    --accent-strong:#9c5c11;
+    --accent-soft:#f3e0bc;
+    --alert:#b23a3a;
+    --alert-soft:#f4d9d3;
+    --clue:#2f7d5c;
+    --clue-soft:#d8ecdf;
+    /* light, high-contrast code palette (easier to read than the old near-black boxes) */
+    --code-bg:#fbfaf6;
+    --code-bar:#f1eee4;
+    --code-bar-fg:#5c6670;
+    --code-fg:#1f2328;
+    --code-cm:#6a737d;
+    --code-kw:#a626a4;
+    --code-st:#0a7d32;
+    --code-nu:#b35900;
+    --code-fn:#0b5cad;
+    --radius:10px;
+    --font-display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Cascadia Code",monospace;
+    --font-stamp:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+      --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+      --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+      --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+      --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+      --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12181a; --paper-raised:#1b2327; --paper-raised-2:#1f2a26;
+    --ink:#e8e6db; --ink-soft:#a6b0a8; --line:#2c3630;
+    --accent:#e2a13e; --accent-strong:#f0b65b; --accent-soft:#3c2f16;
+    --alert:#e2685f; --alert-soft:#452321; --clue:#5cc99a; --clue-soft:#1c3a2c;
+    --code-bg:#20262c; --code-bar:#2a3138; --code-bar-fg:#aab4bd; --code-fg:#e6edf3;
+    --code-cm:#9aa5b1; --code-kw:#d2a8ff; --code-st:#7ee787; --code-nu:#ffa657; --code-fn:#79c0ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --paper:#eef1ec; --paper-raised:#ffffff; --paper-raised-2:#f7f8f4;
+    --ink:#202a2f; --ink-soft:#55636b; --line:#ccd4c8;
+    --accent:#c8791f; --accent-strong:#9c5c11; --accent-soft:#f3e0bc;
+    --alert:#b23a3a; --alert-soft:#f4d9d3; --clue:#2f7d5c; --clue-soft:#d8ecdf;
+    --code-bg:#fbfaf6; --code-bar:#f1eee4; --code-bar-fg:#5c6670; --code-fg:#1f2328;
+    --code-cm:#6a737d; --code-kw:#a626a4; --code-st:#0a7d32; --code-nu:#b35900; --code-fn:#0b5cad;
+    --shadow:0 1px 2px rgba(32,42,47,.06), 0 6px 18px rgba(32,42,47,.07);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);}
+  .page{color:var(--ink);font-family:var(--font-body);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 100px;}
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent-strong);}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;font-weight:700;color:var(--ink);}
+  h3{font-size:18px;margin:26px 0 8px;}
+  p{margin:0 0 1em;}
+  img,svg{max-width:100%;}
+  strong{color:var(--ink);}
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{max-width:760px;margin:0 auto;padding:16px 20px 0;text-align:right;}
+  .lang-switch a{display:inline-block;text-decoration:none;color:var(--ink-soft);font-size:13.5px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-raised);}
+  .lang-switch a:hover{color:var(--accent-strong);border-color:var(--accent);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:30px 20px 36px;background:linear-gradient(180deg, var(--paper-raised-2), var(--paper) 90%);border-bottom:1px solid var(--line);}
+  .hero-inner{max-width:760px;margin:0 auto;}
+  .eyebrow{font-family:var(--font-stamp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,46px);line-height:1.14;margin:0 0 12px;letter-spacing:-.01em;}
+  .hero h1 em{font-style:normal;color:var(--accent-strong);text-decoration:underline;text-decoration-color:var(--accent-soft);text-decoration-thickness:6px;text-underline-offset:-2px;}
+  .hero .sub{font-size:17px;color:var(--ink-soft);max-width:38em;}
+  .stampbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .stamp{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-raised);}
+  .stamp.hot{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft);}
+
+  /* ---------- Sections ---------- */
+  .level{padding:40px 0;border-bottom:1px solid var(--line);}
+  .level:last-of-type{border-bottom:none;}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .level-num{font-family:var(--font-stamp);font-weight:800;font-size:12px;letter-spacing:.1em;color:var(--paper-raised);background:var(--accent-strong);padding:4px 10px;border-radius:6px;white-space:nowrap;}
+  .level h2{font-size:24px;margin:0;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- Callouts ---------- */
+  .callout{border-radius:var(--radius);padding:16px 18px;margin:20px 0;border:1px solid var(--line);background:var(--paper-raised);box-shadow:var(--shadow);}
+  .callout .ctitle{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+  .callout.fact{border-color:var(--line);}
+  .callout.fact .ctitle{color:var(--ink-soft);}
+  .callout.tip{background:var(--clue-soft);border-color:var(--clue);}
+  .callout.tip .ctitle{color:var(--clue);}
+  .callout.warn{background:var(--alert-soft);border-color:var(--alert);}
+  .callout.warn .ctitle{color:var(--alert);}
+  .callout p:last-child, .callout ul:last-child, .callout ol:last-child{margin-bottom:0;}
+  .callout ul, .callout ol{margin:0 0 1em;padding-left:1.3em;}
+
+  /* ---------- Code (light, readable) ---------- */
+  .codebox{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin:20px 0;border:1px solid var(--line);border-left:4px solid var(--accent);}
+  .codebox .bar{background:var(--code-bar);color:var(--code-bar-fg);font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);}
+  .codebox .dots{display:flex;gap:5px;}
+  .codebox .dots span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .codebox .dots span:nth-child(1){background:#ec6a5e;}
+  .codebox .dots span:nth-child(2){background:#f4bf4f;}
+  .codebox .dots span:nth-child(3){background:#61c554;}
+  .codebox pre{margin:0;background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:15px;line-height:1.7;}
+  .codebox code{font-family:var(--font-mono);background:none;border:none;padding:0;font-size:inherit;}
+  .cm{color:var(--code-cm);font-style:italic;}
+  .kw{color:var(--code-kw);font-weight:700;}
+  .st{color:var(--code-st);}
+  .nu{color:var(--code-nu);}
+  .fn{color:var(--code-fn);font-weight:600;}
+
+  /* annotated code */
+  .annot{display:grid;grid-template-columns:1fr;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:20px 0;}
+  .annot-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+  @media (max-width:600px){.annot-row{grid-template-columns:1fr;}}
+  .annot-row + .annot-row{border-top:1px solid var(--line);}
+  .annot-code{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:14.5px;padding:10px 14px;white-space:pre;overflow-x:auto;display:flex;align-items:center;}
+  .annot-note{background:var(--paper-raised);color:var(--ink-soft);font-size:14px;padding:10px 14px;display:flex;align-items:center;border-left:3px solid var(--accent);}
+  .annot-note b{color:var(--ink);}
+
+  /* ---------- Call tree (SVG) ---------- */
+  .tree{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:22px 0;}
+  .tree svg{display:block;width:100%;height:auto;}
+  .tree line{stroke:var(--line);stroke-width:2;}
+  .tree rect{fill:var(--paper-raised-2);stroke:var(--line);stroke-width:1.5;}
+  .tree rect.r3{fill:var(--accent-soft);stroke:var(--accent);}
+  .tree rect.r2{fill:var(--alert-soft);stroke:var(--alert);}
+  .tree text{fill:var(--ink);font-family:var(--font-mono);font-size:15px;font-weight:700;}
+  .tree .legend{font-size:13px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid;}
+  .swatch.s3{background:var(--accent-soft);border-color:var(--accent);}
+  .swatch.s2{background:var(--alert-soft);border-color:var(--alert);}
+
+  /* ---------- Notebook strip ---------- */
+  .notebook{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0;padding:18px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .page-cell{flex:1 1 56px;min-width:52px;text-align:center;padding:8px 4px;border-radius:8px;background:var(--paper-raised-2);border:1px solid var(--line);}
+  .page-cell .p{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .page-cell .v{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--ink);}
+  .page-cell.hot{background:var(--clue-soft);border-color:var(--clue);}
+
+  /* ---------- Stat tiles ---------- */
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:22px 0;}
+  .stat{flex:1 1 200px;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .stat.slow{background:var(--alert-soft);border-color:var(--alert);}
+  .stat.fast{background:var(--clue-soft);border-color:var(--clue);}
+  .stat .num{font-family:var(--font-mono);font-size:26px;font-weight:800;}
+  .stat.slow .num{color:var(--alert);}
+  .stat.fast .num{color:var(--clue);}
+  .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  /* ---------- Recipe steps ---------- */
+  .recipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;}
+  .recipe .step{background:var(--paper-raised);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
+  .recipe .step .k{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-strong);}
+  .recipe .step .t{font-weight:700;margin:2px 0 4px;}
+  .recipe .step .d{font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;border-radius:var(--radius);box-shadow:var(--shadow);}
+  table.trace{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper-raised);}
+  .table-wrap table.trace{margin:0;}
+  table.trace th, table.trace td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--font-mono);}
+  table.trace th{background:var(--paper-raised-2);color:var(--ink-soft);font-family:var(--font-body);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  table.trace tr:last-child td{border-bottom:none;}
+  table.trace td.odd{background:var(--clue-soft);color:var(--clue);font-weight:700;}
+  table.trace td.even{color:var(--ink-soft);}
+  table.trace td.left{text-align:left;}
+  table.trace tfoot td{font-weight:800;background:var(--accent-soft);color:var(--accent-strong);}
+
+  /* ---------- DP grid ---------- */
+  .dpgrid{display:grid;gap:5px;margin:18px 0;padding:14px;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .dpcell{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);font-family:var(--font-mono);font-weight:700;font-size:clamp(11px,2.6vw,16px);color:var(--ink);background:var(--paper-raised-2);user-select:none;}
+  .dpcell.start{background:var(--clue-soft);border-color:var(--clue);}
+  .dpcell.goal{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);}
+  .dpcell.rock{background:var(--alert-soft);border-color:var(--alert);}
+  .dpgrid.clickable .dpcell{cursor:pointer;}
+  .dpgrid.clickable .dpcell:hover{outline:2px solid var(--accent);}
+
+  /* ---------- Treasure items ---------- */
+  .items{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;}
+  .item{flex:1 1 140px;text-align:center;background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;box-shadow:var(--shadow);}
+  .item .emo{font-size:30px;line-height:1.2;}
+  .item .nm{font-weight:700;}
+  .item .wv{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);}
+
+  /* ---------- Widget (interactive) ---------- */
+  .widget{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:22px 0;}
+  .widget h3{margin:0 0 4px;font-size:17px;}
+  .widget .hint{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px;}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);}
+  .field input{width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-raised-2);color:var(--ink);font-family:var(--font-mono);font-size:15px;}
+  .field input.wide{width:180px;}
+  .field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{font-family:var(--font-stamp);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;background:var(--accent-strong);color:#fff8ec;border:none;padding:11px 18px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  .btn:hover{background:var(--accent);}
+  .btn:active{transform:translateY(1px);}
+  .answer-line{font-family:var(--font-mono);font-size:15px;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;}
+  .answer-line b{color:var(--accent-strong);}
+  .subhead{font-family:var(--font-stamp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 8px;}
+
+  /* ---------- Details / quiz / exercises ---------- */
+  details{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin:16px 0;}
+  summary{cursor:pointer;font-weight:700;font-family:var(--font-display);font-size:15.5px;}
+  details[open] summary{margin-bottom:10px;}
+  details .reveal{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .exercise{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin:20px 0;}
+  .exercise h3{margin:0 0 8px;font-size:18px;}
+  .exercise .stars{color:var(--accent);letter-spacing:2px;font-size:14px;margin-left:6px;}
+  .exercise details{box-shadow:none;margin:10px 0 0;padding:10px 14px;background:var(--paper-raised-2);}
+  .exercise details summary{font-family:var(--font-body);font-size:14px;}
+
+  /* ---------- Footer ---------- */
+  .footer{padding:40px 20px 60px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+  .footer a{color:var(--accent-strong);}
+
+  code{background:var(--paper-raised-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--font-mono);font-size:.92em;}
+
+  /* ---------- Maze cells (extends .dpcell) ---------- */
+  .dpcell.wall{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .dpcell.path{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .dpcell.dead{background:var(--alert-soft);border-color:var(--alert);color:var(--alert);}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:6px 0 4px;justify-content:center;}
+
+  /* ---------- Chess board (N-Queens) ---------- */
+  .board{display:grid;width:100%;max-width:360px;margin:16px auto;border:3px solid #6b4a2b;border-radius:6px;overflow:hidden;box-shadow:var(--shadow);}
+  .sq{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8vw,44px);line-height:1;color:#1b1b1b;position:relative;}
+  .sq.l{background:#f0d9b5;}
+  .sq.d{background:#b58863;}
+  .sq.new{box-shadow:inset 0 0 0 4px #2f9e6a;}
+  .sq.gone{box-shadow:inset 0 0 0 4px #d24b43;}
+  .sq.gone span{opacity:.3;}
+  .sq.win{background:#9fd8b4;}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0 10px;}
+  .btn.ghost{background:var(--paper-raised-2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--paper-raised-2);}
+  .log{font-family:var(--font-mono);font-size:14px;text-align:center;min-height:2.6em;color:var(--ink);}
+  .log .ok{color:var(--clue);font-weight:700;}
+  .log .back{color:var(--alert);font-weight:700;}
+
+  /* ---------- Mini sudoku ---------- */
+  .sudoku{display:grid;grid-template-columns:repeat(4,46px);gap:0;border:3px solid var(--ink);width:max-content;margin:14px auto;background:var(--paper-raised);}
+  .sudoku div{width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border:1px solid var(--line);color:var(--ink);}
+  .sudoku div.given{background:var(--paper-raised-2);}
+  .sudoku div.filled{color:var(--clue);}
+  .sudoku div:nth-child(4n+2){border-right:3px solid var(--ink);}
+  .sudoku div:nth-child(n+5):nth-child(-n+8){border-bottom:3px solid var(--ink);}
+  .pair{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 24px;}
+  .pair .arrow{font-size:26px;color:var(--accent-strong);}
+
+  /* ---------- Bug detective (diff view) ---------- */
+  .codebox pre.diff{padding:12px 0;}
+  .codebox pre.diff code{display:block;}
+  .codebox pre.diff span.ln{display:block;padding:0 18px;white-space:pre;}
+  .bugs{counter-reset:bug;list-style:none;padding:0;margin:20px 0;}
+  .bugs li{position:relative;background:var(--paper-raised);border:1px solid var(--line);border-left:4px solid var(--alert);border-radius:var(--radius);padding:12px 16px 12px 52px;margin:10px 0;box-shadow:var(--shadow);}
+  .bugs li::before{counter-increment:bug;content:"🐞" counter(bug);position:absolute;left:12px;top:12px;font-family:var(--font-mono);font-size:13px;font-weight:800;color:var(--alert);}
+  .bugs li .err{display:block;font-family:var(--font-mono);font-size:12.5px;color:var(--alert);margin-top:4px;}
+  .codebox pre.diff span.bug{background:var(--alert-soft);box-shadow:inset 3px 0 0 var(--alert);}
+
+  /* ---------- Sliding-tile boards ---------- */
+  .puzzle{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:252px;max-width:100%;margin:14px auto;padding:8px;background:var(--paper-raised-2);border:2px solid var(--line);border-radius:14px;}
+  .puzzle.mini{width:126px;gap:3px;padding:4px;border-radius:9px;margin:6px auto;}
+  .puzzle.won{border-color:var(--clue);background:var(--clue-soft);}
+  .tile{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;margin:0;padding:0;border:1px solid var(--accent);border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);font-family:var(--font-mono);font-weight:800;font-size:34px;line-height:1;box-shadow:inset 0 -4px 0 rgba(0,0,0,.10);user-select:none;}
+  .puzzle.mini .tile{font-size:17px;border-radius:6px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.10);}
+  .tile.home{background:var(--clue-soft);border-color:var(--clue);color:var(--clue);}
+  .tile.blank{background:transparent;border:2px dashed var(--line);box-shadow:none;}
+  .tile.idx{background:var(--paper-raised);border-color:var(--line);color:var(--ink-soft);box-shadow:none;}
+  button.tile{cursor:default;}
+  button.tile.can{cursor:pointer;outline:2px dashed var(--clue);outline-offset:2px;}
+  button.tile.can:hover{filter:brightness(1.06);transform:translateY(-2px);}
+  button.tile:focus-visible{outline:3px solid var(--accent-strong);outline-offset:2px;}
+  .tile.moved{animation:tilepop .22s ease-out;}
+  @keyframes tilepop{from{transform:scale(.82);}to{transform:scale(1);}}
+  @media (prefers-reduced-motion:reduce){.tile.moved{animation:none;}}
+  .status{font-family:var(--font-mono);font-size:14px;line-height:1.6;background:var(--paper-raised-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0;min-height:3.4em;word-break:break-word;}
+  .status b{color:var(--accent-strong);}
+  .status .ok{color:var(--clue);font-weight:800;}
+  .status .back{color:var(--alert);font-weight:700;}
+  .status .seq{letter-spacing:.06em;font-size:16px;font-weight:700;}
+  .status .seq span.done{color:var(--ink-soft);opacity:.55;}
+  .status .seq span.cur{background:var(--accent-soft);color:var(--accent-strong);border-radius:3px;outline:1px solid var(--accent);}
+  .gcap{font-size:13px;color:var(--ink-soft);text-align:center;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lang-switch"><a href="eight_puzzle_zh.html">中文 &#x2192;</a></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Search Algorithms &middot; Skill Explainer</div>
+      <h1>The Sliding Tile Escape Room: <em>Solving the 8 Puzzle with BFS</em></h1>
+      <p class="sub">Eight numbered tiles, one empty hole, and a single rule: you may only slide a tile into the hole. Can you put the tiles back in order? And can you do it in the <b>fewest possible moves</b>? We'll play the puzzle, teach Python to solve <b>every</b> board instantly, catch the <b>bugs</b> in a sample solution, and discover a secret that makes half of all boards impossible.</p>
+      <div class="stampbar">
+        <span class="stamp hot">Ages 13+</span>
+        <span class="stamp">Breadth-first search</span>
+        <span class="stamp">Playable puzzle</span>
+        <span class="stamp">Bug hunt</span>
+        <span class="stamp">8 practice problems</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============ LEVEL 1 ============ -->
+    <section class="level" id="level1">
+      <div class="level-head"><span class="level-num">LEVEL 1</span><h2>Meet the puzzle</h2></div>
+      <p class="lead">Imagine you're locked in an escape room. The door has a 3×3 panel of sliding tiles, numbered 1 to 8, with one empty square. The door opens only when the tiles read <b>1 2 3 / 4 5 6 / 7 8</b>, with the hole in the bottom-right corner.</p>
+      <p>Try it yourself. Click any tile <b>next to</b> the hole to slide it in. Tiles with a dashed outline can move. Green tiles are already in their home square.</p>
+      <div class="widget" id="gameWidget">
+        <h3>🧩 The escape-room door</h3>
+        <div class="hint">Press <b>Shuffle</b> for a fresh puzzle. It is mixed up using only legal slides, so it can always be solved.</div>
+        <div class="puzzle" id="game" role="grid" aria-label="8 puzzle board"></div>
+        <div class="controls">
+          <button class="btn" id="shuffleBtn" type="button">Shuffle</button>
+          <button class="btn ghost" id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="status" id="gameMsg"></div>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">A puzzle that drove the world crazy</div>
+        <p>The 8 puzzle is the little brother of the <b>15 puzzle</b> (4×4, fifteen tiles). In 1880 the 15 puzzle became a worldwide craze: people played it at home, at work and on trains. The famous puzzle writer Sam Loyd later claimed he had offered a $1,000 prize for one particular board. Nobody ever won it, and in Level 7 you'll find out why nobody <i>could</i>.</p>
+      </div>
+      <p>Playing by hand, you probably solved it in 30, 50, maybe 100 moves. But what is the <b>shortest</b> solution? Guessing won't tell us. We need a <b>system</b>, and that's what computer science is for.</p>
+    </section>
+
+    <!-- ============ LEVEL 2 ============ -->
+    <section class="level" id="level2">
+      <div class="level-head"><span class="level-num">LEVEL 2</span><h2>Turning a board into a string</h2></div>
+      <p class="lead">Computers don't see pictures, so first we need a way to write a board down. The trick: read the tiles row by row, left to right, and write <code>x</code> for the hole.</p>
+      <div class="pair">
+        <div class="puzzle" aria-hidden="true"><div class="tile">2</div><div class="tile">3</div><div class="tile">4</div><div class="tile">1</div><div class="tile">5</div><div class="tile blank"></div><div class="tile">7</div><div class="tile">6</div><div class="tile">8</div></div>
+        <span class="arrow">&#x2192;</span>
+        <code style="font-size:20px">"23415x768"</code>
+      </div>
+      <p>Each square gets a <b>position number</b> from 0 to 8. Because a row has 3 squares, we can turn a position into a (row, column) pair with two tiny formulas:</p>
+      <div class="pair">
+        <div class="puzzle mini" aria-hidden="true"><div class="tile idx">0</div><div class="tile idx">1</div><div class="tile idx">2</div><div class="tile idx">3</div><div class="tile idx">4</div><div class="tile idx">5</div><div class="tile idx">6</div><div class="tile idx">7</div><div class="tile idx">8</div></div>
+        <div><p style="margin:0"><code>row = pos // 3</code> &nbsp;(how many full rows fit before it)<br><code>col = pos % 3</code> &nbsp;(what's left over)</p></div>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>state_basics.py</div>
+<pre><code>state = <span class="st">"23415x768"</span>
+pos = state.index(<span class="st">"x"</span>)         <span class="cm"># where is the hole?</span>
+<span class="fn">print</span>(pos)                     <span class="cm"># 5</span>
+row, col = pos // <span class="nu">3</span>, pos % <span class="nu">3</span>   <span class="cm"># position -&gt; (row, column)</span>
+<span class="fn">print</span>(row, col)                <span class="cm"># 1 2</span>
+<span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">3</span>):             <span class="cm"># print the board, 3 squares per row</span>
+    <span class="fn">print</span>(<span class="st">" "</span>.join(state[<span class="nu">3</span> * r : <span class="nu">3</span> * r + <span class="nu">3</span>]))
+<span class="cm"># 2 3 4</span>
+<span class="cm"># 1 5 x</span>
+<span class="cm"># 7 6 8</span></code></pre>
+      </div>
+      <h3>Moving the hole</h3>
+      <p>Here's a clever change of view: instead of thinking "a tile slides into the hole", think "<b>the hole moves</b>" and swaps places with a neighbour. Then there are only four possible moves, and each one just adds a number to the hole's position:</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>the hole moves…</th><th>letter</th><th>position change</th><th>not allowed when…</th></tr></thead>
+          <tbody>
+            <tr><td>up</td><td>u</td><td>−3</td><td class="left">it's in the top row (pos − 3 &lt; 0)</td></tr>
+            <tr><td>down</td><td>d</td><td>+3</td><td class="left">it's in the bottom row (pos + 3 &gt; 8)</td></tr>
+            <tr><td>left</td><td>l</td><td>−1</td><td class="left">it's in the left column (pos % 3 == 0)</td></tr>
+            <tr><td>right</td><td>r</td><td>+1</td><td class="left">it's in the right column (pos % 3 == 2)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <div class="ctitle">The wrap-around trap</div>
+        <p>Up and down are easy to check: if the new position is below 0 or above 8, you fell off the board. Left and right are sneaky. If the hole is at position 3 (start of the middle row), then 3 − 1 = 2 is a perfectly valid number, but position 2 is the <b>end of the top row</b>! The hole would teleport around the edge. That's why we need the extra <code>pos % 3</code> checks.</p>
+      </div>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>neighbours.py</div>
+<pre><code>MOVES = [(-<span class="nu">3</span>, <span class="st">"u"</span>), (<span class="nu">3</span>, <span class="st">"d"</span>), (-<span class="nu">1</span>, <span class="st">"l"</span>), (<span class="nu">1</span>, <span class="st">"r"</span>)]   <span class="cm"># (position change, letter)</span>
+
+<span class="kw">def</span> <span class="fn">neighbours</span>(state):
+    pos = state.index(<span class="st">"x"</span>)
+    result = []
+    <span class="kw">for</span> offset, letter <span class="kw">in</span> MOVES:
+        npos = pos + offset
+        <span class="kw">if</span> npos &lt; <span class="nu">0</span> <span class="kw">or</span> npos &gt;= <span class="nu">9</span>:            <span class="cm"># fell off the top or the bottom</span>
+            <span class="kw">continue</span>
+        <span class="kw">if</span> offset == -<span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">0</span>:    <span class="cm"># left column: can't go left</span>
+            <span class="kw">continue</span>
+        <span class="kw">if</span> offset == <span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">2</span>:     <span class="cm"># right column: can't go right</span>
+            <span class="kw">continue</span>
+        cells = <span class="fn">list</span>(state)                  <span class="cm"># strings can't change, lists can</span>
+        cells[pos], cells[npos] = cells[npos], cells[pos]   <span class="cm"># swap hole and tile</span>
+        result.append((letter, <span class="st">""</span>.join(cells)))
+    <span class="kw">return</span> result
+
+<span class="kw">for</span> letter, s <span class="kw">in</span> neighbours(<span class="st">"23415x768"</span>):
+    <span class="fn">print</span>(letter, s)
+<span class="cm"># u 23x154768</span>
+<span class="cm"># d 23415876x</span>
+<span class="cm"># l 2341x5768</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 3 ============ -->
+    <section class="level" id="level3">
+      <div class="level-head"><span class="level-num">LEVEL 3</span><h2>A map of every possible board</h2></div>
+      <p class="lead">Now picture a giant map. Every possible board is a <b>dot</b> on the map, and two dots are joined by a line if one slide turns one board into the other. Mathematicians call this kind of map a <b>graph</b>: the dots are <b>states</b>, the lines are <b>moves</b>.</p>
+      <p>Solving the puzzle means: find a route on this map from your board to the goal board <code>12345678x</code>. The <b>shortest</b> solution is the route with the fewest lines.</p>
+      <div class="stats">
+        <div class="stat slow"><div class="num">9! = 362,880</div><div class="lbl">ways to arrange 8 tiles and a hole on 9 squares</div></div>
+        <div class="stat fast"><div class="num">2 to 4</div><div class="lbl">moves from each board (hole in a corner: 2, on an edge: 3, in the centre: 4)</div></div>
+      </div>
+      <p>That's far too many boards to explore by trial and error. If we just wander around randomly, we might walk in circles forever. We need a search that is <b>organised</b>, never visits a board twice, and is guaranteed to find the shortest route. Meet <b>BFS</b>.</p>
+    </section>
+
+    <!-- ============ LEVEL 4 ============ -->
+    <section class="level" id="level4">
+      <div class="level-head"><span class="level-num">LEVEL 4</span><h2>BFS: the ripple in a pond</h2></div>
+      <p class="lead">Drop a stone into a pond. A ring of ripples spreads out: first everything 1 step away, then everything 2 steps away, then 3… <b>Breadth-first search (BFS)</b> explores the map in exactly the same way.</p>
+      <div class="recipe">
+        <div class="step"><div class="k">Tool 1</div><div class="t">A queue</div><div class="d">A waiting line: boards join at the back and leave from the front. First in, first out, like a lunch queue.</div></div>
+        <div class="step"><div class="k">Tool 2</div><div class="t">A "seen" record</div><div class="d">A dictionary of every board we've already found, so we never explore the same one twice.</div></div>
+        <div class="step"><div class="k">The loop</div><div class="t">Take, expand, add</div><div class="d">Take the board at the front, find its neighbours, and add every <b>new</b> one to the back of the queue.</div></div>
+      </div>
+      <p>Because the queue is first-in-first-out, all boards at distance 1 are handled before any board at distance 2, and so on. So <b>the first time BFS reaches a board, it got there by a shortest route</b>. That's the whole magic.</p>
+      <p>Here's how the ripples grow when we start from the goal board:</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <thead><tr><th>ring (moves away)</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>…</th><th>24</th><th>…</th><th>30</th><th>31</th></tr></thead>
+          <tbody>
+            <tr><td>number of boards</td><td>1</td><td>2</td><td>4</td><td>8</td><td>16</td><td>20</td><td>…</td><td class="odd">24,047</td><td>…</td><td>221</td><td class="odd">2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The biggest ring is 24 moves away, and the very last ring, at 31 moves, has only <b>2</b> boards. These are the hardest 8 puzzles in the world. You'll find them in practice problem 6.</p>
+      <p>Let's write BFS. Along with "seen", we remember <b>where each board came from</b> (its parent and the move used), so at the end we can walk backwards from the goal and read off the route.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>bfs_solve.py</div>
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> <span class="fn">deque</span>
+
+<span class="kw">def</span> <span class="fn">bfs_solve</span>(start, goal=<span class="st">"12345678x"</span>):
+    parent = {start: <span class="kw">None</span>}                 <span class="cm"># board -&gt; (previous board, move letter)</span>
+    q = <span class="fn">deque</span>([start])                     <span class="cm"># the waiting line</span>
+    <span class="kw">while</span> q:
+        s = q.popleft()                    <span class="cm"># take the board at the front</span>
+        <span class="kw">if</span> s == goal:
+            <span class="kw">break</span>                          <span class="cm"># reached the goal: stop searching</span>
+        <span class="kw">for</span> letter, t <span class="kw">in</span> neighbours(s):
+            <span class="kw">if</span> t <span class="kw">not</span> <span class="kw">in</span> parent:            <span class="cm"># a brand-new board?</span>
+                parent[t] = (s, letter)    <span class="cm"># remember how we got here</span>
+                q.append(t)                <span class="cm"># join the back of the line</span>
+    <span class="kw">if</span> goal <span class="kw">not</span> <span class="kw">in</span> parent:
+        <span class="kw">return</span> <span class="kw">None</span>, <span class="fn">len</span>(parent)           <span class="cm"># the goal was never reached</span>
+    path = <span class="st">""</span>
+    s = goal
+    <span class="kw">while</span> parent[s] <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>:           <span class="cm"># walk back from goal to start</span>
+        s, letter = parent[s]
+        path = letter + path               <span class="cm"># put each move in front</span>
+    <span class="kw">return</span> path, <span class="fn">len</span>(parent)
+
+<span class="fn">print</span>(bfs_solve(<span class="st">"1234567x8"</span>))   <span class="cm"># ('r', 8)</span>
+<span class="fn">print</span>(bfs_solve(<span class="st">"23415x768"</span>))   <span class="cm"># ('ullddrurdllurdruldr', 46289)</span>
+<span class="fn">print</span>(bfs_solve(<span class="st">"21345678x"</span>))   <span class="cm"># (None, 181440)</span></code></pre>
+      </div>
+      <p>Look at the second number in each answer: it's how many boards BFS had to discover. An easy board needs very few. A 19-move board needs about 46,000. And the last board? BFS searched <b>181,440</b> boards, and then gave up: that board can never be solved. Hold that thought for Level 7.</p>
+      <div class="callout tip">
+        <div class="ctitle">Read the answer</div>
+        <p>Each letter is the direction <b>the hole</b> moves. <code>"r"</code> for the board <code>1234567x8</code> means "the hole moves right", in other words tile 8 slides left. Done in one move!</p>
+      </div>
+    </section>
+
+    <!-- ============ LEVEL 5 ============ -->
+    <section class="level" id="level5">
+      <div class="level-head"><span class="level-num">LEVEL 5</span><h2>The clever trick: search backwards, once</h2></div>
+      <p class="lead">Suppose a contest gives us <b>many</b> boards to solve. Running a whole BFS for each board is slow, especially for unsolvable ones. Here is a smarter idea: every puzzle ends at the <b>same goal</b>. So let's do a single BFS that starts <b>from the goal</b> and spreads out to every reachable board.</p>
+      <p>Each slide can be undone (if the hole moved up, moving it down puts it back), so a route from the goal to a board, read backwards, is a route from that board to the goal. One BFS gives us a "phone book" of answers:</p>
+      <div class="pair">
+        <div style="text-align:center"><code>bfs_tree["12345678x"]</code><br>→ <code>""</code> (already solved)</div>
+        <div style="text-align:center"><code>bfs_tree["12345x786"]</code><br>→ <code>"d"</code></div>
+        <div style="text-align:center"><code>bfs_tree["23415x768"]</code><br>→ <code>"ullddrurdllurrdlurd"</code></div>
+      </div>
+      <p>After building the book once, answering any board is a single dictionary lookup, which is practically instant. A board that's not in the book can't be solved.</p>
+      <h3>Why the letters look backwards</h3>
+      <p>This is the part that confuses everyone at first, so let's go slowly. BFS starts at the goal and moves the hole <b>away</b> from it. But the answer we store must move the hole <b>back towards</b> the goal. So every letter is flipped:</p>
+      <div class="pair">
+        <figure style="margin:0;text-align:center"><div class="puzzle mini" aria-hidden="true"><div class="tile">1</div><div class="tile">2</div><div class="tile">3</div><div class="tile">4</div><div class="tile">5</div><div class="tile">6</div><div class="tile">7</div><div class="tile">8</div><div class="tile blank"></div></div><figcaption class="gcap">goal (hole at 8)</figcaption></figure>
+        <span class="arrow">&#x2192;</span>
+        <figure style="margin:0;text-align:center"><div class="puzzle mini" aria-hidden="true"><div class="tile">1</div><div class="tile">2</div><div class="tile">3</div><div class="tile">4</div><div class="tile">5</div><div class="tile blank"></div><div class="tile">7</div><div class="tile">8</div><div class="tile">6</div></div><figcaption class="gcap">BFS moved the hole <b>up</b> (−3)</figcaption></figure>
+      </div>
+      <p>To solve <code>12345x786</code>, the hole has to go back <b>down</b>. That's why the move list pairs the offset −3 with the letter <code>"d"</code>:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>moves_table.py</div>
+<pre><code>moves = [(-<span class="nu">3</span>, <span class="st">"d"</span>), (<span class="nu">3</span>, <span class="st">"u"</span>), (-<span class="nu">1</span>, <span class="st">"r"</span>), (<span class="nu">1</span>, <span class="st">"l"</span>)]
+<span class="cm"># BFS moves the hole UP (-3)    -&gt; the solution moves it DOWN  ("d")</span>
+<span class="cm"># BFS moves the hole DOWN (+3)  -&gt; the solution moves it UP    ("u")</span>
+<span class="cm"># BFS moves the hole LEFT (-1)  -&gt; the solution moves it RIGHT ("r")</span>
+<span class="cm"># BFS moves the hole RIGHT (+1) -&gt; the solution moves it LEFT  ("l")</span></code></pre>
+      </div>
+      <h3>Why the new letter goes in front</h3>
+      <p>Suppose BFS is at board A, and the book already says A needs the moves <code>"lu"</code> to reach the goal. Now BFS steps from A to a new board B. To solve B, you must <b>first</b> undo that step (getting back to A), and <b>then</b> follow A's moves. So the new letter goes at the <b>front</b>:</p>
+      <div class="answer-line">bfs_tree[B] = <b>letter_back_to_A</b> + bfs_tree[A]</div>
+      <p>If we added it at the end instead, we'd be doing the moves in the wrong order and the hole would end up somewhere strange.</p>
+    </section>
+
+    <!-- ============ LEVEL 6 ============ -->
+    <section class="level" id="level6">
+      <div class="level-head"><span class="level-num">LEVEL 6</span><h2>Bug detective: fixing the sample solution</h2></div>
+      <p class="lead">Here is the solution code we were given. The idea is exactly the backwards-BFS trick from Level 5, and it's a great idea! But if you type it in, <b>Python refuses to run it</b>. Put on your detective hat: the highlighted lines hide the bugs.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>original.py (as given, does NOT run)</div>
+<pre class="diff"><code><span class="ln">from collections import deque</span><span class="ln">config = ["1", "2", "3", "4", "5", "6", "7",</span><span class="ln">"8", "x"]</span><span class="ln">target = "".join(config) # "12345678x"</span><span class="ln">bfs_tree = {target: ""}</span><span class="ln"># each thing in the queue is (state, pos_x)</span><span class="ln">q = deque([(target, target.index("x"))])</span><span class="ln">moves = [(-3, "d"), (3, "u"), (-1, "r"),</span><span class="ln">(1, "l")]</span><span class="ln">while q:</span><span class="ln">curr_state, pos = q.popleft()</span><span class="ln">current_path = bfs_tree[curr_state]</span><span class="ln">for offset, solution_char in moves:</span><span class="ln">npos = pos + offset</span><span class="ln">if npos &lt; 0 or npos &gt;= 9: continue</span><span class="ln bug">if offset = -1 and pos % 3 = 0:</span><span class="ln">continue</span><span class="ln bug">if offset = 1 and pos % 3 = 2:</span><span class="ln">continue</span><span class="ln bug">state_list = list(current_state)</span><span class="ln"># e.g. ["1", "2", ., "x"]</span><span class="ln">state_list[pos], state_list[npos] = (</span><span class="ln">state_list[npos], state_list[pos]</span><span class="ln">)</span><span class="ln">new_state = "".join(state_list)</span><span class="ln bug">if new_state is not in bfs_tree:</span><span class="ln">bfs_tree[new_state] = (solution_char +</span><span class="ln">current_path)</span><span class="ln">q.append((new_state, npos))</span><span class="ln bug">while (s =input()):</span><span class="ln">s = "".join(s.split()).strip()</span><span class="ln bug">if s is not in bfs_tree: print("unsolvable")</span><span class="ln">else: print(bfs_tree[s])</span></code></pre>
+      </div>
+      <ol class="bugs">
+        <li><b><code>=</code> instead of <code>==</code>.</b> In Python, <code>=</code> <i>stores</i> a value and <code>==</code> <i>compares</i> two values. The two edge checks use <code>=</code> four times where they mean "is equal to?": <code>offset = -1</code>, <code>pos % 3 = 0</code>, <code>offset = 1</code> and <code>pos % 3 = 2</code>.<span class="err">SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?</span></li>
+        <li><b>A name that doesn't exist.</b> The board taken from the queue is called <code>curr_state</code>, but the code later says <code>list(current_state)</code>. Python has never heard of <code>current_state</code>.<span class="err">NameError: name 'current_state' is not defined. Did you mean: 'curr_state'?</span></li>
+        <li><b><code>is not in</code> isn't Python.</b> Python has <code>not in</code> ("is it missing from?") and <code>is not</code> ("is it a different object?"), but you can't glue them together. Both <code>if new_state is not in bfs_tree</code> and <code>if s is not in bfs_tree</code> must become <code>not in</code>.<span class="err">SyntaxError: invalid syntax</span></li>
+        <li><b>An assignment inside <code>while (…)</code>.</b> <code>while (s = input())</code> is how you'd write it in C, but in Python a plain <code>=</code> isn't allowed inside a condition. Python 3.8+ has the "walrus" operator, <code>while (s := input()):</code>, but that still crashes with <code>EOFError</code> when the input runs out. The safe fix is a <code>try / except EOFError</code> loop.<span class="err">SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?</span></li>
+        <li><b>Lost indentation.</b> Python uses indentation to know which lines belong inside <code>while</code>, <code>for</code> and <code>if</code>. Without it the program can't even start. (This usually happens when code is copied from a web page or chat.)<span class="err">IndentationError: expected an indented block after 'while' statement on line 10</span></li>
+      </ol>
+      <div class="callout fact">
+        <div class="ctitle">Not a bug, just extra</div>
+        <p><code>"".join(s.split()).strip()</code>: the <code>.strip()</code> does nothing here. <code>s.split()</code> already throws away <b>all</b> spaces, so the joined string has none left to strip. It's harmless, so we just leave it out.</p>
+      </div>
+      <p>Here is the repaired program, with a comment on <b>every line</b> explaining what it does and why:</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>eight_puzzle.py (fixed, every line explained)</div>
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> <span class="fn">deque</span>     <span class="cm"># deque = a fast queue: add at the back, take from the front</span>
+
+config = [<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"4"</span>, <span class="st">"5"</span>, <span class="st">"6"</span>, <span class="st">"7"</span>, <span class="st">"8"</span>, <span class="st">"x"</span>]   <span class="cm"># the goal board, tile by tile ("x" = hole)</span>
+target = <span class="st">""</span>.join(config)          <span class="cm"># glue the pieces into one string: "12345678x"</span>
+bfs_tree = {target: <span class="st">""</span>}           <span class="cm"># the answer book: board -&gt; moves that solve it ("" = already solved)</span>
+
+<span class="cm"># each thing in the queue is (state, pos_x): a board and where its hole is</span>
+q = <span class="fn">deque</span>([(target, target.index(<span class="st">"x"</span>))])   <span class="cm"># BFS starts from the GOAL; its hole is at position 8</span>
+moves = [(-<span class="nu">3</span>, <span class="st">"d"</span>), (<span class="nu">3</span>, <span class="st">"u"</span>), (-<span class="nu">1</span>, <span class="st">"r"</span>), (<span class="nu">1</span>, <span class="st">"l"</span>)]   <span class="cm"># (how BFS moves the hole, the letter that UNDOES it)</span>
+
+<span class="kw">while</span> q:                                        <span class="cm"># keep going while boards are waiting in line</span>
+    curr_state, pos = q.popleft()               <span class="cm"># take the oldest board (first in, first out)</span>
+    current_path = bfs_tree[curr_state]         <span class="cm"># the moves that solve this board</span>
+    <span class="kw">for</span> offset, solution_char <span class="kw">in</span> moves:         <span class="cm"># try moving the hole in all 4 directions</span>
+        npos = pos + offset                     <span class="cm"># the hole's new position</span>
+        <span class="kw">if</span> npos &lt; <span class="nu">0</span> <span class="kw">or</span> npos &gt;= <span class="nu">9</span>:               <span class="cm"># fell off the top or bottom edge?</span>
+            <span class="kw">continue</span>                            <span class="cm">#   then this direction is impossible</span>
+        <span class="kw">if</span> offset == -<span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">0</span>:       <span class="cm"># ✅ ==  moving left from the left column?</span>
+            <span class="kw">continue</span>                            <span class="cm">#   no wrapping around the edge!</span>
+        <span class="kw">if</span> offset == <span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">2</span>:        <span class="cm"># ✅ ==  moving right from the right column?</span>
+            <span class="kw">continue</span>                            <span class="cm">#   no wrapping around the edge!</span>
+        state_list = <span class="fn">list</span>(curr_state)           <span class="cm"># ✅ curr_state  string -&gt; list, so we can swap</span>
+        <span class="cm"># e.g. ["1", "2", ..., "x"]</span>
+        state_list[pos], state_list[npos] = (   <span class="cm"># swap the hole and the tile next to it...</span>
+            state_list[npos], state_list[pos]   <span class="cm"># ...both at once, Python-style</span>
+        )
+        new_state = <span class="st">""</span>.join(state_list)         <span class="cm"># list -&gt; string again (strings work as dict keys)</span>
+        <span class="kw">if</span> new_state <span class="kw">not</span> <span class="kw">in</span> bfs_tree:           <span class="cm"># ✅ not in  a board we've never seen?</span>
+            bfs_tree[new_state] = (solution_char +    <span class="cm"># first undo this step,</span>
+                                   current_path)      <span class="cm"># then follow the old board's moves</span>
+            q.append((new_state, npos))         <span class="cm"># explore it later: join the back of the line</span>
+
+<span class="kw">while</span> <span class="kw">True</span>:                                     <span class="cm"># ✅ answer questions until the input ends</span>
+    <span class="kw">try</span>:
+        s = <span class="fn">input</span>()                             <span class="cm"># read one line, e.g. "2 3 4 1 5 x 7 6 8"</span>
+    <span class="kw">except</span> EOFError:                            <span class="cm"># no more lines?</span>
+        <span class="kw">break</span>                                   <span class="cm">#   then we're done</span>
+    s = <span class="st">""</span>.join(s.split())                      <span class="cm"># remove every space: "23415x768"</span>
+    <span class="kw">if</span> s <span class="kw">not</span> <span class="kw">in</span> bfs_tree:                       <span class="cm"># ✅ not in  missing from the book?</span>
+        <span class="fn">print</span>(<span class="st">"unsolvable"</span>)                     <span class="cm">#   then no sequence of moves can solve it</span>
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(bfs_tree[s])                      <span class="cm"># otherwise just look up the answer</span>
+
+<span class="cm"># input:  2 3 4 1 5 x 7 6 8</span>
+<span class="cm"># output: ullddrurdllurrdlurd</span></code></pre>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">Check the answer on the board</div>
+        <p>Paste the starting board <code>2 3 4 1 5 x 7 6 8</code> into the solver in Level 8 and press <b>Play</b>. You'll watch all 19 moves of <code>ullddrurdllurrdlurd</code> bring the tiles home. Building the answer book takes Python under a second, and after that every board is answered instantly.</p>
+      </div>
+      <p>Did you notice that our <code>bfs_solve</code> in Level 4 gave a <b>different</b> 19-move answer (<code>ullddrurdllurdruldr</code>) for the same board? Both are correct! Many boards have several shortest solutions, and which one you get depends on the order you try the four moves. That's why contest judges for this problem accept any valid solution.</p>
+    </section>
+
+    <!-- ============ LEVEL 7 ============ -->
+    <section class="level" id="level7">
+      <div class="level-head"><span class="level-num">LEVEL 7</span><h2>The parity secret: why half the boards are impossible</h2></div>
+      <p class="lead">9! = 362,880 boards exist, but the answer book has exactly <b>181,440</b> entries: precisely <b>half</b>. The other half can never be solved, no matter how clever you are. Why?</p>
+      <p>Write the tiles in reading order and skip the hole. An <b>inversion</b> is a pair of tiles in the wrong order, where a bigger number comes before a smaller one.</p>
+      <div class="pair">
+        <div class="puzzle mini" aria-hidden="true"><div class="tile">2</div><div class="tile">1</div><div class="tile">3</div><div class="tile">4</div><div class="tile">5</div><div class="tile">6</div><div class="tile">7</div><div class="tile">8</div><div class="tile blank"></div></div>
+        <div><p style="margin:0">Reading order: <code>2 1 3 4 5 6 7 8</code><br>Wrong-order pairs: only (2, 1)<br>→ <b>1 inversion</b> (odd)</p></div>
+      </div>
+      <p>Now watch what each kind of move does to the inversions:</p>
+      <ul>
+        <li><b>Left or right:</b> the hole swaps with a tile in the same row, so the tiles' reading order doesn't change at all. Inversions: <b>+0</b>.</li>
+        <li><b>Up or down:</b> one tile jumps over exactly <b>2</b> other tiles in reading order. Each of those 2 pairs flips between right and wrong order, so the count changes by −2, 0, or +2.</li>
+      </ul>
+      <p>Either way, the count changes by an <b>even</b> number, so whether it's even or odd (its <b>parity</b>) can never change. The goal has 0 inversions, which is even. So a board with an <b>odd</b> number of inversions can never reach the goal!</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>parity.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">inversions</span>(state):
+    tiles = [c <span class="kw">for</span> c <span class="kw">in</span> state <span class="kw">if</span> c != <span class="st">"x"</span>]   <span class="cm"># reading order, hole removed</span>
+    count = <span class="nu">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(tiles)):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i + <span class="nu">1</span>, <span class="fn">len</span>(tiles)):
+            <span class="kw">if</span> tiles[i] &gt; tiles[j]:           <span class="cm"># bigger before smaller: wrong order</span>
+                count += <span class="nu">1</span>
+    <span class="kw">return</span> count
+
+<span class="kw">def</span> <span class="fn">solvable</span>(state):
+    <span class="kw">return</span> inversions(state) % <span class="nu">2</span> == <span class="nu">0</span>         <span class="cm"># even -&gt; solvable, odd -&gt; impossible</span>
+
+<span class="fn">print</span>(inversions(<span class="st">"23415x768"</span>), solvable(<span class="st">"23415x768"</span>))   <span class="cm"># 4 True</span>
+<span class="fn">print</span>(inversions(<span class="st">"21345678x"</span>), solvable(<span class="st">"21345678x"</span>))   <span class="cm"># 1 False</span>
+
+<span class="cm"># Check against the answer book from Level 6:</span>
+<span class="fn">print</span>(<span class="fn">len</span>(bfs_tree))                              <span class="cm"># 181440</span>
+<span class="fn">print</span>(<span class="fn">all</span>(solvable(s) <span class="kw">for</span> s <span class="kw">in</span> bfs_tree))         <span class="cm"># True</span></code></pre>
+      </div>
+      <div class="callout fact">
+        <div class="ctitle">The $1,000 that nobody won</div>
+        <p>Sam Loyd's famous challenge was a 15 puzzle with only tiles 14 and 15 swapped: exactly one inversion. A similar parity argument shows it's impossible, so the prize money was always safe. Our BFS proves the 8-puzzle version by brute force: of 362,880 boards, exactly the 181,440 with an even number of inversions are reachable.</p>
+      </div>
+      <p>This gives us a lightning-fast test: before you search, count inversions. If the count is odd, print <code>unsolvable</code> immediately and skip the search entirely.</p>
+    </section>
+
+    <!-- ============ LEVEL 8 ============ -->
+    <section class="level" id="level8">
+      <div class="level-head"><span class="level-num">LEVEL 8</span><h2>Going further: the solver and A* search</h2></div>
+      <p class="lead">Time to put it all together. This solver builds the same backwards answer book as the Python program (all 181,440 boards, right here in your browser), checks the inversion parity, and plays the solution step by step.</p>
+      <div class="widget" id="solverWidget">
+        <h3>🤖 The instant solver</h3>
+        <div class="hint">Type 9 symbols (digits 1–8 and one <code>x</code>), with or without spaces, or copy the board from the game in Level 1.</div>
+        <div class="field-row">
+          <div class="field"><label for="boardIn">board</label><input class="wide" id="boardIn" type="text" value="2 3 4 1 5 x 7 6 8" spellcheck="false" autocomplete="off"></div>
+          <button class="btn" id="solveBtn" type="button">Solve</button>
+          <button class="btn ghost" id="fromGameBtn" type="button">Use game board</button>
+        </div>
+        <div class="puzzle mini" id="solveBoard" aria-label="solver board"></div>
+        <div class="controls">
+          <button class="btn" id="playBtn" type="button">Play</button>
+          <button class="btn ghost" id="stepBtn" type="button">Step</button>
+        </div>
+        <div class="status" id="solveOut"></div>
+      </div>
+      <h3>A*: searching with a sense of direction</h3>
+      <p>BFS is fair but blind: it spreads out equally in every direction, even directions that lead away from the goal. <b>A*</b> (say "A-star") is smarter. For each board it estimates how far it still is from the goal, and it always explores the most promising board first.</p>
+      <p>A good estimate is the <b>Manhattan distance</b>: for each tile, count how many rows plus columns it is from its home square, and add these up. Each move shifts only one tile by one square, so you can never need <i>fewer</i> moves than this number. Because the estimate never overestimates, A* is still guaranteed to find a shortest solution.</p>
+      <div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>astar.py</div>
+<pre><code><span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="fn">manhattan</span>(state):
+    total = <span class="nu">0</span>
+    <span class="kw">for</span> i, c <span class="kw">in</span> <span class="fn">enumerate</span>(state):
+        <span class="kw">if</span> c != <span class="st">"x"</span>:
+            home = <span class="fn">int</span>(c) - <span class="nu">1</span>                 <span class="cm"># tile 1 belongs at position 0, and so on</span>
+            total += <span class="fn">abs</span>(i // <span class="nu">3</span> - home // <span class="nu">3</span>) + <span class="fn">abs</span>(i % <span class="nu">3</span> - home % <span class="nu">3</span>)
+    <span class="kw">return</span> total
+
+<span class="kw">def</span> <span class="fn">astar</span>(start, goal=<span class="st">"12345678x"</span>):
+    best = {start: <span class="nu">0</span>}                         <span class="cm"># fewest moves found so far to each board</span>
+    heap = [(manhattan(start), <span class="nu">0</span>, start, <span class="st">""</span>)] <span class="cm"># (estimate of total, moves so far, board, path)</span>
+    explored = <span class="nu">0</span>
+    <span class="kw">while</span> heap:
+        f, g, s, path = heapq.heappop(heap)   <span class="cm"># the most promising board</span>
+        <span class="kw">if</span> g &gt; best[s]:                       <span class="cm"># an old, worse entry: skip it</span>
+            <span class="kw">continue</span>
+        explored += <span class="nu">1</span>
+        <span class="kw">if</span> s == goal:
+            <span class="kw">return</span> path, explored
+        <span class="kw">for</span> letter, t <span class="kw">in</span> neighbours(s):
+            <span class="kw">if</span> t <span class="kw">not</span> <span class="kw">in</span> best <span class="kw">or</span> g + <span class="nu">1</span> &lt; best[t]:
+                best[t] = g + <span class="nu">1</span>
+                heapq.heappush(heap, (g + <span class="nu">1</span> + manhattan(t), g + <span class="nu">1</span>, t, path + letter))
+    <span class="kw">return</span> <span class="kw">None</span>, explored
+
+path, explored = astar(<span class="st">"23415x768"</span>)
+<span class="fn">print</span>(<span class="fn">len</span>(path), explored)        <span class="cm"># 19 651</span></code></pre>
+      </div>
+      <div class="stats">
+        <div class="stat slow"><div class="num">46,289</div><div class="lbl">boards discovered by BFS to solve 23415x768</div></div>
+        <div class="stat fast"><div class="num">651</div><div class="lbl">boards explored by A* for the same 19-move solution</div></div>
+      </div>
+      <div class="callout tip">
+        <div class="ctitle">Which one should I use?</div>
+        <ul>
+          <li><b>Many boards, small puzzle (3×3):</b> one backwards BFS, then look up each answer. That's the sample solution's approach.</li>
+          <li><b>One board, bigger puzzle (4×4):</b> the 15 puzzle has over 10 trillion reachable boards, far too many to store. A* (or its memory-saving cousin IDA*) with a good estimate is the way to go.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ CHECKPOINT ============ -->
+    <section class="level" id="level9">
+      <div class="level-head"><span class="level-num">CHECKPOINT</span><h2>Quick concept quiz</h2></div>
+      <details>
+        <summary>1. Why is the first route BFS finds to a board always a shortest one?</summary>
+        <div class="reveal"><p>Because the queue is first-in-first-out. All boards 1 move away are taken out before any board 2 moves away, those before any board 3 moves away, and so on. So when BFS first reaches a board, every shorter route has already been fully explored. If one existed, BFS would have found the board earlier.</p></div>
+      </details>
+      <details>
+        <summary>2. In the sample solution, why is it <code>solution_char + current_path</code> and not <code>current_path + solution_char</code>?</summary>
+        <div class="reveal"><p>The new board is one step <b>further</b> from the goal than the current board. To solve it, you must first make the move that returns to the current board (<code>solution_char</code>), and then follow the current board's moves (<code>current_path</code>). First things go first, at the front.</p></div>
+      </details>
+      <details>
+        <summary>3. Can <code>1 2 3 / 4 5 6 / 8 7 x</code> be solved? Answer without running any search.</summary>
+        <div class="reveal"><p>Reading order (skip the hole): 1 2 3 4 5 6 8 7. The only wrong-order pair is (8, 7), so there is <b>1</b> inversion, which is odd. The parity can never change, and the goal has 0 inversions, so this board is <b>unsolvable</b>.</p></div>
+      </details>
+    </section>
+
+    <!-- ============ TRAINING GROUND ============ -->
+    <section class="level" id="level10">
+      <div class="level-head"><span class="level-num">TRAINING GROUND</span><h2>Practice problems</h2></div>
+      <p class="lead">Eight problems, from warm-up ★ to boss level ★★★. Several solutions reuse <code>neighbours()</code> from Level 2 and <code>bfs_tree</code> from Level 6, so paste those in first. Only open a solution after a real try!</p>
+
+      <div class="exercise" id="ex1">
+        <h3>1. Position detective <span class="stars">★</span></h3>
+        <p>Write <code>to_rc(pos)</code> that turns a position (0–8) into <code>(row, col)</code>, and <code>to_pos(row, col)</code> that does the reverse. Check that the two undo each other for all 9 squares.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Going one way uses <code>//</code> and <code>%</code>. Going back: each row is worth 3 positions, so <code>pos = row * 3 + col</code>.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex1_positions.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">to_rc</span>(pos):
+    <span class="kw">return</span> pos // <span class="nu">3</span>, pos % <span class="nu">3</span>
+
+<span class="kw">def</span> <span class="fn">to_pos</span>(row, col):
+    <span class="kw">return</span> row * <span class="nu">3</span> + col
+
+<span class="fn">print</span>(to_rc(<span class="nu">5</span>), to_rc(<span class="nu">7</span>))                                 <span class="cm"># (1, 2) (2, 1)</span>
+<span class="fn">print</span>(to_pos(<span class="nu">1</span>, <span class="nu">2</span>), to_pos(<span class="nu">2</span>, <span class="nu">1</span>))                         <span class="cm"># 5 7</span>
+<span class="fn">print</span>(<span class="fn">all</span>(to_pos(*to_rc(p)) == p <span class="kw">for</span> p <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">9</span>)))      <span class="cm"># True</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex2">
+        <h3>2. How many moves from here? <span class="stars">★</span></h3>
+        <p>Using <code>neighbours()</code>, print how many moves are possible when the hole is at each of the 9 positions. Print the numbers as a 3×3 grid. Does it match "corner 2, edge 3, centre 4"?</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>For position <code>p</code>, build a board with the hole there, for example by inserting <code>"x"</code> into <code>"12345678"</code> at index <code>p</code>.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex2_move_count.py</div>
+<pre><code><span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">3</span>):
+    row = []
+    <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">3</span>):
+        p = r * <span class="nu">3</span> + c
+        board = <span class="st">"12345678"</span>[:p] + <span class="st">"x"</span> + <span class="st">"12345678"</span>[p:]   <span class="cm"># hole at position p</span>
+        row.append(<span class="fn">str</span>(<span class="fn">len</span>(neighbours(board))))
+    <span class="fn">print</span>(<span class="st">" "</span>.join(row))
+<span class="cm"># 2 3 2</span>
+<span class="cm"># 3 4 3</span>
+<span class="cm"># 2 3 2</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex3">
+        <h3>3. The answer checker <span class="stars">★★</span></h3>
+        <p>Write <code>apply_moves(state, moves)</code>, which performs a move string like <code>"ullddr"</code> (each letter = the direction the hole moves) and returns the final board, or <code>None</code> if a move would leave the board. Use it to check that the sample solution's answer really solves <code>23415x768</code>.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Turn <code>neighbours(state)</code> into a dictionary <code>{letter: new_board}</code>. If the letter isn't in it, the move is illegal.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex3_apply.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">apply_moves</span>(state, moves):
+    <span class="kw">for</span> m <span class="kw">in</span> moves:
+        options = <span class="fn">dict</span>(neighbours(state))   <span class="cm"># e.g. {"u": "...", "d": "...", "l": "..."}</span>
+        <span class="kw">if</span> m <span class="kw">not</span> <span class="kw">in</span> options:
+            <span class="kw">return</span> <span class="kw">None</span>                     <span class="cm"># this move would leave the board</span>
+        state = options[m]
+    <span class="kw">return</span> state
+
+<span class="fn">print</span>(apply_moves(<span class="st">"23415x768"</span>, <span class="st">"ullddrurdllurrdlurd"</span>))   <span class="cm"># 12345678x</span>
+<span class="fn">print</span>(apply_moves(<span class="st">"23415x768"</span>, <span class="st">"r"</span>))                     <span class="cm"># None  (hole is in the right column)</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex4">
+        <h3>4. Quick reject <span class="stars">★★</span></h3>
+        <p>Make the sample solution faster for unsolvable boards: before looking a board up, use <code>solvable()</code> from Level 7. Then test it on these boards: <code>8 1 3 4 x 2 7 6 5</code>, <code>1 2 3 4 5 6 8 7 x</code>, and <code>x 8 7 6 5 4 3 2 1</code>.</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Count inversions first. Only if the count is even do you need the answer book, and then the board is guaranteed to be in it.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex4_quick_reject.py</div>
+<pre><code><span class="kw">def</span> <span class="fn">answer</span>(line):
+    s = <span class="st">""</span>.join(line.split())
+    <span class="kw">if</span> <span class="kw">not</span> solvable(s):                 <span class="cm"># odd inversions: impossible, no lookup needed</span>
+        <span class="kw">return</span> <span class="st">"unsolvable"</span>
+    <span class="kw">return</span> bfs_tree[s]                  <span class="cm"># even: guaranteed to be in the book</span>
+
+<span class="kw">for</span> line <span class="kw">in</span> [<span class="st">"8 1 3 4 x 2 7 6 5"</span>, <span class="st">"1 2 3 4 5 6 8 7 x"</span>, <span class="st">"x 8 7 6 5 4 3 2 1"</span>]:
+    <span class="fn">print</span>(inversions(<span class="st">""</span>.join(line.split())), answer(line))
+<span class="cm"># 12 rdlluurdldrurd</span>
+<span class="cm"># 1 unsolvable</span>
+<span class="cm"># 28 rrddlluurrddlluurrddlluurrdd</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex5">
+        <h3>5. The ripple census <span class="stars">★★</span></h3>
+        <p>Using <code>bfs_tree</code>, count how many boards need exactly 0, 1, 2, … moves. (The length of each answer string is its number of moves.) Which distance has the most boards?</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p><code>collections.Counter</code> counts things for you: <code>Counter(len(p) for p in bfs_tree.values())</code>.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex5_census.py</div>
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> <span class="fn">Counter</span>
+
+census = <span class="fn">Counter</span>(<span class="fn">len</span>(path) <span class="kw">for</span> path <span class="kw">in</span> bfs_tree.values())
+<span class="fn">print</span>([census[d] <span class="kw">for</span> d <span class="kw">in</span> <span class="fn">range</span>(<span class="nu">6</span>)])         <span class="cm"># [1, 2, 4, 8, 16, 20]</span>
+<span class="fn">print</span>(<span class="fn">max</span>(census))                           <span class="cm"># 31  (the farthest ring)</span>
+<span class="fn">print</span>(<span class="fn">max</span>(census, key=census.get))           <span class="cm"># 24  (the biggest ring)</span>
+<span class="fn">print</span>(census[<span class="nu">24</span>])                            <span class="cm"># 24047</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex6">
+        <h3>6. The world's hardest 8 puzzles <span class="stars">★★</span></h3>
+        <p>Find every board that needs the maximum number of moves. Print each one with its answer. Then try one in the solver!</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>First find the largest answer length, then collect every board whose answer has that length.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex6_hardest.py</div>
+<pre><code>longest = <span class="fn">max</span>(<span class="fn">len</span>(p) <span class="kw">for</span> p <span class="kw">in</span> bfs_tree.values())
+hardest = <span class="fn">sorted</span>(s <span class="kw">for</span> s, p <span class="kw">in</span> bfs_tree.items() <span class="kw">if</span> <span class="fn">len</span>(p) == longest)
+<span class="fn">print</span>(longest, hardest)      <span class="cm"># 31 ['64785x321', '8672543x1']</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex7">
+        <h3>7. The 5 puzzle (2×3) <span class="stars">★★★</span></h3>
+        <p>A smaller version has 2 rows and 3 columns: tiles 1–5 and a hole, with goal <code>12345x</code>. Change the backwards BFS to work on it. How many boards are solvable, and what is the hardest board?</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Only the board size changes: positions 0–5 instead of 0–8. A row still has 3 squares, so up/down are still ±3, and the edge checks with <code>% 3</code> stay the same.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex7_five_puzzle.py</div>
+<pre><code><span class="kw">from</span> collections <span class="kw">import</span> <span class="fn">deque</span>
+
+goal = <span class="st">"12345x"</span>
+book = {goal: <span class="st">""</span>}
+q = <span class="fn">deque</span>([(goal, goal.index(<span class="st">"x"</span>))])
+moves = [(-<span class="nu">3</span>, <span class="st">"d"</span>), (<span class="nu">3</span>, <span class="st">"u"</span>), (-<span class="nu">1</span>, <span class="st">"r"</span>), (<span class="nu">1</span>, <span class="st">"l"</span>)]
+<span class="kw">while</span> q:
+    s, pos = q.popleft()
+    <span class="kw">for</span> offset, ch <span class="kw">in</span> moves:
+        npos = pos + offset
+        <span class="kw">if</span> npos &lt; <span class="nu">0</span> <span class="kw">or</span> npos &gt;= <span class="nu">6</span>:                 <span class="cm"># 6 squares now</span>
+            <span class="kw">continue</span>
+        <span class="kw">if</span> offset == -<span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">0</span>:
+            <span class="kw">continue</span>
+        <span class="kw">if</span> offset == <span class="nu">1</span> <span class="kw">and</span> pos % <span class="nu">3</span> == <span class="nu">2</span>:
+            <span class="kw">continue</span>
+        cells = <span class="fn">list</span>(s)
+        cells[pos], cells[npos] = cells[npos], cells[pos]
+        t = <span class="st">""</span>.join(cells)
+        <span class="kw">if</span> t <span class="kw">not</span> <span class="kw">in</span> book:
+            book[t] = ch + book[s]
+            q.append((t, npos))
+
+<span class="fn">print</span>(<span class="fn">len</span>(book))                                  <span class="cm"># 360  (= 6! / 2)</span>
+far = <span class="fn">max</span>(book, key=<span class="kw">lambda</span> s: <span class="fn">len</span>(book[s]))
+<span class="fn">print</span>(far, <span class="fn">len</span>(book[far]))                        <span class="cm"># 45x123 21</span></code></pre>
+      </div>
+        </div></details>
+      </div>
+
+      <div class="exercise" id="ex8">
+        <h3>8. BFS vs A* showdown <span class="stars">★★★</span></h3>
+        <p>For the three solvable boards below, compare <code>bfs_solve()</code> from Level 4 and <code>astar()</code> from Level 8. Do they always find solutions of the same length? Which one explores fewer boards?</p>
+        <details><summary>💡 Hint</summary><div class="reveal"><p>Both functions return <code>(path, count)</code>. Compare <code>len(path)</code> for the length and the second number for the work done.</p></div></details>
+        <details><summary>✅ Solution</summary><div class="reveal">
+<div class="codebox">
+        <div class="bar"><span class="dots"><span></span><span></span><span></span></span>ex8_showdown.py</div>
+<pre><code><span class="kw">for</span> board <span class="kw">in</span> [<span class="st">"23415x768"</span>, <span class="st">"8134x2765"</span>, <span class="st">"x87654321"</span>]:
+    p1, n1 = bfs_solve(board)
+    p2, n2 = astar(board)
+    <span class="fn">print</span>(board, <span class="fn">len</span>(p1), <span class="fn">len</span>(p2), n1, n2)
+<span class="cm"># 23415x768 19 19 46289 651</span>
+<span class="cm"># 8134x2765 14 14 9021 77</span>
+<span class="cm"># x87654321 28 28 180899 727</span></code></pre>
+      </div>
+          <p>Same length every time, because both are guaranteed to be optimal. But A* does a tiny fraction of the work, because its Manhattan estimate keeps pointing it towards the goal.</p>
+        </div></details>
+      </div>
+
+      <div class="callout tip">
+        <div class="ctitle">Escape complete!</div>
+        <p>You turned a sliding-tile toy into strings, built a map of 181,440 boards, explored it with BFS ripples, used the backwards trick to answer any board instantly, fixed five bugs, proved half the boards impossible with parity, and met A*. Those are the same ideas that route-finding apps and game AIs use every day.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <p>The 8 puzzle: slide tiles to reach 12345678x. One backwards breadth-first search from the goal solves all 181,440 solvable boards, and inversion parity spots the impossible ones. For depth-first search, see <a href="Backtracking_en.html">backtracking</a>, and for another search on a graph, see <a href="Regular_Dodecahedron_en.html">Hamiltonian cycles</a>.</p>
+    <p><a href="index.html">&#x2190; Back to all explainers</a> &middot; <a href="eight_puzzle_zh.html">中文版</a></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* ---------- UI text (the only part that differs between EN and ZH) ---------- */
+  var T = {
+    gameMsg: function(n, s){ return 'Moves: <b>' + n + '</b> &middot; state = <b>"' + s + '"</b>'; },
+    won: function(n, best){ return '<span class="ok">The door opens! Solved in ' + n + ' moves.</span> The shortest possible solution for this board was <b>' + best + '</b> moves.' + (n === best ? ' Perfect!' : ' Can you match it? Press Reset to try again.'); },
+    pressShuffle: 'Press <b>Shuffle</b> to mix up the tiles.',
+    solverStart: 'Press <b>Solve</b> to find the shortest solution.',
+    bad: '<span class="back">Please enter exactly 9 symbols: the digits 1&ndash;8 once each and one x.</span>',
+    unsolvable: function(inv){ return '<span class="back">unsolvable</span>: this board has <b>' + inv + '</b> inversion' + (inv === 1 ? '' : 's') + ', an odd number. No sequence of moves can ever solve it (see Level 7).'; },
+    already: '<span class="ok">This board is already solved!</span>',
+    solved: function(n, inv){ return 'Inversions: <b>' + inv + '</b> (even, so solvable). Shortest solution: <b>' + n + '</b> moves'; },
+    stepOf: function(i, n){ return 'Move ' + i + ' of ' + n + '. Each letter is the direction the hole moves.'; },
+    done: '<span class="ok">Solved: 12345678x!</span>',
+    play: 'Play', pause: 'Pause'
+  };
+
+  var GOAL = '12345678x';
+  var STEP = { u: -3, d: 3, l: -1, r: 1 };      /* letter = the direction the hole moves */
+
+  function canMove(p, n){
+    if (n < 0 || n > 8) return false;
+    if (n === p - 1 && p % 3 === 0) return false; /* no wrapping off the left edge */
+    if (n === p + 1 && p % 3 === 2) return false; /* no wrapping off the right edge */
+    return n === p - 3 || n === p + 3 || n === p - 1 || n === p + 1;
+  }
+  function swap(s, p, n){
+    var a = s.split(''); a[p] = a[n]; a[n] = 'x'; return a.join('');
+  }
+  function inversions(s){
+    var t = s.replace('x', ''), c = 0;
+    for (var i = 0; i < t.length; i++) for (var j = i + 1; j < t.length; j++) if (t[i] > t[j]) c++;
+    return c;
+  }
+
+  /* ---------- The answer book: the same backwards BFS as the Python program ---------- */
+  var book = null;
+  function buildBook(){
+    if (book) return book;
+    var moves = [[-3, 'd'], [3, 'u'], [-1, 'r'], [1, 'l']];
+    book = new Map(); book.set(GOAL, '');
+    var qs = [GOAL], qp = [8], head = 0;
+    while (head < qs.length){
+      var s = qs[head], pos = qp[head]; head++;
+      var path = book.get(s);
+      for (var k = 0; k < 4; k++){
+        var npos = pos + moves[k][0];
+        if (npos < 0 || npos >= 9) continue;
+        if (moves[k][0] === -1 && pos % 3 === 0) continue;
+        if (moves[k][0] === 1 && pos % 3 === 2) continue;
+        var t = swap(s, pos, npos);
+        if (!book.has(t)){ book.set(t, moves[k][1] + path); qs.push(t); qp.push(npos); }
+      }
+    }
+    return book;
+  }
+  /* build it in the background shortly after load, so clicks feel instant */
+  setTimeout(buildBook, 600);
+
+  function render(el, s, clickable, moved){
+    var p = s.indexOf('x'), html = '';
+    for (var i = 0; i < 9; i++){
+      var c = s[i], cls = 'tile';
+      if (c === 'x') cls += ' blank';
+      else if (c === GOAL[i]) cls += ' home';
+      if (clickable && c !== 'x' && canMove(p, i)) cls += ' can';
+      if (i === moved) cls += ' moved';
+      var label = c === 'x' ? '' : c;
+      html += clickable
+        ? '<button type="button" class="' + cls + '" data-pos="' + i + '"' + (c === 'x' ? ' aria-label="empty" tabindex="-1"' : '') + '>' + label + '</button>'
+        : '<div class="' + cls + '">' + label + '</div>';
+    }
+    el.innerHTML = html;
+  }
+
+  /* ---------- Widget 1: the playable puzzle ---------- */
+  var gameEl = document.getElementById('game'), gameMsg = document.getElementById('gameMsg');
+  var game = { s: GOAL, start: GOAL, moves: 0, won: false };
+
+  function drawGame(moved){
+    render(gameEl, game.s, !game.won, moved);
+    gameEl.classList.toggle('won', game.won);
+    if (game.won){
+      var best = buildBook().get(game.start).length;
+      gameMsg.innerHTML = T.won(game.moves, best);
+    } else if (game.s === GOAL){
+      gameMsg.innerHTML = T.pressShuffle;
+    } else {
+      gameMsg.innerHTML = T.gameMsg(game.moves, game.s);
+    }
+  }
+  function shuffle(){
+    var s = GOAL, p = 8, last = -1;
+    var n = 30 + Math.floor(Math.random() * 40);
+    for (var k = 0; k < n || s === GOAL; k++){
+      var opts = [];
+      [p - 3, p + 3, p - 1, p + 1].forEach(function(q){ if (canMove(p, q) && q !== last) opts.push(q); });
+      var q = opts[Math.floor(Math.random() * opts.length)];
+      s = swap(s, p, q); last = p; p = q;
+    }
+    game = { s: s, start: s, moves: 0, won: false };
+    drawGame();
+  }
+  gameEl.addEventListener('click', function(e){
+    var b = e.target.closest('button.tile');
+    if (!b || game.won) return;
+    var i = +b.getAttribute('data-pos'), p = game.s.indexOf('x');
+    if (!canMove(p, i)) return;
+    game.s = swap(game.s, p, i);
+    game.moves++;
+    if (game.s === GOAL && game.start !== GOAL) game.won = true;
+    drawGame(p);
+  });
+  document.getElementById('shuffleBtn').addEventListener('click', shuffle);
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    game = { s: game.start, start: game.start, moves: 0, won: false };
+    drawGame();
+  });
+
+  /* ---------- Widget 2: the instant solver ---------- */
+  var boardIn = document.getElementById('boardIn'), solveBoard = document.getElementById('solveBoard');
+  var solveOut = document.getElementById('solveOut'), playBtn = document.getElementById('playBtn');
+  var sv = { s: null, path: '', i: 0, inv: 0, timer: null };
+
+  function stopPlay(){
+    if (sv.timer){ clearInterval(sv.timer); sv.timer = null; }
+    playBtn.textContent = T.play;
+  }
+  function seqHtml(){
+    var h = '';
+    for (var k = 0; k < sv.path.length; k++){
+      h += '<span class="' + (k < sv.i ? 'done' : (k === sv.i ? 'cur' : '')) + '">' + sv.path[k] + '</span>';
+    }
+    return '<span class="seq">' + h + '</span>';
+  }
+  function drawSolver(moved){
+    render(solveBoard, sv.s, false, moved);
+    if (sv.path.length === 0){ solveOut.innerHTML = T.already; return; }
+    solveOut.innerHTML = T.solved(sv.path.length, sv.inv) + '<br>' + seqHtml() +
+      (sv.i === sv.path.length ? '<br>' + T.done : '<br>' + T.stepOf(sv.i, sv.path.length));
+  }
+  function solve(){
+    stopPlay();
+    var s = boardIn.value.replace(/\s+/g, '').toLowerCase();
+    if (s.length !== 9 || s.split('').sort().join('') !== '12345678x'){
+      sv.s = null; solveBoard.innerHTML = ''; solveOut.innerHTML = T.bad; return;
+    }
+    sv.inv = inversions(s);
+    if (sv.inv % 2 === 1){
+      sv.s = null; render(solveBoard, s, false); solveOut.innerHTML = T.unsolvable(sv.inv); return;
+    }
+    sv.s = s; sv.path = buildBook().get(s); sv.i = 0;
+    drawSolver();
+  }
+  function step(){
+    if (!sv.s || sv.i >= sv.path.length){ stopPlay(); return false; }
+    var p = sv.s.indexOf('x');
+    sv.s = swap(sv.s, p, p + STEP[sv.path[sv.i]]);
+    sv.i++;
+    drawSolver(p);
+    if (sv.i >= sv.path.length) stopPlay();
+    return true;
+  }
+  document.getElementById('solveBtn').addEventListener('click', solve);
+  boardIn.addEventListener('keydown', function(e){ if (e.key === 'Enter') solve(); });
+  document.getElementById('fromGameBtn').addEventListener('click', function(){
+    boardIn.value = game.s.split('').join(' ');
+    solve();
+  });
+  document.getElementById('stepBtn').addEventListener('click', function(){ stopPlay(); step(); });
+  playBtn.addEventListener('click', function(){
+    if (sv.timer){ stopPlay(); return; }
+    if (!sv.s || sv.i >= sv.path.length){ solve(); if (!sv.s) return; }
+    playBtn.textContent = T.pause;
+    sv.timer = setInterval(step, 450);
+  });
+
+  shuffle();
+  solveOut.innerHTML = T.solverStart;
+})();
+</script>
+</body>
+</html>
